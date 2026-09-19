@@ -42,6 +42,20 @@ public class GenesisBlocks {
         }
     }
 
+    // Concrete BushBlock implementation for 1.21.1 codec requirement
+    public static class GenesisBushBlock extends BushBlock {
+        public static final MapCodec<GenesisBushBlock> CODEC = simpleCodec(GenesisBushBlock::new);
+
+        public GenesisBushBlock(Properties properties) {
+            super(properties);
+        }
+
+        @Override
+        protected MapCodec<? extends BushBlock> codec() {
+            return CODEC;
+        }
+    }
+
     public static final DeferredHolder<Block, Block> ASTEROID_0 = BLOCKS.register("asteroid_0", () ->
             new AsteroidBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.BARRIER)
                     .mapColor(DyeColor.GRAY).sound(SoundType.STONE)
@@ -163,7 +177,7 @@ public class GenesisBlocks {
             )
     );
 
-    public static final DeferredHolder<Block, VoidCoreOreBlock> VOID_CORE_ORE = BLOCKS.register("void_core_ore",
+    public static final DeferredHolder<Block, Block> VOID_CORE_ORE = BLOCKS.register("void_core_ore",
             () -> new VoidCoreOreBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.DIAMOND_ORE)
                     .mapColor(MapColor.COLOR_BLACK)
                     .strength(6.0F, 12.0F)
@@ -171,7 +185,7 @@ public class GenesisBlocks {
             )
     );
 
-    public static final DeferredHolder<Block, DropExperienceBlock> ANORTHITE = BLOCKS.register("anorthite",
+    public static final DeferredHolder<Block, Block> ANORTHITE = BLOCKS.register("anorthite",
             () -> new DropExperienceBlock(ConstantInt.of(0), BlockBehaviour.Properties.ofFullCopy(Blocks.COPPER_ORE)
                     .mapColor(MapColor.COLOR_GRAY)
                     .sound(SoundType.DEEPSLATE)
@@ -389,7 +403,7 @@ public class GenesisBlocks {
     );
 
     public static final DeferredHolder<Block, Block> MIMIC_FEATHER = BLOCKS.register("mimic_feather", () ->
-            new BushBlock(BlockBehaviour.Properties.of()
+            new GenesisBushBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_GRAY)
                     .strength(0.5F)
                     .sound(SoundType.GRASS)
@@ -550,42 +564,42 @@ public class GenesisBlocks {
 
     public static final DeferredHolder<Block, Block> SPINDLE_GRASS = BLOCKS.register("spindle_grass", () ->
             new AzurePlantBlock(BlockBehaviour.Properties
-                    .ofFullCopy(Blocks.GRASS)
+                    .ofFullCopy(Blocks.SHORT_GRASS)
                     .mapColor(MapColor.COLOR_BLUE)
             )
     );
 
     public static final DeferredHolder<Block, Block> SPINDLE_BUSH = BLOCKS.register("spindle_bush", () ->
             new AzurePlantBlock(BlockBehaviour.Properties
-                    .ofFullCopy(Blocks.GRASS)
+                    .ofFullCopy(Blocks.SHORT_GRASS)
                     .mapColor(MapColor.COLOR_BLUE)
             )
     );
 
     public static final DeferredHolder<Block, Block> GLOWING_SPINDLE_BUSH = BLOCKS.register("glowing_spindle_bush", () ->
             new AzurePlantBlock(BlockBehaviour.Properties
-                    .ofFullCopy(Blocks.GRASS)
+                    .ofFullCopy(Blocks.SHORT_GRASS)
                     .mapColor(MapColor.COLOR_BLUE)
             )
     );
 
     public static final DeferredHolder<Block, Block> TALL_SPINDLE_GRASS = BLOCKS.register("tall_spindle_grass", () ->
             new TallAzurePlantBlock(BlockBehaviour.Properties
-                    .ofFullCopy(Blocks.GRASS)
+                    .ofFullCopy(Blocks.SHORT_GRASS)
                     .mapColor(MapColor.COLOR_BLUE)
             )
     );
 
     public static final DeferredHolder<Block, Block> GIANT_SPINDLE_GRASS = BLOCKS.register("gaint_spindle_grass", () ->
             new TallAzurePlantBlock(BlockBehaviour.Properties
-                    .ofFullCopy(Blocks.GRASS)
+                    .ofFullCopy(Blocks.SHORT_GRASS)
                     .mapColor(MapColor.COLOR_BLUE)
             )
     );
 
     public static final DeferredHolder<Block, Block> BELL_FLOWER = BLOCKS.register("bell_flower", () ->
             new TallAzurePlantBlock(BlockBehaviour.Properties
-                    .ofFullCopy(Blocks.GRASS)
+                    .ofFullCopy(Blocks.SHORT_GRASS)
                     .mapColor(MapColor.COLOR_BLUE)
             )
     );
@@ -901,7 +915,7 @@ public class GenesisBlocks {
                         DeferredHolder<Block, Block> stairs = BLOCKS.register(id,
                                 () -> {
                                     Block block = blockLookup(entry.getKey()).get().get();
-                                    return new StairBlock(block::defaultBlockState, ((BlockBehaviourAccessor) block).getProperties());
+                                    return new StairBlock(block.defaultBlockState(), ((BlockBehaviourAccessor) block).getProperties());
                                 });
 
                         GenesisItems.DYNAMIC_ITEMS.put(id, GenesisItems.ITEMS.register(id,
