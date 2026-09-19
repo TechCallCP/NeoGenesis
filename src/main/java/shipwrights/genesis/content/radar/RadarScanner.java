@@ -23,7 +23,7 @@ public class RadarScanner {
         });
     }
 
-    void update(Vector3dc cameraPos, Vector3dc forward, Vector3dc up, Vector3dc right) {
+    public void update(Vector3dc cameraPos, Vector3dc forward, Vector3dc up, Vector3dc right) {
         this.cameraPos = cameraPos;
         this.minDot = Math.cos((fov / resolution) * Math.sqrt(2.0) / 2.0);
 
@@ -38,14 +38,18 @@ public class RadarScanner {
 
             it.rotateAxis(rotY, up.x(), up.y(), up.z());
             it.rotateAxis(rotX, right.x(), right.y(), right.z());
+            it.normalize(); // Guarantee unit vectors for correct dot product matching
         });
     }
 
-    Optional<RadarScanResult> scanPoint(Vector3dc point) {
-        Vector3d ray = point.sub(cameraPos, new Vector3d());
+    public Optional<RadarScanResult> scanPoint(Vector3dc point) {
+        // Safe directional extraction preventing target point side-effects
+        Vector3d ray = point.sub(cameraPos, new Vector3d()).normalize();
+
         double maxDot = -1;
         int resX = 0;
         int resY = 0;
+
         for (int x = 0; x < resolution; x++) {
             for (int y = 0; y < resolution; y++) {
                 double dot = rays[x][y].dot(ray);
@@ -57,6 +61,7 @@ public class RadarScanner {
             }
         }
 
+        // Checking intersection bounds using matching normalized vector thresholds
         if (maxDot > minDot) {
             return Optional.of(new RadarScanResult(resX, resY, cameraPos.distanceSquared(point)));
         } else {

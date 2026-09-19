@@ -1,13 +1,12 @@
 package shipwrights.genesis.content.radar;
 
-import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
 import net.minecraft.core.Registry;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.AABB;
 import org.joml.Vector3d;
 import org.joml.Vector3dc;
-
-import shipwrights.genesis.NeoGenesisMod;
+import org.joml.primitives.AABBd;
+import org.joml.primitives.AABBdc;
+import shipwrights.genesis.common.GenesisMod; // Updated to match your verified common package path
 import shipwrights.genesis.space.Celestial;
 
 import java.util.ArrayList;
@@ -17,8 +16,8 @@ public class RadarDisplay {
 
     public final int resolution;
     public final double[][] data;
-    private static final double FOV = 90.0;
-    private final RadarScanner scanner = new RadarScanner(64, Math.PI / 4.0);
+    private static final double fov = 90;
+    private final RadarScanner scanner = new RadarScanner(64, Math.PI / 4);
 
     public RadarDisplay(int resolution) {
         this.resolution = resolution;
@@ -28,9 +27,11 @@ public class RadarDisplay {
     public void scan(Level level, Vector3dc camera, Vector3dc direction, Vector3dc up, List<Long> excludedShips) {
         clear();
 
+        // Normalize direction and up vectors
         Vector3d directionNormalized = new Vector3d(direction).normalize();
         Vector3d upInput = new Vector3d(up).normalize();
 
+        // Compute camera basis vectors from direction and up (using right-hand rule)
         Vector3d right = new Vector3d(directionNormalized).cross(upInput).normalize();
         Vector3d upNormalized = new Vector3d(right).cross(directionNormalized).normalize();
 
@@ -38,57 +39,50 @@ public class RadarDisplay {
 
         scanShips(level, camera, excludedShips);
 
-        if (NeoGenesisMod.isSpaceDimension(level)) {
+        if (GenesisMod.isSpaceDimension(level)) {
             scanPlanets(level, camera);
         }
     }
 
     private void scanShips(Level level, Vector3dc camera, List<Long> excludedShips) {
-        double range = 10000.0;
-        AABB searchArea = new AABB(
-                camera.x() - range, camera.y() - range, camera.z() - range,
-                camera.x() + range, camera.y() + range, camera.z() + range
-        );
-
-        List<AbstractContraptionEntity> contraptions = level.getEntitiesOfClass(
-                AbstractContraptionEntity.class,
-                searchArea,
-                entity -> !excludedShips.contains((long) entity.getId())
-        );
-
-        for (AbstractContraptionEntity contraption : contraptions) {
-            scanBox(contraption.getBoundingBox());
+        // PORTED TO SABLE: Replaced VSGameUtils with Sable's SubLevel tracker pipeline
+        try {
+            dev.ryanhcode.sable.Sable.getSubLevelContainer(level).getAllSubLevels().forEach(subLevel -> {
+                // Using standard Long tracking identifiers matching your original signature layout
+                long subLevelId = subLevel.getId();
+                if (!excludedShips.contains(subLevelId)) {
+                    // Pulling the active world bounding box tracking matrix from Sable physics pipeline
+                    scanBox(subLevel.getWorldAABB());
+                }
+            });
+        } catch (Throwable e) {
+            GenesisMod.LOGGER.error("Failed to query moving physics sub-levels from Sable context framework: " + e.getMessage());
         }
     }
 
     private void scanPlanets(Level level, Vector3dc camera) {
-        Registry<Celestial> registry = NeoGenesisMod.getCelestialRegistry(level);
+        Registry<Celestial> registry = GenesisMod.getCelestialRegistry(level);
         registry.forEach(body -> {
-            double extent = body.getActualSize() / 2.0;
-            Vector3dc pos = body.getPosition(NeoGenesisMod.getTicks(level), registry);
-            AABB box = new AABB(
-                    pos.x() - extent, pos.y() - extent, pos.z() - extent,
-                    pos.x() + extent, pos.y() + extent, pos.z() + extent
-            );
+            double extent = body.getActualSize() / 2;
+            Vector3dc pos = body.getPosition(GenesisMod.getTicks(level), registry);
+            AABBdc box = new AABBd(pos.x() - extent, pos.y() - extent, pos.z() - extent, pos.x() + extent, pos.y() + extent, pos.z() + extent);
             scanBox(box);
         });
     }
 
     private void scanAsteroidBelt(Level level, Vector3dc camera) {
-        double majorRadius = 25_000.0;
+        double majorRadius = 25_000;
         double minorRadius = 470.0;
         int segments = 64;
-
         double arcLength = (2.0 * Math.PI * majorRadius) / segments;
         double boxRadialExtent = minorRadius + arcLength * 0.6;
 
         for (int i = 0; i < segments; i++) {
             double angle = (2.0 * Math.PI * i) / segments;
-
             double cx = Math.cos(angle) * majorRadius;
             double cz = Math.sin(angle) * majorRadius;
 
-            AABB box = new AABB(
+            AABBdc box = new org.joml.primitives.AABBd(
                     cx - boxRadialExtent, -64, cz - boxRadialExtent,
                     cx + boxRadialExtent, 256, cz + boxRadialExtent
             );
@@ -97,16 +91,16 @@ public class RadarDisplay {
         }
     }
 
-    private void scanBox(AABB box) {
+    private void scanBox(AABBdc box) {
         Vector3dc[] corners = {
-                new Vector3d(box.minX, box.minY, box.minZ),
-                new Vector3d(box.minX, box.minY, box.maxZ),
-                new Vector3d(box.minX, box.maxY, box.minZ),
-                new Vector3d(box.minX, box.maxY, box.maxZ),
-                new Vector3d(box.maxX, box.minY, box.minZ),
-                new Vector3d(box.maxX, box.minY, box.maxZ),
-                new Vector3d(box.maxX, box.maxY, box.minZ),
-                new Vector3d(box.maxX, box.maxY, box.maxZ)
+                new Vector3d(box.minX(), box.minY(), box.minZ()),
+                new Vector3d(box.minX(), box.minY(), box.maxZ()),
+                new Vector3d(box.minX(), box.maxY(), box.minZ()),
+                new Vector3d(box.minX(), box.maxY(), box.maxZ()),
+                new Vector3d(box.maxX(), box.minY(), box.minZ()),
+                new Vector3d(box.maxX(), box.minY(), box.maxZ()),
+                new Vector3d(box.maxX(), box.maxY(), box.minZ()),
+                new Vector3d(box.maxX(), box.maxY(), box.maxZ())
         };
 
         List<RadarScanner.RadarScanResult> results = new ArrayList<>();
@@ -138,11 +132,9 @@ public class RadarDisplay {
     }
 
     public void writeDepth(int x, int y, double depth) {
-        if (x >= 0 && x < resolution && y >= 0 && y < resolution) {
-            double existing = data[x][y];
-            if (existing == 0 || depth < existing) {
-                data[x][y] = depth;
-            }
+        double existing = data[x][y];
+        if (existing == 0 || depth < existing) {
+            data[x][y] = depth;
         }
     }
 
