@@ -14,7 +14,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
-import shipwrights.genesis.GenesisMod;
+import shipwrights.genesis.NeoGenesisMod;
 import shipwrights.genesis.space.Celestial;
 
 import java.util.ArrayList;
@@ -155,7 +155,7 @@ public class CelestialArgument implements ArgumentType<CelestialArgument.Celesti
             String typed = remaining.substring(prefix.length());
             Collection<String> ids = new ArrayList<>();
             if (context.getSource() instanceof SharedSuggestionProvider source) {
-                source.registryAccess().registry(GenesisMod.CELESTIALS_KEY)
+                source.registryAccess().registry(NeoGenesisMod.CELESTIALS_KEY)
                         .ifPresent(reg -> reg.keySet().forEach(id -> ids.add(id.toString())));
             }
 
@@ -195,7 +195,7 @@ public class CelestialArgument implements ArgumentType<CelestialArgument.Celesti
             String prefix = "@c[id=";
             Collection<String> options = new ArrayList<>();
             if (context.getSource() instanceof SharedSuggestionProvider source) {
-                source.registryAccess().registry(GenesisMod.CELESTIALS_KEY)
+                source.registryAccess().registry(NeoGenesisMod.CELESTIALS_KEY)
                         .ifPresent(reg -> reg.keySet().forEach(id -> options.add(id.toString())));
             }
             return SharedSuggestionProvider.suggest(options, builder.createOffset(builder.getStart() + prefix.length()));
@@ -217,7 +217,7 @@ public class CelestialArgument implements ArgumentType<CelestialArgument.Celesti
 
         List<Celestial> find(CommandSourceStack source) {
             Registry<Celestial> registry = source.getServer().registryAccess()
-                    .registryOrThrow(GenesisMod.CELESTIALS_KEY);
+                    .registryOrThrow(NeoGenesisMod.CELESTIALS_KEY);
             List<Celestial> matches = new ArrayList<>();
             if (id != null) {
                 Celestial celestial = registry.get(id);
