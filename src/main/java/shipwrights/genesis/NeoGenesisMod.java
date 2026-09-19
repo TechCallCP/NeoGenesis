@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 // Sable / Create Aeronautics imports
 import dev.ryanhcode.sable.api.SableApi;
 
-import shipwrights.genesis.commands.GenesisCommandArguments;
+import shipwrights.genesis.commands.NeogenesisCommandArguments;
 import shipwrights.genesis.config.GenesisClientConfig;
 import shipwrights.genesis.config.GenesisCommonConfig;
 import shipwrights.genesis.content.block.GenesisBlocks;
@@ -52,9 +52,9 @@ import virtuoel.pehkui.api.ScaleTypes;
 
 import java.util.regex.Pattern;
 
-@Mod(GenesisMod.MOD_ID)
-public final class GenesisMod {
-    public static final String MOD_ID = "genesis";
+@Mod(NeoGenesisMod.MOD_ID)
+public final class NeoGenesisMod {
+    public static final String MOD_ID = "neogenesis";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
     public static final Vector3dc UP = new Vector3d(0.0, 1.0, 0.0);
@@ -93,7 +93,7 @@ public final class GenesisMod {
         // Register fluids using Registrate
         GenesisFluids.init();
 
-        GenesisCommandArguments.register(eventBus);
+        NeogenesisCommandArguments.register(eventBus);
 
         GenesisBlocks.BLOCKS.register(eventBus);
         GenesisBlocks.MENU_TYPES.register(eventBus);

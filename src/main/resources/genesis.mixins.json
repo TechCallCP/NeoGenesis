@@ -28,7 +28,7 @@
   "mixins": [
     "ArgumentTypeInfosMixin",
     "BlockBehaviourAccessor",
-    "EntityDraggerMixin",
+    "SableEntitySpaceHandler",
     "EntityMixin",
     "FallingBlockEntityAccessor",
     "FallingBlockEntityMixin",
@@ -42,9 +42,6 @@
     "ServerLevelMixin",
     "TeleportCommandMixin",
     "TimeCommandMixin",
-    "VSBlockItemMixin",
-    "VSExplosionForceMixin",
-    "VSMountedCameraMixin",
     "compat.mekanism.AdvancedSolarGeneratorMixin",
     "compat.mekanism.WorldUtilsMixin"
   ],
