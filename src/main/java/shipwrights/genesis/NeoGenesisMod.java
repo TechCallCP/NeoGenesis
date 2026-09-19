@@ -11,7 +11,6 @@ import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 
-// NeoForge imports
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
@@ -27,9 +26,6 @@ import org.joml.Vector3d;
 import org.joml.Vector3dc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-// Sable / Create Aeronautics imports
-import dev.ryanhcode.sable.api.SableApi;
 
 import shipwrights.genesis.commands.NeogenesisCommandArguments;
 import shipwrights.genesis.config.GenesisClientConfig;
@@ -65,7 +61,7 @@ public final class NeoGenesisMod {
     public static final ResourceLocation SPACE_DIM = ResourceLocation.fromNamespaceAndPath(MOD_ID, "great_unknown");
     public static final ResourceLocation WORMHOLE_DIM = ResourceLocation.fromNamespaceAndPath(MOD_ID, "subspace");
     public static final ResourceLocation ASTEROID_RULE_ID = ResourceLocation.fromNamespaceAndPath(MOD_ID, "asteroid_block_surface_rule");
-    public static ResourceLocation GENERIC_PLANET_ID = ResourceLocation.fromNamespaceAndPath(GenesisMod.MOD_ID, "planet");
+    public static final ResourceLocation GENERIC_PLANET_ID = ResourceLocation.fromNamespaceAndPath(MOD_ID, "planet");
 
     public static final ResourceKey<Registry<Celestial>> CELESTIALS_KEY =
             ResourceKey.createRegistryKey(ResourceLocation.fromNamespaceAndPath(MOD_ID, "celestials"));
@@ -73,24 +69,17 @@ public final class NeoGenesisMod {
     private static final Pattern SEAT_REGISTRY_NAME =
             Pattern.compile("(?<![a-z])(seat|chair)(?![a-z])", Pattern.CASE_INSENSITIVE);
 
-    // Injected constructor parameters for NeoForge 1.21.1
-    public GenesisMod(IEventBus eventBus, ModContainer modContainer) {
+    public NeoGenesisMod(IEventBus eventBus, ModContainer modContainer) {
         modContainer.registerConfig(ModConfig.Type.CLIENT, GenesisClientConfig.CONFIG_SPEC);
         modContainer.registerConfig(ModConfig.Type.COMMON, GenesisCommonConfig.CONFIG_SPEC);
 
-        // Register the celestials datapack registry
-        eventBus.addListener(GenesisMod::registerDataPackRegistries);
+        // Register datapack registries on mod event bus
+        eventBus.addListener(NeoGenesisMod::registerDataPackRegistries);
 
-        // Register packet handlers
+        // Initialize networking and space providers
         GenesisNetworking.init();
-
-        // Register celestial types
         BuiltinCelestialTypes.register();
-
-        // Register celestial transform providers
         BuiltinTransformProviders.register();
-
-        // Register fluids using Registrate
         GenesisFluids.init();
 
         NeogenesisCommandArguments.register(eventBus);
@@ -105,12 +94,11 @@ public final class NeoGenesisMod {
         shipwrights.genesis.content.item.GenesisCreativeTabs.register(eventBus);
         shipwrights.genesis.content.painting.GenesisPaintings.PAINTING_VARIANTS.register(eventBus);
 
-        // Replaced VS phys tick listener with Sable/NeoForge server tick listener
+        // Physics tick hook on NeoForge event bus
         NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post event) -> {
             ShipCollector.onPhysTick(event.getServer());
         });
 
-        // Updated system property key for NeoForge
         boolean isGameTest = System.getProperty("neoforge.enabledGameTestNamespaces") != null;
 
         NeoForge.EVENT_BUS.register(new PlanetToSpaceTeleporter(isGameTest));
@@ -205,7 +193,6 @@ public final class NeoGenesisMod {
             explosionScaleData.setPersistence(true);
             if (isMiniScale(level)) {
                 ResourceLocation entityType = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
-                // Replaced VSEntityManager check with general entity/seat checks
                 if (
                         entity instanceof Projectile ||
                                 SEAT_REGISTRY_NAME.matcher(entityType.getPath()).find()

@@ -8,9 +8,9 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 
 import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
-import shipwrights.genesis.GenesisMod;
+import shipwrights.genesis.NeoGenesisMod;
 
-@EventBusSubscriber(modid = GenesisMod.MOD_ID)
+@EventBusSubscriber(modid = NeoGenesisMod.MOD_ID)
 public class SableEntitySpaceHandler {
 
     @SubscribeEvent
@@ -19,7 +19,7 @@ public class SableEntitySpaceHandler {
         Level level = entity.level();
 
         // Only process in Genesis space/subspace dimensions
-        if (!level.isClientSide && GenesisMod.shouldCancelVoidDamage(level)) {
+        if (!level.isClientSide && NeoGenesisMod.shouldCancelVoidDamage(level)) {
             // Check if entity is riding or near a Sable/Create contraption ship
             if (entity.getVehicle() instanceof AbstractContraptionEntity contraption) {
                 // Keep entity active / reset void tick counters
