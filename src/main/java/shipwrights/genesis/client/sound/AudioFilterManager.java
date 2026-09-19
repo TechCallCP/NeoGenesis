@@ -1,7 +1,7 @@
 package shipwrights.genesis.client.sound;
 
 import org.lwjgl.openal.*;
-import shipwrights.genesis.GenesisMod;
+import shipwrights.genesis.NeoGenesisMod;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -69,7 +69,7 @@ public class AudioFilterManager {
     private static boolean hasAlError(String errorContext) {
         int alError = AL10.alGetError();
         if (alError != AL10.AL_NO_ERROR) {
-            GenesisMod.LOGGER.error("{}: Error code: {}", errorContext, alError);
+            NeoGenesisMod.LOGGER.error("{}: Error code: {}", errorContext, alError);
             return true;
         }
         return false;

@@ -4,7 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.sounds.SoundSource;
 import org.lwjgl.openal.AL10;
-import shipwrights.genesis.GenesisMod;
+import shipwrights.genesis.NeoGenesisMod;
 
 public class SoundFilterHandler {
     private static final Minecraft client = Minecraft.getInstance();
@@ -40,7 +40,7 @@ public class SoundFilterHandler {
         if (client.player == null)
             return AL10.AL_NONE;
 
-        if (client.player.level().dimension().location().equals(GenesisMod.SPACE_DIM))
+        if (client.player.level().dimension().location().equals(NeoGenesisMod.SPACE_DIM))
             return AudioFilterManager.getFilterId(AudioFilterManager.Filter.LOWPASS);
 
         return AL10.AL_NONE;
