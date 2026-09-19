@@ -57,11 +57,31 @@ jar {
 repositories {
     flatDir { dir 'libs'}
 
+    // tterrag Maven (Required for Registrate)
+    maven {
+        name = "tterrag Maven"
+        url = "https://maven.tterrag.com"
+    }
+
+    // JitPack (Fallback for Pehkui)
+    maven {
+        name = "JitPack"
+        url = "https://jitpack.io"
+    }
+
+    // ParchmentMC Repository
     maven {
         name = "ParchmentMC"
         url = "https://maven.parchmentmc.org"
     }
 
+    // Curios Maven
+    maven {
+        name = 'Curios maven'
+        url = "https://maven.theillusivec4.top/"
+    }
+
+    // Modrinth Maven
     maven {
         name = "Modrinth"
         url = "https://api.modrinth.com/maven"
@@ -75,7 +95,6 @@ repositories {
             }
         }
         filter {
-            // Fixed typo: added 'h' to dev.ryanhcode
             includeGroup("dev.ryanhcode.sable")
             includeGroup("dev.ryanhcode.sable-companion")
         }
@@ -84,11 +103,6 @@ repositories {
     maven {
         name = "Jared's maven"
         url = "https://maven.blamejared.com/"
-    }
-
-    maven {
-        name 'Curios maven'
-        url = "https://maven.theillusivec4.top/"
     }
 
     maven { url = "https://maven.ithundxr.dev/mirror" }
@@ -102,6 +116,7 @@ dependencies {
     annotationProcessor("org.spongepowered:mixin:0.8.5:processor")
 
     // Registrate for NeoForge
+    // Registrate for 1.21.1 NeoForge via Modrinth
     implementation("com.tterrag.registrate:Registrate:${registrate_version}")
     jarJar("com.tterrag.registrate:Registrate:${registrate_version}") {
         version {
@@ -128,10 +143,11 @@ dependencies {
     implementation("dev.ryanhcode.sable:sable-neoforge-1.21.1:${sable_version}")
     // endregion
 
-    // 1.21.1 NeoForge Mod Dependencies
-    implementation("maven.modrinth:curios:9.0.10+1.21.1-neoforge")
-    implementation("maven.modrinth:pehkui:3.8.3+1.21.1-neoforge")
-    jarJar("maven.modrinth:pehkui:3.8.3+1.21.1-neoforge")
+    // Official Maven Coordinates for Curios and Pehkui
+    implementation("top.theillusivec4.curios:curios-neoforge:9.5.1+1.21.1")
+
+    implementation "com.github.Virtuoel:Pehkui:${pehkui_version}"
+    jarJar("com.github.virtuoel:pehkui:3.8.3+1.21.1-neoforge")
 
     additionalRuntimeClasspath("org.maplibre:earcut4j:3.0.0")
     implementation("org.maplibre:earcut4j:3.0.0")
