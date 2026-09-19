@@ -14,7 +14,8 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.*;
-import shipwrights.genesis.GenesisMod;
+
+import shipwrights.genesis.NeoGenesisMod;
 import shipwrights.genesis.config.GenesisCommonConfig;
 import shipwrights.genesis.mixin.LevelRendererAccessor;
 import shipwrights.genesis.space.Celestial;
@@ -22,14 +23,13 @@ import shipwrights.genesis.space.VantagePoint;
 import shipwrights.genesis.space.properties.PlanetColorPalette;
 import shipwrights.genesis.space.properties.PlanetProperties;
 
-import java.lang.Math;
 import java.util.ArrayList;
 import java.util.List;
 
 public class PlanetDimensionEffects extends DimensionSpecialEffects {
 
     public PlanetDimensionEffects() {
-        super(192f, false, SkyType.NORMAL, false, false);
+        super(192.0F, false, SkyType.NORMAL, false, false);
         createStars();
     }
 
@@ -43,9 +43,9 @@ public class PlanetDimensionEffects extends DimensionSpecialEffects {
     private final List<VertexBuffer> starBuffers = new ArrayList<>(starBufferCount);
 
     private final List<Vector4fc> starColors = List.of(
-            new Vector4f(1f, 1f, 1f, 0.8f),
-            new Vector4f(0.8f, 0.8f, 1f, 0.8f),
-            new Vector4f(1f, 1f, 0.8f, 0.8f)
+            new Vector4f(1.0F, 1.0F, 1.0F, 0.8F),
+            new Vector4f(0.8F, 0.8F, 1.0F, 0.8F),
+            new Vector4f(1.0F, 1.0F, 0.8F, 0.8F)
     );
 
     public @NotNull Vec3 getBrightnessDependentFogColor(@NotNull Vec3 color, float brightness) {
@@ -70,7 +70,7 @@ public class PlanetDimensionEffects extends DimensionSpecialEffects {
 
     @Nullable
     private PlanetProperties getPlanetProperties(ClientLevel level) {
-        VantagePoint vp = VantagePoint.get(level, new Vector3d(), 0, 0f);
+        VantagePoint vp = VantagePoint.get(level, new Vector3d(), 0, 0.0F);
         Celestial celestial = vp instanceof VantagePoint.OnCelestial oc ? oc.celestial() : null;
         if (celestial == null) return null;
         return celestial.properties() instanceof PlanetProperties pp ? pp : null;
@@ -102,29 +102,28 @@ public class PlanetDimensionEffects extends DimensionSpecialEffects {
     @Override
     public boolean renderSky(ClientLevel level, int unused, float partialTick, PoseStack poseStack, Camera camera, Matrix4f projectionMatrix, boolean isFoggy, Runnable setupFog) {
 
-        long gameTime = GenesisMod.getTicks(level);
+        long gameTime = NeoGenesisMod.getTicks(level);
         VantagePoint vp = VantagePoint.get(level, new Vector3d(camera.getPosition().x, camera.getPosition().y, camera.getPosition().z), gameTime, partialTick);
         if (!(vp instanceof VantagePoint.OnCelestial vpOc)) {
             return false;
         }
         final Celestial celestial = vpOc.celestial();
-        
+
         Celestial star = celestial.getNearestStar(gameTime, partialTick, vpOc.registry());
 
         Vector3d toStar = new Vector3d(star.getPosition(gameTime, partialTick, vpOc.registry()))
                 .sub(celestial.getPosition(gameTime, partialTick, vpOc.registry()))
                 .normalize();
-        
+
         Quaterniondc rot = new Quaterniond(vp.getRotation()).conjugate();
         toStar.rotate(rot);
-        
-        double starUpDot = GenesisMod.UP.dot(toStar);
-        double starEastDot = GenesisMod.EAST.dot(toStar);
+
+        double starUpDot = NeoGenesisMod.UP.dot(toStar);
+        double starEastDot = NeoGenesisMod.EAST.dot(toStar);
         PlanetProperties planetProps = getPlanetProperties(level);
         cachedRawDensity = planetProps != null ? planetProps.atmosphere().density() : 1.0;
         double density = Mth.clamp(cachedRawDensity, 0.0, 1.0);
 
-        // fade out density with camera y level, from y=320 to y=GenesisMod.atmosphereEntryHeight
         double cameraY = camera.getPosition().y;
         double densityFade = 1.0 - Mth.clamp((cameraY - 320.0) / (GenesisCommonConfig.getAtmosphereEntryHeight() - 320.0), 0.0, 1.0);
         density *= densityFade;
@@ -133,18 +132,17 @@ public class PlanetDimensionEffects extends DimensionSpecialEffects {
         cachedClampedDensity = density;
         PlanetColorPalette palette = planetProps != null ? planetProps.atmosphere().color() : new PlanetColorPalette.Overworld();
 
-        float rainLevel = hasPrecipitation(level) ? level.getRainLevel(partialTick) : 0f;
-        double rawStarBrightness = 2 * Math.min(Math.max(-starUpDot, 0), 0.5d) * (1f - rainLevel);
+        float rainLevel = hasPrecipitation(level) ? level.getRainLevel(partialTick) : 0.0F;
+        double rawStarBrightness = 2 * Math.min(Math.max(-starUpDot, 0), 0.5D) * (1.0F - rainLevel);
         cachedStarBrightness = Mth.lerp(density, 1.0, rawStarBrightness);
         double apparentSunAngle = getApparentSunAngle(starUpDot, starEastDot);
-        // apparent world time
         long fakeTime = (long) (apparentSunAngle * 24000);
 
         Vec3 skyColor = getSkyColor(camera.getPosition(), partialTick, fakeTime, level, palette);
         cachedSkyColor = skyColor;
-        float skyR = (float)skyColor.x;
-        float skyG = (float)skyColor.y;
-        float skyB = (float)skyColor.z;
+        float skyR = (float) skyColor.x;
+        float skyG = (float) skyColor.y;
+        float skyB = (float) skyColor.z;
         FogRenderer.levelFogColor();
         BufferBuilder bufferbuilder = Tesselator.getInstance().getBuilder();
         RenderSystem.depthMask(false);
@@ -156,7 +154,7 @@ public class PlanetDimensionEffects extends DimensionSpecialEffects {
             skyBuffer.drawWithShader(poseStack.last().pose(), projectionMatrix, shader);
             VertexBuffer.unbind();
         }
-        
+
         RenderSystem.enableBlend();
         float dayTime = level.dimensionType().timeOfDay(fakeTime);
         float[] acolor = this.getSunriseColor(dayTime, partialTick);
@@ -166,41 +164,33 @@ public class PlanetDimensionEffects extends DimensionSpecialEffects {
             poseStack.pushPose();
             poseStack.mulPose(com.mojang.math.Axis.XP.rotationDegrees(-90.0F));
             poseStack.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(90.0F));
-            
-            Quaternionf fullRot = new Quaternionf();/*.set(rot).rotateTo(
-                    1.0f,
-                    0.0f,
-                    0.0f,
-                    (float) toStar.x,
-                    (float) toStar.y,
-                    (float) toStar.z
-            );*/
+
+            Quaternionf fullRot = new Quaternionf();
             float r = acolor[0];
             float g = acolor[1];
             float b = acolor[2];
             float a = (float) (acolor[3] * (1 - cachedStarBrightness));
             poseStack.mulPose(fullRot);
             Matrix4f pose = poseStack.last().pose();
-            
+
             bufferbuilder.begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
             bufferbuilder.vertex(pose, 0.0F, 100.0F, 0.0F).color(r, g, b, a).endVertex();
             int i = 16;
-            
-            for(int j = 0; j <= i; ++j) {
-                float angle = (float)j * ((float)Math.PI * 2F) / i;
+
+            for (int j = 0; j <= i; ++j) {
+                float angle = (float) j * ((float) Math.PI * 2F) / i;
                 float sin = Mth.sin(angle);
                 float cos = Mth.cos(angle);
                 bufferbuilder.vertex(pose, sin * 120.0F, cos * 120.0F, -cos * 40.0F * a).color(acolor[0], acolor[1], acolor[2], 0.0F).endVertex();
             }
-            
+
             BufferUploader.drawWithShader(bufferbuilder.end());
             poseStack.popPose();
         }
-        
+
         poseStack.pushPose();
 
-        //transform stars view to the side of the planet fixme todo change this to use the new vantage point system
-        poseStack.mulPose(new Quaternionf().rotateX((float) (Math.PI/2)));
+        poseStack.mulPose(new Quaternionf().rotateX((float) (Math.PI / 2)));
         poseStack.mulPose(new Quaternionf(celestial.getRotation(gameTime, partialTick, vpOc.registry())).invert());
 
         for (int i = 0; i < starBufferCount; i++) {
@@ -214,7 +204,7 @@ public class PlanetDimensionEffects extends DimensionSpecialEffects {
         }
         setupFog.run();
 
-        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.disableBlend();
         poseStack.popPose();
         return true;
@@ -225,7 +215,7 @@ public class PlanetDimensionEffects extends DimensionSpecialEffects {
         starBuffers.clear();
 
         BufferBuilder bufferbuilder = Tesselator.getInstance().getBuilder();
-        for(int i = 0; i < starBufferCount; i++) {
+        for (int i = 0; i < starBufferCount; i++) {
             VertexBuffer starBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
             BufferBuilder.RenderedBuffer renderedBuffer = this.drawStars(bufferbuilder, 10842L / (i + 4));
             starBuffer.bind();
@@ -239,7 +229,7 @@ public class PlanetDimensionEffects extends DimensionSpecialEffects {
         RandomSource randomsource = RandomSource.create(seed);
         bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
 
-        for(int i = 0; i < 1600; ++i) {
+        for (int i = 0; i < 1600; ++i) {
             double d0 = randomsource.nextFloat() * 2.0F - 1.0F;
             double d1 = randomsource.nextFloat() * 2.0F - 1.0F;
             double d2 = randomsource.nextFloat() * 2.0F - 1.0F;
@@ -263,10 +253,10 @@ public class PlanetDimensionEffects extends DimensionSpecialEffects {
                 double d15 = Math.sin(d14);
                 double d16 = Math.cos(d14);
 
-                for(int j = 0; j < 4; ++j) {
+                for (int j = 0; j < 4; ++j) {
                     double d17 = 0.0;
-                    double d18 = (double)((j & 2) - 1) * d3;
-                    double d19 = (double)((j + 1 & 2) - 1) * d3;
+                    double d18 = (double) ((j & 2) - 1) * d3;
+                    double d19 = (double) ((j + 1 & 2) - 1) * d3;
                     double d21 = d18 * d16 - d19 * d15;
                     double d22 = d19 * d16 + d18 * d15;
                     double d23 = d21 * d12 + d17 * d13;
@@ -280,7 +270,7 @@ public class PlanetDimensionEffects extends DimensionSpecialEffects {
 
         return bufferbuilder.end();
     }
-    
+
     public static Vec3 getSkyColor(Vec3 position, float partialTick, long time, ClientLevel level, PlanetColorPalette palette) {
         float f = level.dimensionType().timeOfDay(time);
         float intensity = Mth.cos(f * ((float) Math.PI * 2F)) * 2.0F + 0.5F;
@@ -296,9 +286,9 @@ public class PlanetDimensionEffects extends DimensionSpecialEffects {
             b = (float) skyColor.z * intensity;
         } else {
             int[] rgb = palette.getRGB();
-            r = (rgb[0] / 255.0f) * intensity;
-            g = (rgb[1] / 255.0f) * intensity;
-            b = (rgb[2] / 255.0f) * intensity;
+            r = (rgb[0] / 255.0F) * intensity;
+            g = (rgb[1] / 255.0F) * intensity;
+            b = (rgb[2] / 255.0F) * intensity;
         }
 
         float rainLevel = level.getRainLevel(partialTick);
@@ -337,6 +327,6 @@ public class PlanetDimensionEffects extends DimensionSpecialEffects {
     }
 
     public static double getApparentSunAngle(double starUpDot, double starEastDot) {
-        return GenesisMod.getApparentSunAngle(starUpDot, starEastDot);
+        return NeoGenesisMod.getApparentSunAngle(starUpDot, starEastDot);
     }
 }

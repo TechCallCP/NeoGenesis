@@ -7,14 +7,17 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
-import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
+import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
+
 import org.jetbrains.annotations.NotNull;
-import shipwrights.genesis.GenesisMod;
+
+import shipwrights.genesis.NeoGenesisMod;
 import shipwrights.genesis.client.blockentityRenderer.NavProjectorBlockEntityRenderer;
 import shipwrights.genesis.client.blockentityRenderer.RadarDisplayBlockEntityRenderer;
 import shipwrights.genesis.client.blockentityRenderer.VoidCoreBlockEntityRenderer;
@@ -25,12 +28,12 @@ import shipwrights.genesis.content.fluid.GenesisFluids;
 import shipwrights.genesis.content.particle.GenesisParticles;
 import shipwrights.genesis.content.particle.VerditeParticle;
 import shipwrights.genesis.content.particle.ZapBubbleParticle;
+
 import team.lodestar.lodestone.systems.postprocess.PostProcessHandler;
 
-@SuppressWarnings("removal")
-@Mod.EventBusSubscriber(modid = GenesisMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@EventBusSubscriber(modid = NeoGenesisMod.MOD_ID, value = Dist.CLIENT)
 public class GenesisClientSetup {
-    @SuppressWarnings("removal")
+
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
         event.enqueueWork(() -> {
@@ -42,9 +45,6 @@ public class GenesisClientSetup {
 
             // Register post-processing shader for space dimension
             PostProcessHandler.addInstance(SpaceInvertPostProcessor.INSTANCE);
-
-            // IDK why it's whining, it says that it's depreciated for 1.21.4+, but were not on that version sooo
-            // also this is how im changing render types for plants
 
             ItemBlockRenderTypes.setRenderLayer(GenesisBlocks.DEAD_MOON_CORAL.get(), RenderType.cutout());
             ItemBlockRenderTypes.setRenderLayer(GenesisBlocks.DEAD_MOON_CORAL_FAN.get(), RenderType.cutout());
@@ -79,15 +79,14 @@ public class GenesisClientSetup {
             ItemBlockRenderTypes.setRenderLayer(GenesisBlocks.WITHERING_WILLOW_BRANCH.get(), RenderType.cutout());
             ItemBlockRenderTypes.setRenderLayer(GenesisBlocks.WITHERING_WILLOW_LEAVES.get(), RenderType.cutout());
 
-            // Miasma fluid render type (must be registered client-side to avoid server crash)
-            ItemBlockRenderTypes.setRenderLayer(GenesisFluids.MIASMA.getSource(), RenderType.translucent());
-            ItemBlockRenderTypes.setRenderLayer(GenesisFluids.MIASMA.get(), RenderType.translucent());
+            // Miasma fluid render type
+            ItemBlockRenderTypes.setRenderLayer(GenesisFluids.MIASMA_SOURCE.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(GenesisFluids.MIASMA_FLOWING.get(), RenderType.translucent());
         });
     }
 
     @SubscribeEvent
     public static void onRegisterReloadListeners(RegisterClientReloadListenersEvent event) {
-        // Register a reload listener to clear planet texture caches when resources are reloaded
         event.registerReloadListener(new SimplePreparableReloadListener<Void>() {
             @Override
             protected @NotNull Void prepare(@NotNull ResourceManager resourceManager, @NotNull ProfilerFiller profiler) {
@@ -97,12 +96,13 @@ public class GenesisClientSetup {
             @Override
             protected void apply(@NotNull Void object, @NotNull ResourceManager resourceManager, @NotNull ProfilerFiller profiler) {
                 ShaderRegistry.clearTexturedPlanetRenderTypes();
-                GenesisMod.LOGGER.debug("Cleared planet texture caches");
+                NeoGenesisMod.LOGGER.debug("Cleared planet texture caches");
             }
         });
     }
+
     @SubscribeEvent
-    public static void registerParticleProvider(RegisterParticleProvidersEvent event){
+    public static void registerParticleProvider(RegisterParticleProvidersEvent event) {
         event.registerSpriteSet(GenesisParticles.ZAP_BUBBLE_PARTICLES.get(), ZapBubbleParticle.Provider::new);
         event.registerSpriteSet(GenesisParticles.VERDITE_PARTICLES.get(), VerditeParticle.Provider::new);
     }

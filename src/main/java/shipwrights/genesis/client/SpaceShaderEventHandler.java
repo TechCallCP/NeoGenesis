@@ -2,20 +2,20 @@ package shipwrights.genesis.client;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.common.Mod;
-import shipwrights.genesis.GenesisMod;
+
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+
+import shipwrights.genesis.NeoGenesisMod;
 import shipwrights.genesis.config.GenesisClientConfig;
 
-@Mod.EventBusSubscriber(value = Dist.CLIENT, modid = GenesisMod.MOD_ID)
+@EventBusSubscriber(value = Dist.CLIENT, modid = NeoGenesisMod.MOD_ID)
 public class SpaceShaderEventHandler {
 
     @SubscribeEvent
     public static void onRenderLevelStage(RenderLevelStageEvent event) {
-        // Update shader state at the start of each frame
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_SKY) {
             return;
         }
@@ -24,7 +24,7 @@ public class SpaceShaderEventHandler {
         Level level = mc.level;
 
         if (level != null) {
-            boolean shouldBeActive = GenesisMod.isSpaceDimension(level) && GenesisClientConfig.enableSpaceLighting();
+            boolean shouldBeActive = NeoGenesisMod.isSpaceDimension(level) && GenesisClientConfig.enableSpaceLighting();
             SpaceInvertPostProcessor.INSTANCE.setActive(shouldBeActive);
         }
     }

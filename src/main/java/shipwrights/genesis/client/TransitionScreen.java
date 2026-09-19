@@ -2,15 +2,20 @@ package shipwrights.genesis.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.ReceivingLevelScreen;
 import net.minecraft.client.renderer.GameRenderer;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.NotNull;
 
+@OnlyIn(Dist.CLIENT)
 public class TransitionScreen extends ReceivingLevelScreen {
+
     public TransitionScreen() {
         super();
     }
@@ -34,23 +39,20 @@ public class TransitionScreen extends ReceivingLevelScreen {
 
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(false);
-        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderTexture(0, TransitionFrame.capturedTarget.getColorTextureId());
 
         Tesselator tesselator = Tesselator.getInstance();
-        BufferBuilder buffer = tesselator.getBuilder();
+        BufferBuilder buffer = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
 
-        buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+        buffer.addVertex(0, h, 0).setUv(0, 0);
+        buffer.addVertex(w, h, 0).setUv(1, 0);
+        buffer.addVertex(w, 0, 0).setUv(1, 1);
+        buffer.addVertex(0, 0, 0).setUv(0, 1);
 
-        // Framebuffer textures are flipped vertically.
-        buffer.vertex(0, h, 0).uv(0, 0).endVertex();
-        buffer.vertex(w, h, 0).uv(1, 0).endVertex();
-        buffer.vertex(w, 0, 0).uv(1, 1).endVertex();
-        buffer.vertex(0, 0, 0).uv(0, 1).endVertex();
-
-        tesselator.end();
+        BufferUploader.drawWithShader(buffer.buildOrThrow());
 
         RenderSystem.depthMask(true);
         RenderSystem.enableDepthTest();

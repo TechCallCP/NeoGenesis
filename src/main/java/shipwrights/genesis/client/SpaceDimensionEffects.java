@@ -1,44 +1,48 @@
 package shipwrights.genesis.client;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.shaders.Uniform;
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import net.minecraft.client.renderer.DimensionSpecialEffects;
-import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix4f;
-import org.joml.Vector4f;
-import org.joml.Vector4fc;
 
+import kotlin.Pair;
 
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.ShaderInstance;
-import com.mojang.blaze3d.vertex.BufferUploader;
-import net.minecraft.util.RandomSource;
-import net.minecraft.util.Mth;
-import net.minecraft.world.phys.Vec3;
 import net.minecraft.core.Registry;
-import kotlin.Pair;
-import shipwrights.genesis.GenesisMod;
+import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.phys.Vec3;
+
+import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4f;
+import org.joml.Vector3d;
+import org.joml.Vector3dc;
+import org.joml.Vector4f;
+import org.joml.Vector4fc;
+
+import shipwrights.genesis.NeoGenesisMod;
 import shipwrights.genesis.space.Celestial;
 import shipwrights.genesis.space.SpaceLevel;
 import shipwrights.genesis.space.properties.StarProperties;
 import shipwrights.genesis.space.type.BuiltinCelestialTypes;
-import org.joml.Vector3d;
-import org.joml.Vector3dc;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 
 public class SpaceDimensionEffects extends DimensionSpecialEffects {
+
     public SpaceDimensionEffects() {
         super(Float.NaN, false, SkyType.NONE, false, false);
         createStars();
@@ -49,19 +53,22 @@ public class SpaceDimensionEffects extends DimensionSpecialEffects {
     private final List<VertexBuffer> starBuffers = new ArrayList<>(starBufferCount);
 
     private final List<Vector4fc> starColors = List.of(
-            new Vector4f(1f, 1f, 1f, 0.8f),
-            new Vector4f(0.8f, 0.8f, 1f, 0.8f),
-            new Vector4f(1f, 1f, 0.8f, 0.8f)
+            new Vector4f(1.0F, 1.0F, 1.0F, 0.8F),
+            new Vector4f(0.8F, 0.8F, 1.0F, 0.8F),
+            new Vector4f(1.0F, 1.0F, 0.8F, 0.8F)
     );
 
+    @Override
     public Vec3 getBrightnessDependentFogColor(Vec3 arg, float f) {
-        return new Vec3(0,0,0);
+        return new Vec3(0, 0, 0);
     }
 
+    @Override
     public boolean isFoggyAt(int i, int j) {
         return false;
     }
 
+    @Override
     public float @Nullable [] getSunriseColor(float f, float g) {
         return null;
     }
@@ -98,16 +105,16 @@ public class SpaceDimensionEffects extends DimensionSpecialEffects {
         }
 
         RenderSystem.depthMask(true);
-        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
         return true;
     }
 
     private void renderNearestStarGlow(ClientLevel level, float partialTick, PoseStack poseStack, Camera camera) {
-        Registry<Celestial> registry = GenesisMod.getCelestialRegistry(level);
+        Registry<Celestial> registry = NeoGenesisMod.getCelestialRegistry(level);
         Vec3 camPos = camera.getPosition();
         Vector3d camPosJoml = new Vector3d(camPos.x, camPos.y, camPos.z);
-        long gameTicks = GenesisMod.getTicks(level);
+        long gameTicks = NeoGenesisMod.getTicks(level);
 
         Pair<Celestial, Double> nearestStar = SpaceLevel.nearestCelestialWhere(
                 registry,
@@ -125,7 +132,7 @@ public class SpaceDimensionEffects extends DimensionSpecialEffects {
         Vector3dc starPos = star.getPosition(gameTicks, partialTick, registry);
         double distance = Math.sqrt(nearestStar.getSecond());
         float fade = (float) Mth.clamp(distance / 3000.0, 0.0, 1.0);
-        if (fade <= 0.001f) {
+        if (fade <= 0.001F) {
             return;
         }
 
@@ -143,28 +150,26 @@ public class SpaceDimensionEffects extends DimensionSpecialEffects {
         Vector3d upPerp = new Vector3d();
         right.cross(toStar, upPerp).normalize();
 
-        float glowDistance = 100.0f;
+        float glowDistance = 100.0F;
         float outerRadius = (float) (36.0 * (10000.0 / Math.max(distance, 1.0)));
-        float innerAlpha = 0.3f * fade;
+        float innerAlpha = 0.3F * fade;
 
-        float r = 1.0f;
-        float g = 1.0f;
-        float b = 1.0f;
+        float r = 1.0F;
+        float g = 1.0F;
+        float b = 1.0F;
         if (star.properties() instanceof StarProperties starProps) {
-            r = starProps.r1() / 255f;
-            g = starProps.g1() / 255f;
-            b = starProps.b1() / 255f;
+            r = starProps.r1() / 255.0F;
+            g = starProps.g1() / 255.0F;
+            b = starProps.b1() / 255.0F;
         }
 
-        // brighten toward white
-        float brighten = 0.25f;
-        r += (1f - r) * brighten;
-        g += (1f - g) * brighten;
-        b += (1f - b) * brighten;
+        float brighten = 0.25F;
+        r += (1.0F - r) * brighten;
+        g += (1.0F - g) * brighten;
+        b += (1.0F - b) * brighten;
 
-        // desaturate slightly
-        float lum = 0.299f * r + 0.587f * g + 0.114f * b;
-        float desat = 0.3f;
+        float lum = 0.299F * r + 0.587F * g + 0.114F * b;
+        float desat = 0.3F;
 
         r += (lum - r) * desat;
         g += (lum - g) * desat;
@@ -187,7 +192,7 @@ public class SpaceDimensionEffects extends DimensionSpecialEffects {
         Matrix4f pose = poseStack.last().pose();
         Vector3d center = new Vector3d(toStar).mul(glowDistance);
         bufferbuilder.begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
-        bufferbuilder.vertex(pose, (float) center.x, (float) center.y, (float) center.z).color(r, g, b, 0.0f).endVertex();
+        bufferbuilder.vertex(pose, (float) center.x, (float) center.y, (float) center.z).color(r, g, b, 0.0F).endVertex();
 
         int steps = 32;
         for (int i = 0; i <= steps; i++) {
@@ -196,7 +201,7 @@ public class SpaceDimensionEffects extends DimensionSpecialEffects {
             double sin = Math.sin(angle);
             Vector3d offset = new Vector3d(right).mul(cos * outerRadius).add(new Vector3d(upPerp).mul(sin * outerRadius));
             Vector3d pos = new Vector3d(center).add(offset);
-            bufferbuilder.vertex(pose, (float) pos.x, (float) pos.y, (float) pos.z).color(r, g, b, 1.0f).endVertex();
+            bufferbuilder.vertex(pose, (float) pos.x, (float) pos.y, (float) pos.z).color(r, g, b, 1.0F).endVertex();
         }
 
         BufferUploader.drawWithShader(bufferbuilder.end());
@@ -208,7 +213,7 @@ public class SpaceDimensionEffects extends DimensionSpecialEffects {
         starBuffers.clear();
 
         BufferBuilder bufferbuilder = Tesselator.getInstance().getBuilder();
-        for(int i = 0; i < starBufferCount; i++) {
+        for (int i = 0; i < starBufferCount; i++) {
             VertexBuffer starBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
             BufferBuilder.RenderedBuffer renderedBuffer = this.drawStars(bufferbuilder, 10842L / (i + 4));
             starBuffer.bind();
@@ -222,11 +227,11 @@ public class SpaceDimensionEffects extends DimensionSpecialEffects {
         RandomSource randomsource = RandomSource.create(seed);
         bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
 
-        for(int i = 0; i < 1600; ++i) {
-            double d0 = (double)(randomsource.nextFloat() * 2.0F - 1.0F);
-            double d1 = (double)(randomsource.nextFloat() * 2.0F - 1.0F);
-            double d2 = (double)(randomsource.nextFloat() * 2.0F - 1.0F);
-            double d3 = (double)(0.05F + randomsource.nextFloat() * 0.2F);
+        for (int i = 0; i < 1600; ++i) {
+            double d0 = (double) (randomsource.nextFloat() * 2.0F - 1.0F);
+            double d1 = (double) (randomsource.nextFloat() * 2.0F - 1.0F);
+            double d2 = (double) (randomsource.nextFloat() * 2.0F - 1.0F);
+            double d3 = (double) (0.05F + randomsource.nextFloat() * 0.2F);
             double d4 = d0 * d0 + d1 * d1 + d2 * d2;
             if (d4 < 1.0 && d4 > 0.01) {
                 d4 = 1.0 / Math.sqrt(d4);
@@ -246,11 +251,10 @@ public class SpaceDimensionEffects extends DimensionSpecialEffects {
                 double d15 = Math.sin(d14);
                 double d16 = Math.cos(d14);
 
-                for(int j = 0; j < 4; ++j) {
+                for (int j = 0; j < 4; ++j) {
                     double d17 = 0.0;
-                    double d18 = (double)((j & 2) - 1) * d3;
-                    double d19 = (double)((j + 1 & 2) - 1) * d3;
-                    double d20 = 0.0;
+                    double d18 = (double) ((j & 2) - 1) * d3;
+                    double d19 = (double) ((j + 1 & 2) - 1) * d3;
                     double d21 = d18 * d16 - d19 * d15;
                     double d22 = d19 * d16 + d18 * d15;
                     double d23 = d21 * d12 + d17 * d13;

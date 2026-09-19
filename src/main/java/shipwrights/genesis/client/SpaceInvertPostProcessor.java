@@ -2,21 +2,26 @@ package shipwrights.genesis.client;
 
 import com.mojang.blaze3d.shaders.Uniform;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.EffectInstance;
+
+import kotlin.Pair;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.EffectInstance;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
+
 import org.joml.Vector3d;
 import org.joml.Vector3dc;
-import net.minecraft.core.Registry;
-import shipwrights.genesis.GenesisMod;
+
+import shipwrights.genesis.NeoGenesisMod;
 import shipwrights.genesis.space.Celestial;
 import shipwrights.genesis.space.SpaceLevel;
 import shipwrights.genesis.space.type.BuiltinCelestialTypes;
+
 import team.lodestar.lodestone.systems.postprocess.PostProcessor;
-import kotlin.Pair;
 
 import java.util.function.Predicate;
 
@@ -25,13 +30,12 @@ public class SpaceInvertPostProcessor extends PostProcessor {
 
     @Override
     public ResourceLocation getPostChainLocation() {
-        return ResourceLocation.fromNamespaceAndPath(GenesisMod.MOD_ID, "space_invert");
+        return ResourceLocation.fromNamespaceAndPath(NeoGenesisMod.MOD_ID, "space_invert");
     }
 
     @Override
     public void init() {
         super.init();
-        // Register custom samplers with the effect instances
         if (effects != null) {
             for (EffectInstance effect : effects) {
                 effect.setSampler("PlanetMaskSampler", PlanetMaskTarget::getColorTextureId);
@@ -53,12 +57,12 @@ public class SpaceInvertPostProcessor extends PostProcessor {
             return;
         }
 
-        long ticks = GenesisMod.getTicks(level);
+        long ticks = NeoGenesisMod.getTicks(level);
         float partialTick = mc.getFrameTime();
         Vec3 camPos = localPlayer.getPosition(partialTick);
         Vector3d camPosJoml = new Vector3d(camPos.x, camPos.y, camPos.z);
 
-        Registry<Celestial> registry = GenesisMod.getCelestialRegistry(level);
+        Registry<Celestial> registry = NeoGenesisMod.getCelestialRegistry(level);
         Vector3dc starPos = null;
         Pair<Celestial, Double> result = SpaceLevel.nearestCelestialWhere(
                 registry,
@@ -74,9 +78,9 @@ public class SpaceInvertPostProcessor extends PostProcessor {
         float camX = (float) camPos.x;
         float camY = (float) camPos.y;
         float camZ = (float) camPos.z;
-        float starX = starPos != null ? (float) starPos.x() : 0.0f;
-        float starY = starPos != null ? (float) starPos.y() : 0.0f;
-        float starZ = starPos != null ? (float) starPos.z() : 0.0f;
+        float starX = starPos != null ? (float) starPos.x() : 0.0F;
+        float starY = starPos != null ? (float) starPos.y() : 0.0F;
+        float starZ = starPos != null ? (float) starPos.z() : 0.0F;
 
         for (EffectInstance effect : effects) {
             Uniform cameraUniform = effect.getUniform("cameraPos");
@@ -92,6 +96,6 @@ public class SpaceInvertPostProcessor extends PostProcessor {
 
     @Override
     public void afterProcess() {
-        // Samplers are handled automatically by Minecraft's EffectInstance
+
     }
 }
