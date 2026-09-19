@@ -2,6 +2,7 @@ package shipwrights.genesis.client.shading;
 
 import org.joml.Vector2d;
 import org.joml.Vector2dc;
+
 import shipwrights.genesis.math.AAPlane;
 import shipwrights.genesis.math.PolygonClipping;
 
