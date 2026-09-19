@@ -96,20 +96,22 @@ repositories {
 dependencies {
     annotationProcessor("org.spongepowered:mixin:0.8.5:processor")
 
-    jarJar(modImplementation("com.tterrag.registrate:Registrate:${registrate_version}")) {
+    // Registrate for NeoForge
+    implementation("com.tterrag.registrate:Registrate:${registrate_version}")
+    jarJar("com.tterrag.registrate:Registrate:${registrate_version}") {
         version {
             strictly "[${registrate_version},)"
             prefer "${registrate_version}"
         }
     }
 
-    // MixinExtras (NeoForge variant)
+    // MixinExtras & MixinSquared
     implementation(annotationProcessor("io.github.llamalad7:mixinextras-common:0.5.0"))
     implementation("io.github.llamalad7:mixinextras-neoforge:0.5.0")
 
-    // MixinSquared (NeoForge variant)
     compileOnly(annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-common:0.3.6-beta.1"))
-    jarJar(implementation("com.github.bawnorton.mixinsquared:mixinsquared-neoforge:0.3.6-beta.1")) {
+    implementation("com.github.bawnorton.mixinsquared:mixinsquared-neoforge:0.3.6-beta.1")
+    jarJar("com.github.bawnorton.mixinsquared:mixinsquared-neoforge:0.3.6-beta.1") {
         version {
             strictly "[0.3.6-beta.1,)"
             prefer "0.3.6-beta.1"
@@ -122,20 +124,22 @@ dependencies {
     // endregion
 
     // 1.21.1 NeoForge Mod Dependencies
-    modImplementation("maven.modrinth:curios:9.0.10+1.21.1-neoforge")
-    jarJar(modImplementation("maven.modrinth:pehkui:3.8.3+1.21.1-neoforge"))
+    implementation("maven.modrinth:curios:9.0.10+1.21.1-neoforge")
+    implementation("maven.modrinth:pehkui:3.8.3+1.21.1-neoforge")
+    jarJar("maven.modrinth:pehkui:3.8.3+1.21.1-neoforge")
 
     additionalRuntimeClasspath("org.maplibre:earcut4j:3.0.0")
-    jarJar(implementation("org.maplibre:earcut4j:3.0.0")) {
+    implementation("org.maplibre:earcut4j:3.0.0")
+    jarJar("org.maplibre:earcut4j:3.0.0") {
         version {
             strictly "[3.0.0,)"
             prefer "3.0.0"
         }
     }
 
-    // Dev / Runtime mods updated to 1.21.1 NeoForge
-    modRuntimeOnly("maven.modrinth:spark:1.10.109-neoforge")
-    modRuntimeOnly("mezz.jei:jei-1.21.1-neoforge:19.21.0.247")
+    // Dev / Runtime mods
+    runtimeOnly("maven.modrinth:spark:1.10.109-neoforge")
+    runtimeOnly("mezz.jei:jei-1.21.1-neoforge:19.21.0.247")
 
     // Test dependencies
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.0")
