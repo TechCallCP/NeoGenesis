@@ -1,13 +1,13 @@
 package shipwrights.genesis.config;
 
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class GenesisClientConfig {
 
-    private static ForgeConfigSpec.ConfigValue<Boolean> spaceShaderEnable;
+    private static ModConfigSpec.ConfigValue<Boolean> spaceShaderEnable;
     private static final boolean defaultSpaceShaderEnable = true;
 
-    private static ForgeConfigSpec.ConfigValue<Boolean> renderCurrentPlanet;
+    private static ModConfigSpec.ConfigValue<Boolean> renderCurrentPlanet;
     private static final boolean defaultRenderCurrentPlanet = true;
 
     public static boolean enableSpaceLighting() {
@@ -26,10 +26,10 @@ public class GenesisClientConfig {
         return result;
     }
 
-    public static final ForgeConfigSpec CONFIG_SPEC = buildConfig();
+    public static final ModConfigSpec CONFIG_SPEC = buildConfig();
 
-    private static ForgeConfigSpec buildConfig() {
-        ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
+    private static ModConfigSpec buildConfig() {
+        ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
         spaceShaderEnable = builder.define("EnableDynamicSpaceLighting", defaultSpaceShaderEnable);
         renderCurrentPlanet = builder.define("ShouldRenderCurrentPlanet", defaultRenderCurrentPlanet);
         return builder.build();

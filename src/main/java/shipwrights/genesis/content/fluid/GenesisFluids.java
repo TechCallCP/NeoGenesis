@@ -4,10 +4,10 @@ import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.util.entry.FluidEntry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.material.MapColor;
-import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
-import net.minecraftforge.fluids.FluidType;
-import net.minecraftforge.fluids.ForgeFlowingFluid;
-import shipwrights.genesis.GenesisMod;
+import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
+import net.neoforged.neoforge.fluids.BaseFlowingFluid;
+import net.neoforged.neoforge.fluids.FluidType;
+import shipwrights.genesis.NeoGenesisMod;
 
 import java.util.function.Consumer;
 
@@ -17,12 +17,11 @@ import java.util.function.Consumer;
  */
 public class GenesisFluids {
 
-    // Registrate.create() auto-registers event listeners via getModEventBus()
-    public static final Registrate REGISTRATE = Registrate.create(GenesisMod.MOD_ID);
+    public static final Registrate REGISTRATE = Registrate.create(NeoGenesisMod.MOD_ID);
 
-    private static final ResourceLocation STILL_RL = ResourceLocation.fromNamespaceAndPath(GenesisMod.MOD_ID, "block/miasma_still");
-    private static final ResourceLocation FLOWING_RL = ResourceLocation.fromNamespaceAndPath(GenesisMod.MOD_ID, "block/miasma_flow");
-    private static final ResourceLocation OVERLAY_RL = ResourceLocation.fromNamespaceAndPath(GenesisMod.MOD_ID, "block/miasma_overlay");
+    private static final ResourceLocation STILL_RL = ResourceLocation.fromNamespaceAndPath(NeoGenesisMod.MOD_ID, "block/miasma_still");
+    private static final ResourceLocation FLOWING_RL = ResourceLocation.fromNamespaceAndPath(NeoGenesisMod.MOD_ID, "block/miasma_flow");
+    private static final ResourceLocation OVERLAY_RL = ResourceLocation.fromNamespaceAndPath(NeoGenesisMod.MOD_ID, "block/miasma_overlay");
     private static final int TINT_COLOR = 0xCC8B9A32;
 
     public static final FluidEntry<MiasmaFluid.Flowing> MIASMA = REGISTRATE
@@ -43,17 +42,17 @@ public class GenesisFluids {
                     .tickRate(10))
             .source(MiasmaFluid.Source::new)
             .block(MiasmaLiquidBlock::new)
-                .initialProperties(() -> net.minecraft.world.level.block.Blocks.WATER)
-                .properties(p -> p
-                        .mapColor(MapColor.COLOR_YELLOW)
-                        .replaceable()
-                        .noCollission()
-                        .strength(100.0F)
-                        .noLootTable()
-                        .liquid())
-                .build()
+            .initialProperties(() -> net.minecraft.world.level.block.Blocks.WATER)
+            .properties(p -> p
+                    .mapColor(MapColor.COLOR_YELLOW)
+                    .replaceable()
+                    .noCollission()
+                    .strength(100.0F)
+                    .noLootTable()
+                    .liquid())
+            .build()
             .bucket()
-                .build()
+            .build()
             .register();
 
     private static FluidType createMiasmaFluidType(FluidType.Properties properties, ResourceLocation stillTexture, ResourceLocation flowingTexture) {
@@ -85,20 +84,15 @@ public class GenesisFluids {
         };
     }
 
-    // Helper methods to access source/flowing fluids
-    public static ForgeFlowingFluid.Source getSource() {
-        return (ForgeFlowingFluid.Source) MIASMA.getSource();
+    public static BaseFlowingFluid.Source getSource() {
+        return (BaseFlowingFluid.Source) MIASMA.getSource();
     }
 
     public static MiasmaFluid.Flowing getFlowing() {
         return MIASMA.get();
     }
 
-    /**
-     * Call this from mod constructor to ensure static initialization happens.
-     * The actual registration is done automatically by Registrate.create().
-     */
     public static void init() {
-        GenesisMod.LOGGER.info("Initializing Genesis fluids via Registrate");
+        NeoGenesisMod.LOGGER.info("Initializing Genesis fluids via Registrate");
     }
 }

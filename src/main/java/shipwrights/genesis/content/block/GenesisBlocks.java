@@ -1,6 +1,9 @@
 package shipwrights.genesis.content.block;
 
+import com.mojang.serialization.MapCodec;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.DyeColor;
@@ -9,11 +12,12 @@ import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
-import net.minecraftforge.common.extensions.IForgeMenuType;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
-import shipwrights.genesis.GenesisMod;
+
+import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
+
+import shipwrights.genesis.NeoGenesisMod;
 import shipwrights.genesis.content.block.datagen.BlockDataGenerator;
 import shipwrights.genesis.content.item.GenesisItems;
 import shipwrights.genesis.mixin.BlockBehaviourAccessor;
@@ -21,16 +25,30 @@ import shipwrights.genesis.mixin.BlockBehaviourAccessor;
 import java.util.Optional;
 
 public class GenesisBlocks {
-    public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, GenesisMod.MOD_ID);
-    public static final DeferredRegister<MenuType<?>> MENU_TYPES = DeferredRegister.create(ForgeRegistries.MENU_TYPES, GenesisMod.MOD_ID);
+    public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(Registries.BLOCK, NeoGenesisMod.MOD_ID);
+    public static final DeferredRegister<MenuType<?>> MENU_TYPES = DeferredRegister.create(Registries.MENU, NeoGenesisMod.MOD_ID);
 
-    public static final RegistryObject<Block> ASTEROID_0 = BLOCKS.register("asteroid_0", () ->
-        new AsteroidBlock(BlockBehaviour.Properties.copy(Blocks.BARRIER)
-                .mapColor(DyeColor.GRAY).sound(SoundType.STONE)
-        )
+    // Concrete FallingBlock implementation for 1.21.1 codec requirement
+    public static class GenesisFallingBlock extends FallingBlock {
+        public static final MapCodec<GenesisFallingBlock> CODEC = simpleCodec(GenesisFallingBlock::new);
+
+        public GenesisFallingBlock(Properties properties) {
+            super(properties);
+        }
+
+        @Override
+        protected MapCodec<? extends FallingBlock> codec() {
+            return CODEC;
+        }
+    }
+
+    public static final DeferredHolder<Block, Block> ASTEROID_0 = BLOCKS.register("asteroid_0", () ->
+            new AsteroidBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.BARRIER)
+                    .mapColor(DyeColor.GRAY).sound(SoundType.STONE)
+            )
     );
 
-    static Optional<RegistryObject<Block>> blockLookup(String name) {
+    static Optional<DeferredHolder<Block, ? extends Block>> blockLookup(String name) {
         for (var block: BLOCKS.getEntries()) {
             ResourceLocation id = block.getId();
             if (id != null && id.getPath().equals(name)) {
@@ -40,94 +58,94 @@ public class GenesisBlocks {
         return Optional.empty();
     }
 
-    public static final RegistryObject<Block> NAV_PROJECTOR = BLOCKS.register("nav_projector",
-        () -> new NavProjectorBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
-            .strength(3.0f)
-            .requiresCorrectToolForDrops()
-            .noOcclusion()
-            .lightLevel(state -> 15)));
+    public static final DeferredHolder<Block, Block> NAV_PROJECTOR = BLOCKS.register("nav_projector",
+            () -> new NavProjectorBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK)
+                    .strength(3.0f)
+                    .requiresCorrectToolForDrops()
+                    .noOcclusion()
+                    .lightLevel(state -> 15)));
 
-    public static final RegistryObject<Block> RADAR_DISPLAY = BLOCKS.register("radar_display",
-        () -> new RadarDisplayBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
-            .strength(3.0f)
-            .requiresCorrectToolForDrops()
-            .noOcclusion()));
+    public static final DeferredHolder<Block, Block> RADAR_DISPLAY = BLOCKS.register("radar_display",
+            () -> new RadarDisplayBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK)
+                    .strength(3.0f)
+                    .requiresCorrectToolForDrops()
+                    .noOcclusion()));
 
-    public static final RegistryObject<Block> VOID_ENGINE_INTERFACE = BLOCKS.register("void_engine_interface",
-        () -> new VoidEngineInterfaceBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
-            .strength(3.0f)
-            .requiresCorrectToolForDrops()
-            .noOcclusion()));
+    public static final DeferredHolder<Block, Block> VOID_ENGINE_INTERFACE = BLOCKS.register("void_engine_interface",
+            () -> new VoidEngineInterfaceBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK)
+                    .strength(3.0f)
+                    .requiresCorrectToolForDrops()
+                    .noOcclusion()));
 
-    public static final RegistryObject<Block> VOID_ENGINE_FRAME = BLOCKS.register("void_engine_frame",
-        () -> new VoidEngineFrameBlock());
+    public static final DeferredHolder<Block, Block> VOID_ENGINE_FRAME = BLOCKS.register("void_engine_frame",
+            VoidEngineFrameBlock::new);
 
-    public static final RegistryObject<Block> VOID_CORE = BLOCKS.register("void_core",
-        () -> new VoidCoreBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
-            .strength(3.0f)
-            .requiresCorrectToolForDrops()
-            .noOcclusion()
-            .lightLevel(state -> 15)));
+    public static final DeferredHolder<Block, Block> VOID_CORE = BLOCKS.register("void_core",
+            () -> new VoidCoreBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK)
+                    .strength(3.0f)
+                    .requiresCorrectToolForDrops()
+                    .noOcclusion()
+                    .lightLevel(state -> 15)));
 
-    public static final RegistryObject<Block> VOID_ENGINE_VIEWPORT = BLOCKS.register("void_engine_viewport",
-        () -> new VoidEngineViewportBlock());
+    public static final DeferredHolder<Block, Block> VOID_ENGINE_VIEWPORT = BLOCKS.register("void_engine_viewport",
+            VoidEngineViewportBlock::new);
 
     // Alien stones
-    public static final RegistryObject<Block> VOIDSTONE = BLOCKS.register("voidstone", () ->
-        new Block(BlockBehaviour.Properties.of()
-            .mapColor(MapColor.COLOR_BLACK)
-            .strength(1.5F, 6.0F)
-            .sound(SoundType.STONE)
-            .requiresCorrectToolForDrops()
-        )
+    public static final DeferredHolder<Block, Block> VOIDSTONE = BLOCKS.register("voidstone", () ->
+            new Block(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_BLACK)
+                    .strength(1.5F, 6.0F)
+                    .sound(SoundType.STONE)
+                    .requiresCorrectToolForDrops()
+            )
     );
 
-    public static final RegistryObject<Block> RIFTROCK = BLOCKS.register("riftrock", () ->
-        new Block(BlockBehaviour.Properties.of()
-            .mapColor(MapColor.COLOR_PURPLE)
-            .strength(1.5F, 6.0F)
-            .sound(SoundType.STONE)
-            .requiresCorrectToolForDrops()
-        )
+    public static final DeferredHolder<Block, Block> RIFTROCK = BLOCKS.register("riftrock", () ->
+            new Block(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_PURPLE)
+                    .strength(1.5F, 6.0F)
+                    .sound(SoundType.STONE)
+                    .requiresCorrectToolForDrops()
+            )
     );
 
-    public static final RegistryObject<Block> NULLSTONE = BLOCKS.register("nullstone", () ->
-        new Block(BlockBehaviour.Properties.of()
-            .mapColor(MapColor.COLOR_GRAY)
-            .strength(1.5F, 6.0F)
-            .sound(SoundType.STONE)
-            .requiresCorrectToolForDrops()
-        )
+    public static final DeferredHolder<Block, Block> NULLSTONE = BLOCKS.register("nullstone", () ->
+            new Block(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_GRAY)
+                    .strength(1.5F, 6.0F)
+                    .sound(SoundType.STONE)
+                    .requiresCorrectToolForDrops()
+            )
     );
 
-    public static final RegistryObject<Block> ECHOSTONE = BLOCKS.register("echostone", () ->
-        new Block(BlockBehaviour.Properties.of()
-            .mapColor(MapColor.COLOR_CYAN)
-            .strength(1.5F, 6.0F)
-            .sound(SoundType.STONE)
-            .requiresCorrectToolForDrops()
-        )
+    public static final DeferredHolder<Block, Block> ECHOSTONE = BLOCKS.register("echostone", () ->
+            new Block(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_CYAN)
+                    .strength(1.5F, 6.0F)
+                    .sound(SoundType.STONE)
+                    .requiresCorrectToolForDrops()
+            )
     );
 
-    public static final RegistryObject<Block> PHASEROCK = BLOCKS.register("phaserock", () ->
-        new Block(BlockBehaviour.Properties.of()
-            .mapColor(MapColor.COLOR_LIGHT_BLUE)
-            .strength(1.5F, 6.0F)
-            .sound(SoundType.STONE)
-            .requiresCorrectToolForDrops()
-        )
+    public static final DeferredHolder<Block, Block> PHASEROCK = BLOCKS.register("phaserock", () ->
+            new Block(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_LIGHT_BLUE)
+                    .strength(1.5F, 6.0F)
+                    .sound(SoundType.STONE)
+                    .requiresCorrectToolForDrops()
+            )
     );
 
-    public static final RegistryObject<Block> WARPSTONE = BLOCKS.register("warpstone", () ->
-        new Block(BlockBehaviour.Properties.of()
-            .mapColor(MapColor.COLOR_PINK)
-            .strength(1.5F, 6.0F)
-            .sound(SoundType.STONE)
-            .requiresCorrectToolForDrops()
-        )
+    public static final DeferredHolder<Block, Block> WARPSTONE = BLOCKS.register("warpstone", () ->
+            new Block(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_PINK)
+                    .strength(1.5F, 6.0F)
+                    .sound(SoundType.STONE)
+                    .requiresCorrectToolForDrops()
+            )
     );
 
-    public static final RegistryObject<Block> TULCITE_ORE = BLOCKS.register("tulcite_ore", () ->
+    public static final DeferredHolder<Block, Block> TULCITE_ORE = BLOCKS.register("tulcite_ore", () ->
             new Block(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_PINK)
                     .strength(3.0F, 6.0F)
@@ -136,160 +154,160 @@ public class GenesisBlocks {
             )
     );
 
-    public static final RegistryObject<Block> VERDITE_ORE = BLOCKS.register("verdite_ore", () ->
-        new Block(BlockBehaviour.Properties.of()
-            .mapColor(MapColor.COLOR_PINK)
-            .strength(3.0F, 6.0F)
-            .sound(SoundType.STONE)
-            .requiresCorrectToolForDrops()
-        )
+    public static final DeferredHolder<Block, Block> VERDITE_ORE = BLOCKS.register("verdite_ore", () ->
+            new Block(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_PINK)
+                    .strength(3.0F, 6.0F)
+                    .sound(SoundType.STONE)
+                    .requiresCorrectToolForDrops()
+            )
     );
 
-    public static final RegistryObject<VoidCoreOreBlock> VOID_CORE_ORE = BLOCKS.register("void_core_ore",
-            () -> new VoidCoreOreBlock(BlockBehaviour.Properties.copy(Blocks.DIAMOND_ORE)
+    public static final DeferredHolder<Block, VoidCoreOreBlock> VOID_CORE_ORE = BLOCKS.register("void_core_ore",
+            () -> new VoidCoreOreBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.DIAMOND_ORE)
                     .mapColor(MapColor.COLOR_BLACK)
                     .strength(6.0F, 12.0F)
                     .sound(SoundType.AMETHYST)
             )
     );
 
-    public static final RegistryObject<DropExperienceBlock> ANORTHITE = BLOCKS.register("anorthite",
-            () -> new DropExperienceBlock(BlockBehaviour.Properties.copy(Blocks.COPPER_ORE)
+    public static final DeferredHolder<Block, DropExperienceBlock> ANORTHITE = BLOCKS.register("anorthite",
+            () -> new DropExperienceBlock(ConstantInt.of(0), BlockBehaviour.Properties.ofFullCopy(Blocks.COPPER_ORE)
                     .mapColor(MapColor.COLOR_GRAY)
                     .sound(SoundType.DEEPSLATE)
             )
     );
 
     // Alien sands
-    public static final RegistryObject<Block> LUNAR_DUST = BLOCKS.register("lunar_dust", () ->
-        new FallingBlock(BlockBehaviour.Properties.of()
-            .mapColor(MapColor.SAND)
-            .strength(0.5F)
-            .sound(SoundType.SAND)
-        )
-    );
-
-    public static final RegistryObject<Block> STELLAR_SAND = BLOCKS.register("stellar_sand", () ->
-        new FallingBlock(BlockBehaviour.Properties.of()
-            .mapColor(MapColor.TERRACOTTA_WHITE)
-            .strength(0.5F)
-            .sound(SoundType.SAND)
-        )
-    );
-
-    public static final RegistryObject<Block> RED_SALT = BLOCKS.register("red_salt", () ->
-            new FallingBlock(BlockBehaviour.Properties.of()
-                    .mapColor(MapColor.COLOR_RED)
+    public static final DeferredHolder<Block, Block> LUNAR_DUST = BLOCKS.register("lunar_dust", () ->
+            new GenesisFallingBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.SAND)
                     .strength(0.5F)
                     .sound(SoundType.SAND)
             )
     );
 
-    public static final RegistryObject<Block> PALE_RED_SALT = BLOCKS.register("pale_red_salt", () ->
-            new FallingBlock(BlockBehaviour.Properties.of()
-                    .mapColor(MapColor.TERRACOTTA_RED)
-                    .strength(0.5F)
-                    .sound(SoundType.SAND)
-            )
-    );
-
-    public static final RegistryObject<Block> CRACKED_RED_SALT = BLOCKS.register("cracked_red_salt", () ->
-            new FallingBlock(BlockBehaviour.Properties.of()
-                    .mapColor(MapColor.COLOR_RED)
-                    .strength(0.5F)
-                    .sound(SoundType.SAND)
-            )
-    );
-
-    public static final RegistryObject<Block> CRACKED_PALE_RED_SALT = BLOCKS.register("cracked_pale_red_salt", () ->
-            new FallingBlock(BlockBehaviour.Properties.of()
-                    .mapColor(MapColor.TERRACOTTA_RED)
-                    .strength(0.5F)
-                    .sound(SoundType.SAND)
-            )
-    );
-
-    public static final RegistryObject<Block> CYAN_SALT = BLOCKS.register("cyan_salt", () ->
-            new FallingBlock(BlockBehaviour.Properties.of()
-                    .mapColor(MapColor.COLOR_CYAN)
-                    .strength(0.5F)
-                    .sound(SoundType.SAND)
-            )
-    );
-
-    public static final RegistryObject<Block> TURQUOISE_SALT = BLOCKS.register("turquoise_salt", () ->
-            new FallingBlock(BlockBehaviour.Properties.of()
-                    .mapColor(MapColor.WARPED_NYLIUM)
-                    .strength(0.5F)
-                    .sound(SoundType.SAND)
-            )
-    );
-
-    public static final RegistryObject<Block> CRACKED_CYAN_SALT = BLOCKS.register("cracked_cyan_salt", () ->
-            new FallingBlock(BlockBehaviour.Properties.of()
-                    .mapColor(MapColor.COLOR_CYAN)
-                    .strength(0.5F)
-                    .sound(SoundType.SAND)
-            )
-    );
-
-    public static final RegistryObject<Block> CRACKED_TURQUOISE_SALT = BLOCKS.register("cracked_turquoise_salt", () ->
-            new FallingBlock(BlockBehaviour.Properties.of()
-                    .mapColor(MapColor.WARPED_NYLIUM)
-                    .strength(0.5F)
-                    .sound(SoundType.SAND)
-            )
-    );
-
-    public static final RegistryObject<Block> SALT = BLOCKS.register("salt", () ->
-            new FallingBlock(BlockBehaviour.Properties.of()
-                    .mapColor(MapColor.SNOW)
-                    .strength(0.5F)
-                    .sound(SoundType.SAND)
-            )
-    );
-
-    public static final RegistryObject<Block> CRACKED_SALT = BLOCKS.register("cracked_salt", () ->
-            new FallingBlock(BlockBehaviour.Properties.of()
+    public static final DeferredHolder<Block, Block> STELLAR_SAND = BLOCKS.register("stellar_sand", () ->
+            new GenesisFallingBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.TERRACOTTA_WHITE)
                     .strength(0.5F)
                     .sound(SoundType.SAND)
             )
     );
 
-    public static final RegistryObject<Block> MOON_SAND = BLOCKS.register("moon_sand", () ->
-            new FallingBlock(BlockBehaviour.Properties.of()
+    public static final DeferredHolder<Block, Block> RED_SALT = BLOCKS.register("red_salt", () ->
+            new GenesisFallingBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_RED)
+                    .strength(0.5F)
+                    .sound(SoundType.SAND)
+            )
+    );
+
+    public static final DeferredHolder<Block, Block> PALE_RED_SALT = BLOCKS.register("pale_red_salt", () ->
+            new GenesisFallingBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.TERRACOTTA_RED)
+                    .strength(0.5F)
+                    .sound(SoundType.SAND)
+            )
+    );
+
+    public static final DeferredHolder<Block, Block> CRACKED_RED_SALT = BLOCKS.register("cracked_red_salt", () ->
+            new GenesisFallingBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_RED)
+                    .strength(0.5F)
+                    .sound(SoundType.SAND)
+            )
+    );
+
+    public static final DeferredHolder<Block, Block> CRACKED_PALE_RED_SALT = BLOCKS.register("cracked_pale_red_salt", () ->
+            new GenesisFallingBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.TERRACOTTA_RED)
+                    .strength(0.5F)
+                    .sound(SoundType.SAND)
+            )
+    );
+
+    public static final DeferredHolder<Block, Block> CYAN_SALT = BLOCKS.register("cyan_salt", () ->
+            new GenesisFallingBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_CYAN)
+                    .strength(0.5F)
+                    .sound(SoundType.SAND)
+            )
+    );
+
+    public static final DeferredHolder<Block, Block> TURQUOISE_SALT = BLOCKS.register("turquoise_salt", () ->
+            new GenesisFallingBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.WARPED_NYLIUM)
+                    .strength(0.5F)
+                    .sound(SoundType.SAND)
+            )
+    );
+
+    public static final DeferredHolder<Block, Block> CRACKED_CYAN_SALT = BLOCKS.register("cracked_cyan_salt", () ->
+            new GenesisFallingBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_CYAN)
+                    .strength(0.5F)
+                    .sound(SoundType.SAND)
+            )
+    );
+
+    public static final DeferredHolder<Block, Block> CRACKED_TURQUOISE_SALT = BLOCKS.register("cracked_turquoise_salt", () ->
+            new GenesisFallingBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.WARPED_NYLIUM)
+                    .strength(0.5F)
+                    .sound(SoundType.SAND)
+            )
+    );
+
+    public static final DeferredHolder<Block, Block> SALT = BLOCKS.register("salt", () ->
+            new GenesisFallingBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.SNOW)
+                    .strength(0.5F)
+                    .sound(SoundType.SAND)
+            )
+    );
+
+    public static final DeferredHolder<Block, Block> CRACKED_SALT = BLOCKS.register("cracked_salt", () ->
+            new GenesisFallingBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.TERRACOTTA_WHITE)
+                    .strength(0.5F)
+                    .sound(SoundType.SAND)
+            )
+    );
+
+    public static final DeferredHolder<Block, Block> MOON_SAND = BLOCKS.register("moon_sand", () ->
+            new GenesisFallingBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_LIGHT_GRAY)
                     .strength(0.5F)
                     .sound(SoundType.SAND)
             )
     );
 
-    public static final RegistryObject<Block> WAVY_MOON_SAND = BLOCKS.register("wavy_moon_sand", () ->
-            new FallingBlock(BlockBehaviour.Properties.of()
+    public static final DeferredHolder<Block, Block> WAVY_MOON_SAND = BLOCKS.register("wavy_moon_sand", () ->
+            new GenesisFallingBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_LIGHT_GRAY)
                     .strength(0.5F)
                     .sound(SoundType.SAND)
             )
     );
 
-    public static final RegistryObject<Block> DARK_MOON_SAND = BLOCKS.register("dark_moon_sand", () ->
-            new FallingBlock(BlockBehaviour.Properties.of()
+    public static final DeferredHolder<Block, Block> DARK_MOON_SAND = BLOCKS.register("dark_moon_sand", () ->
+            new GenesisFallingBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_GRAY)
                     .strength(0.5F)
                     .sound(SoundType.SAND)
             )
     );
 
-    public static final RegistryObject<Block> DARK_WAVY_MOON_SAND = BLOCKS.register("dark_wavy_moon_sand", () ->
-            new FallingBlock(BlockBehaviour.Properties.of()
+    public static final DeferredHolder<Block, Block> DARK_WAVY_MOON_SAND = BLOCKS.register("dark_wavy_moon_sand", () ->
+            new GenesisFallingBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_GRAY)
                     .strength(0.5F)
                     .sound(SoundType.SAND)
             )
     );
 
-    public static final RegistryObject<Block> MOON_STONE = BLOCKS.register("moon_stone", () ->
+    public static final DeferredHolder<Block, Block> MOON_STONE = BLOCKS.register("moon_stone", () ->
             new Block(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_GRAY)
                     .strength(4.5F)
@@ -298,7 +316,7 @@ public class GenesisBlocks {
             )
     );
 
-    public static final RegistryObject<Block> HALLOW_MOON_STONE = BLOCKS.register("hallow_moon_stone", () ->
+    public static final DeferredHolder<Block, Block> HALLOW_MOON_STONE = BLOCKS.register("hallow_moon_stone", () ->
             new Block(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_GRAY)
                     .strength(4.0F)
@@ -307,7 +325,7 @@ public class GenesisBlocks {
             )
     );
 
-    public static final RegistryObject<Block> DEAD_MOON_CORAL_BLOCK = BLOCKS.register("dead_moon_coral_block", () ->
+    public static final DeferredHolder<Block, Block> DEAD_MOON_CORAL_BLOCK = BLOCKS.register("dead_moon_coral_block", () ->
             new Block(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_GRAY)
                     .strength(0.5F)
@@ -315,7 +333,7 @@ public class GenesisBlocks {
             )
     );
 
-    public static final RegistryObject<Block> DEAD_MOON_CORAL_WALL_FAN = BLOCKS.register("dead_moon_coral_wall_fan", () ->
+    public static final DeferredHolder<Block, Block> DEAD_MOON_CORAL_WALL_FAN = BLOCKS.register("dead_moon_coral_wall_fan", () ->
             new BaseCoralWallFanBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_GRAY)
                     .strength(0.5F)
@@ -324,7 +342,7 @@ public class GenesisBlocks {
             )
     );
 
-    public static final RegistryObject<Block> DEAD_MOON_CORAL_FAN = BLOCKS.register("dead_moon_coral_fan", () ->
+    public static final DeferredHolder<Block, Block> DEAD_MOON_CORAL_FAN = BLOCKS.register("dead_moon_coral_fan", () ->
             new BaseCoralFanBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_GRAY)
                     .strength(0.5F)
@@ -333,7 +351,7 @@ public class GenesisBlocks {
             )
     );
 
-    public static final RegistryObject<Block> DEAD_MOON_CORAL = BLOCKS.register("dead_moon_coral", () ->
+    public static final DeferredHolder<Block, Block> DEAD_MOON_CORAL = BLOCKS.register("dead_moon_coral", () ->
             new BaseCoralPlantBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_GRAY)
                     .strength(0.5F)
@@ -342,7 +360,7 @@ public class GenesisBlocks {
             )
     );
 
-    public static final RegistryObject<Block> BRINE_TRUNK = BLOCKS.register("brine_trunk", () ->
+    public static final DeferredHolder<Block, Block> BRINE_TRUNK = BLOCKS.register("brine_trunk", () ->
             new BrineTrunkPlantBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.TERRACOTTA_WHITE)
                     .strength(0.5F)
@@ -350,7 +368,7 @@ public class GenesisBlocks {
             )
     );
 
-    public static final RegistryObject<Block> BRINE_FLOWER = BLOCKS.register("brine_flower", () ->
+    public static final DeferredHolder<Block, Block> BRINE_FLOWER = BLOCKS.register("brine_flower", () ->
             new BrineFlowerBlock((BrineTrunkPlantBlock) BRINE_TRUNK.get(), BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_RED)
                     .strength(0.5F)
@@ -361,7 +379,7 @@ public class GenesisBlocks {
             )
     );
 
-    public static final RegistryObject<Block> PETRIFIED_BUSH = BLOCKS.register("petrified_bush", () ->
+    public static final DeferredHolder<Block, Block> PETRIFIED_BUSH = BLOCKS.register("petrified_bush", () ->
             new ColoredSaltPlantBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.TERRACOTTA_WHITE)
                     .strength(0.5F)
@@ -370,7 +388,7 @@ public class GenesisBlocks {
             )
     );
 
-    public static final RegistryObject<Block> MIMIC_FEATHER = BLOCKS.register("mimic_feather", () ->
+    public static final DeferredHolder<Block, Block> MIMIC_FEATHER = BLOCKS.register("mimic_feather", () ->
             new BushBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_GRAY)
                     .strength(0.5F)
@@ -379,7 +397,7 @@ public class GenesisBlocks {
             )
     );
 
-    public static final RegistryObject<Block> TALL_MIMIC_FEATHER = BLOCKS.register("tall_mimic_feather", () ->
+    public static final DeferredHolder<Block, Block> TALL_MIMIC_FEATHER = BLOCKS.register("tall_mimic_feather", () ->
             new TallFlowerBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_GRAY)
                     .strength(0.5F)
@@ -388,7 +406,7 @@ public class GenesisBlocks {
             )
     );
 
-    public static final RegistryObject<Block> BUBBLE_SHROOM_STALK = BLOCKS.register("bubble_shroom_stalk", () ->
+    public static final DeferredHolder<Block, Block> BUBBLE_SHROOM_STALK = BLOCKS.register("bubble_shroom_stalk", () ->
             new RotatedPillarBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_CYAN)
                     .strength(0.5F)
@@ -396,7 +414,7 @@ public class GenesisBlocks {
             )
     );
 
-    public static final RegistryObject<Block> BUBBLE_SHROOM_CAP = BLOCKS.register("bubble_shroom_cap", () ->
+    public static final DeferredHolder<Block, Block> BUBBLE_SHROOM_CAP = BLOCKS.register("bubble_shroom_cap", () ->
             new Block(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_BLUE)
                     .strength(0.5F)
@@ -404,7 +422,7 @@ public class GenesisBlocks {
             )
     );
 
-    public static final RegistryObject<Block> BEARD_SHROOM_CAP = BLOCKS.register("beard_shroom_cap", () ->
+    public static final DeferredHolder<Block, Block> BEARD_SHROOM_CAP = BLOCKS.register("beard_shroom_cap", () ->
             new Block(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_BLUE)
                     .strength(0.5F)
@@ -412,7 +430,7 @@ public class GenesisBlocks {
             )
     );
 
-    public static final RegistryObject<Block> BEARD_SHROOM_LOG = BLOCKS.register("beard_shroom_log", () ->
+    public static final DeferredHolder<Block, Block> BEARD_SHROOM_LOG = BLOCKS.register("beard_shroom_log", () ->
             new RotatedPillarBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.SNOW)
                     .strength(0.5F)
@@ -420,23 +438,23 @@ public class GenesisBlocks {
             )
     );
 
-    public static final RegistryObject<Block> BEARD_SHROOM_LEAVES = BLOCKS.register("beard_shroom_leaves", () ->
+    public static final DeferredHolder<Block, Block> BEARD_SHROOM_LEAVES = BLOCKS.register("beard_shroom_leaves", () ->
             new LeavesBlock(BlockBehaviour.Properties
-                    .copy(Blocks.CHERRY_LEAVES)
+                    .ofFullCopy(Blocks.CHERRY_LEAVES)
                     .mapColor(MapColor.COLOR_MAGENTA)
                     .sound(SoundType.CHERRY_LEAVES)
             )
     );
 
-    public static final RegistryObject<Block> FLOWERING_BEARD_SHROOM_LEAVES = BLOCKS.register("flowering_beard_shroom_leaves", () ->
+    public static final DeferredHolder<Block, Block> FLOWERING_BEARD_SHROOM_LEAVES = BLOCKS.register("flowering_beard_shroom_leaves", () ->
             new CherryLeavesBlock(BlockBehaviour.Properties
-                    .copy(Blocks.CHERRY_LEAVES)
+                    .ofFullCopy(Blocks.CHERRY_LEAVES)
                     .mapColor(MapColor.COLOR_PINK)
                     .sound(SoundType.CHERRY_LEAVES)
             )
     );
 
-    public static final RegistryObject<Block> HANGING_BEARD_SHROOM_LEAVES = BLOCKS.register("hanging_beard_shroom_leaves", () ->
+    public static final DeferredHolder<Block, Block> HANGING_BEARD_SHROOM_LEAVES = BLOCKS.register("hanging_beard_shroom_leaves", () ->
             new WeepingVinesBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_PINK)
                     .strength(0.0F)
@@ -446,7 +464,7 @@ public class GenesisBlocks {
             )
     );
 
-    public static final RegistryObject<Block> HANGING_BEARD_SHROOM_LEAVES_PLANT = BLOCKS.register("hanging_beard_shroom_leaves_plant", () ->
+    public static final DeferredHolder<Block, Block> HANGING_BEARD_SHROOM_LEAVES_PLANT = BLOCKS.register("hanging_beard_shroom_leaves_plant", () ->
             new WeepingVinesPlantBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_PINK)
                     .strength(0.0F)
@@ -456,11 +474,9 @@ public class GenesisBlocks {
             )
     );
 
-
-
-    public static final RegistryObject<Block> ZAPLIGHT = BLOCKS.register("zaplight", () ->
+    public static final DeferredHolder<Block, Block> ZAPLIGHT = BLOCKS.register("zaplight", () ->
             new Block(BlockBehaviour.Properties
-                    .copy(Blocks.SHROOMLIGHT)
+                    .ofFullCopy(Blocks.SHROOMLIGHT)
                     .mapColor(MapColor.COLOR_PINK)
                     .sound(SoundType.SHROOMLIGHT)
                     .emissiveRendering((state, level, pos) -> true)
@@ -468,9 +484,9 @@ public class GenesisBlocks {
             )
     );
 
-    public static final RegistryObject<Block> ZAPLIGHT_SPINDLES = BLOCKS.register("zaplight_spindles", () ->
+    public static final DeferredHolder<Block, Block> ZAPLIGHT_SPINDLES = BLOCKS.register("zaplight_spindles", () ->
             new ZaplightSpindlesBlock(BlockBehaviour.Properties
-                    .copy(Blocks.DEAD_BRAIN_CORAL)
+                    .ofFullCopy(Blocks.DEAD_BRAIN_CORAL)
                     .mapColor(MapColor.COLOR_PINK)
                     .sound(SoundType.CHERRY_LEAVES)
                     .emissiveRendering((state, level, pos) -> true)
@@ -478,9 +494,9 @@ public class GenesisBlocks {
             )
     );
 
-    public static final RegistryObject<Block> WALL_ZAPLIGHT_SPINDLES = BLOCKS.register("wall_zaplight_spindles", () ->
+    public static final DeferredHolder<Block, Block> WALL_ZAPLIGHT_SPINDLES = BLOCKS.register("wall_zaplight_spindles", () ->
             new WallZaplightSpindlesBlock(BlockBehaviour.Properties
-                    .copy(Blocks.DEAD_BRAIN_CORAL_WALL_FAN)
+                    .ofFullCopy(Blocks.DEAD_BRAIN_CORAL_WALL_FAN)
                     .mapColor(MapColor.COLOR_PINK)
                     .sound(SoundType.CHERRY_LEAVES)
                     .emissiveRendering((state, level, pos) -> true)
@@ -488,95 +504,93 @@ public class GenesisBlocks {
             )
     );
 
-    public static final RegistryObject<Block> AZURE_MOSS = BLOCKS.register("azure_moss", () ->
+    public static final DeferredHolder<Block, Block> AZURE_MOSS = BLOCKS.register("azure_moss", () ->
             new Block(BlockBehaviour.Properties
-                    .copy(Blocks.MOSS_BLOCK)
+                    .ofFullCopy(Blocks.MOSS_BLOCK)
                     .mapColor(MapColor.COLOR_BLUE)
                     .sound(SoundType.MOSS)
             )
     );
 
-    public static final RegistryObject<Block> CYAN_MOSS = BLOCKS.register("cyan_moss", () ->
+    public static final DeferredHolder<Block, Block> CYAN_MOSS = BLOCKS.register("cyan_moss", () ->
             new Block(BlockBehaviour.Properties
-                    .copy(Blocks.MOSS_BLOCK)
+                    .ofFullCopy(Blocks.MOSS_BLOCK)
                     .mapColor(MapColor.COLOR_BLUE)
             )
     );
 
-    public static final RegistryObject<Block> TURQUOISE_MOSS = BLOCKS.register("turquoise_moss", () ->
+    public static final DeferredHolder<Block, Block> TURQUOISE_MOSS = BLOCKS.register("turquoise_moss", () ->
             new Block(BlockBehaviour.Properties
-                    .copy(Blocks.MOSS_BLOCK)
+                    .ofFullCopy(Blocks.MOSS_BLOCK)
                     .mapColor(MapColor.COLOR_BLUE)
             )
     );
 
-    public static final RegistryObject<Block> AZURE_MOSS_CARPET = BLOCKS.register("azure_moss_carpet", () ->
+    public static final DeferredHolder<Block, Block> AZURE_MOSS_CARPET = BLOCKS.register("azure_moss_carpet", () ->
             new CarpetBlock(BlockBehaviour.Properties
-                    .copy(Blocks.MOSS_CARPET)
+                    .ofFullCopy(Blocks.MOSS_CARPET)
                     .mapColor(MapColor.COLOR_BLUE)
                     .sound(SoundType.MOSS)
             )
     );
 
-    public static final RegistryObject<Block> CYAN_MOSS_CARPET = BLOCKS.register("cyan_moss_carpet", () ->
+    public static final DeferredHolder<Block, Block> CYAN_MOSS_CARPET = BLOCKS.register("cyan_moss_carpet", () ->
             new CarpetBlock(BlockBehaviour.Properties
-                    .copy(Blocks.MOSS_CARPET)
+                    .ofFullCopy(Blocks.MOSS_CARPET)
                     .mapColor(MapColor.COLOR_BLUE)
             )
     );
 
-    public static final RegistryObject<Block> TURQUOISE_MOSS_CARPET = BLOCKS.register("turquoise_moss_carpet", () ->
+    public static final DeferredHolder<Block, Block> TURQUOISE_MOSS_CARPET = BLOCKS.register("turquoise_moss_carpet", () ->
             new CarpetBlock(BlockBehaviour.Properties
-                    .copy(Blocks.MOSS_CARPET)
+                    .ofFullCopy(Blocks.MOSS_CARPET)
                     .mapColor(MapColor.COLOR_BLUE)
             )
     );
 
-
-
-    public static final RegistryObject<Block> SPINDLE_GRASS = BLOCKS.register("spindle_grass", () ->
+    public static final DeferredHolder<Block, Block> SPINDLE_GRASS = BLOCKS.register("spindle_grass", () ->
             new AzurePlantBlock(BlockBehaviour.Properties
-                    .copy(Blocks.GRASS)
+                    .ofFullCopy(Blocks.GRASS)
                     .mapColor(MapColor.COLOR_BLUE)
             )
     );
 
-    public static final RegistryObject<Block> SPINDLE_BUSH = BLOCKS.register("spindle_bush", () ->
+    public static final DeferredHolder<Block, Block> SPINDLE_BUSH = BLOCKS.register("spindle_bush", () ->
             new AzurePlantBlock(BlockBehaviour.Properties
-                    .copy(Blocks.GRASS)
+                    .ofFullCopy(Blocks.GRASS)
                     .mapColor(MapColor.COLOR_BLUE)
             )
     );
 
-    public static final RegistryObject<Block> GLOWING_SPINDLE_BUSH = BLOCKS.register("glowing_spindle_bush", () ->
+    public static final DeferredHolder<Block, Block> GLOWING_SPINDLE_BUSH = BLOCKS.register("glowing_spindle_bush", () ->
             new AzurePlantBlock(BlockBehaviour.Properties
-                    .copy(Blocks.GRASS)
+                    .ofFullCopy(Blocks.GRASS)
                     .mapColor(MapColor.COLOR_BLUE)
             )
     );
 
-    public static final RegistryObject<Block> TALL_SPINDLE_GRASS = BLOCKS.register("tall_spindle_grass", () ->
+    public static final DeferredHolder<Block, Block> TALL_SPINDLE_GRASS = BLOCKS.register("tall_spindle_grass", () ->
             new TallAzurePlantBlock(BlockBehaviour.Properties
-                    .copy(Blocks.GRASS)
+                    .ofFullCopy(Blocks.GRASS)
                     .mapColor(MapColor.COLOR_BLUE)
             )
     );
 
-    public static final RegistryObject<Block> GIANT_SPINDLE_GRASS = BLOCKS.register("gaint_spindle_grass", () ->
+    public static final DeferredHolder<Block, Block> GIANT_SPINDLE_GRASS = BLOCKS.register("gaint_spindle_grass", () ->
             new TallAzurePlantBlock(BlockBehaviour.Properties
-                    .copy(Blocks.GRASS)
+                    .ofFullCopy(Blocks.GRASS)
                     .mapColor(MapColor.COLOR_BLUE)
             )
     );
 
-    public static final RegistryObject<Block> BELL_FLOWER = BLOCKS.register("bell_flower", () ->
+    public static final DeferredHolder<Block, Block> BELL_FLOWER = BLOCKS.register("bell_flower", () ->
             new TallAzurePlantBlock(BlockBehaviour.Properties
-                    .copy(Blocks.GRASS)
+                    .ofFullCopy(Blocks.GRASS)
                     .mapColor(MapColor.COLOR_BLUE)
             )
     );
 
-    public static final RegistryObject<Block> HOOK_GRASS = BLOCKS.register("hook_grass", () ->
+    public static final DeferredHolder<Block, Block> HOOK_GRASS = BLOCKS.register("hook_grass", () ->
             new AzurePlantBlock(BlockBehaviour.Properties.of()
                     .replaceable()
                     .noCollission()
@@ -589,7 +603,7 @@ public class GenesisBlocks {
             )
     );
 
-    public static final RegistryObject<Block> VERDITE_CRYSTAL_BLOCK = BLOCKS.register("verdite_crystal_block", () ->
+    public static final DeferredHolder<Block, Block> VERDITE_CRYSTAL_BLOCK = BLOCKS.register("verdite_crystal_block", () ->
             new VerditeCrystalBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_LIGHT_GREEN)
                     .sound(SoundType.AMETHYST)
@@ -598,123 +612,123 @@ public class GenesisBlocks {
             )
     );
 
-    public static final RegistryObject<Block> SMALL_VERDITE_BUD = BLOCKS.register("small_verdite_bud", () ->
-            new AmethystClusterBlock(2,2,BlockBehaviour.Properties.of()
+    public static final DeferredHolder<Block, Block> SMALL_VERDITE_BUD = BLOCKS.register("small_verdite_bud", () ->
+            new AmethystClusterBlock(2, 2, BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_LIGHT_GREEN)
                     .sound(SoundType.AMETHYST)
                     .lightLevel(state -> 4)
             )
     );
 
-    public static final RegistryObject<Block> MEDIUM_VERDITE_BUD = BLOCKS.register("medium_verdite_bud", () ->
-            new AmethystClusterBlock(2,2,BlockBehaviour.Properties.of()
+    public static final DeferredHolder<Block, Block> MEDIUM_VERDITE_BUD = BLOCKS.register("medium_verdite_bud", () ->
+            new AmethystClusterBlock(2, 2, BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_LIGHT_GREEN)
                     .sound(SoundType.AMETHYST)
                     .lightLevel(state -> 6)
             )
     );
 
-    public static final RegistryObject<Block> LARGE_VERDITE_BUD = BLOCKS.register("large_verdite_bud", () ->
-            new AmethystClusterBlock(2,2,BlockBehaviour.Properties.of()
+    public static final DeferredHolder<Block, Block> LARGE_VERDITE_BUD = BLOCKS.register("large_verdite_bud", () ->
+            new AmethystClusterBlock(2, 2, BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_LIGHT_GREEN)
                     .sound(SoundType.AMETHYST)
                     .lightLevel(state -> 8)
             )
     );
 
-    public static final RegistryObject<Block> VERDITE_CLUSTER = BLOCKS.register("verdite_cluster", () ->
-            new AmethystClusterBlock(2,2,BlockBehaviour.Properties.of()
+    public static final DeferredHolder<Block, Block> VERDITE_CLUSTER = BLOCKS.register("verdite_cluster", () ->
+            new AmethystClusterBlock(2, 2, BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_LIGHT_GREEN)
                     .sound(SoundType.AMETHYST)
                     .lightLevel(state -> 12)
             )
     );
 
-    public static final RegistryObject<Block> CHALCOPYRITE_SAND = BLOCKS.register("chalcopyrite_sand", () ->
+    public static final DeferredHolder<Block, Block> CHALCOPYRITE_SAND = BLOCKS.register("chalcopyrite_sand", () ->
             new Block(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_LIGHT_GREEN)
                     .sound(SoundType.SAND)
             )
     );
 
-    public static final RegistryObject<Block> MALACHITE_SAND = BLOCKS.register("malachite_sand", () ->
+    public static final DeferredHolder<Block, Block> MALACHITE_SAND = BLOCKS.register("malachite_sand", () ->
             new Block(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.TERRACOTTA_GREEN)
                     .sound(SoundType.SAND)
             )
     );
 
-    public static final RegistryObject<Block> HEMATITE_SAND = BLOCKS.register("hematite_sand", () ->
+    public static final DeferredHolder<Block, Block> HEMATITE_SAND = BLOCKS.register("hematite_sand", () ->
             new Block(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.TERRACOTTA_RED)
                     .sound(SoundType.SAND)
             )
     );
 
-    public static final RegistryObject<Block> CHALCOPYRITE_GRAVEL = BLOCKS.register("chalcopyrite_gravel", () ->
+    public static final DeferredHolder<Block, Block> CHALCOPYRITE_GRAVEL = BLOCKS.register("chalcopyrite_gravel", () ->
             new Block(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_LIGHT_GREEN)
                     .sound(SoundType.GRAVEL)
             )
     );
 
-    public static final RegistryObject<Block> MALACHITE_GRAVEL = BLOCKS.register("malachite_gravel", () ->
+    public static final DeferredHolder<Block, Block> MALACHITE_GRAVEL = BLOCKS.register("malachite_gravel", () ->
             new Block(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.TERRACOTTA_GREEN)
                     .sound(SoundType.GRAVEL)
             )
     );
 
-    public static final RegistryObject<Block> HEMATITE_GRAVEL = BLOCKS.register("hematite_gravel", () ->
+    public static final DeferredHolder<Block, Block> HEMATITE_GRAVEL = BLOCKS.register("hematite_gravel", () ->
             new Block(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.TERRACOTTA_RED)
                     .sound(SoundType.GRAVEL)
             )
     );
 
-    public static final RegistryObject<Block> CHALCOPYRITE = BLOCKS.register("chalcopyrite", () ->
+    public static final DeferredHolder<Block, Block> CHALCOPYRITE = BLOCKS.register("chalcopyrite", () ->
             new Block(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_LIGHT_GREEN)
                     .sound(SoundType.NETHER_BRICKS)
             )
     );
 
-    public static final RegistryObject<Block> MALACHITE = BLOCKS.register("malachite", () ->
+    public static final DeferredHolder<Block, Block> MALACHITE = BLOCKS.register("malachite", () ->
             new Block(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.TERRACOTTA_GREEN)
                     .sound(SoundType.NETHER_BRICKS)
             )
     );
 
-    public static final RegistryObject<Block> HEMATITE = BLOCKS.register("hematite", () ->
+    public static final DeferredHolder<Block, Block> HEMATITE = BLOCKS.register("hematite", () ->
             new Block(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.TERRACOTTA_RED)
                     .sound(SoundType.NETHER_BRICKS)
             )
     );
 
-    public static final RegistryObject<Block> ROOTED_SMOLDERING_CHALCOPYRITE = BLOCKS.register("rooted_smoldering_chalcopyrite", () ->
+    public static final DeferredHolder<Block, Block> ROOTED_SMOLDERING_CHALCOPYRITE = BLOCKS.register("rooted_smoldering_chalcopyrite", () ->
             new SmolderingRootBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_LIGHT_GREEN)
                     .sound(SoundType.GRAVEL)
             )
     );
 
-    public static final RegistryObject<Block> ROOTED_SMOLDERING_MALACHITE = BLOCKS.register("rooted_smoldering_malachite", () ->
+    public static final DeferredHolder<Block, Block> ROOTED_SMOLDERING_MALACHITE = BLOCKS.register("rooted_smoldering_malachite", () ->
             new SmolderingRootBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.TERRACOTTA_GREEN)
                     .sound(SoundType.GRAVEL)
             )
     );
 
-    public static final RegistryObject<Block> ROOTED_SMOLDERING_HEMATITE = BLOCKS.register("rooted_smoldering_hematite", () ->
+    public static final DeferredHolder<Block, Block> ROOTED_SMOLDERING_HEMATITE = BLOCKS.register("rooted_smoldering_hematite", () ->
             new SmolderingRootBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.TERRACOTTA_RED)
                     .sound(SoundType.GRAVEL)
             )
     );
 
-    public static final RegistryObject<Block> CHALCOPYRITE_SPROUTS = BLOCKS.register("chalcopyrite_sprouts", () ->
+    public static final DeferredHolder<Block, Block> CHALCOPYRITE_SPROUTS = BLOCKS.register("chalcopyrite_sprouts", () ->
             new BaseCoralPlantBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_LIGHT_GREEN)
                     .sound(SoundType.NETHER_SPROUTS)
@@ -723,7 +737,7 @@ public class GenesisBlocks {
             )
     );
 
-    public static final RegistryObject<Block> MALACHITE_SPROUTS = BLOCKS.register("malachite_sprouts", () ->
+    public static final DeferredHolder<Block, Block> MALACHITE_SPROUTS = BLOCKS.register("malachite_sprouts", () ->
             new BaseCoralPlantBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.TERRACOTTA_GREEN)
                     .sound(SoundType.NETHER_SPROUTS)
@@ -732,7 +746,7 @@ public class GenesisBlocks {
             )
     );
 
-    public static final RegistryObject<Block> HEMATITE_SPROUTS = BLOCKS.register("hematite_sprouts", () ->
+    public static final DeferredHolder<Block, Block> HEMATITE_SPROUTS = BLOCKS.register("hematite_sprouts", () ->
             new BaseCoralPlantBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.TERRACOTTA_RED)
                     .sound(SoundType.NETHER_SPROUTS)
@@ -741,7 +755,7 @@ public class GenesisBlocks {
             )
     );
 
-    public static final RegistryObject<Block> CHALCOPYRITE_BRAMBLE = BLOCKS.register("chalcopyrite_bramble", () ->
+    public static final DeferredHolder<Block, Block> CHALCOPYRITE_BRAMBLE = BLOCKS.register("chalcopyrite_bramble", () ->
             new Block(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_LIGHT_GREEN)
                     .sound(SoundType.CHERRY_LEAVES)
@@ -750,7 +764,7 @@ public class GenesisBlocks {
             )
     );
 
-    public static final RegistryObject<Block> MALACHITE_BRAMBLE = BLOCKS.register("malachite_bramble", () ->
+    public static final DeferredHolder<Block, Block> MALACHITE_BRAMBLE = BLOCKS.register("malachite_bramble", () ->
             new Block(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.TERRACOTTA_GREEN)
                     .sound(SoundType.CHERRY_LEAVES)
@@ -759,7 +773,7 @@ public class GenesisBlocks {
             )
     );
 
-    public static final RegistryObject<Block> HEMATITE_BRAMBLE = BLOCKS.register("hematite_bramble", () ->
+    public static final DeferredHolder<Block, Block> HEMATITE_BRAMBLE = BLOCKS.register("hematite_bramble", () ->
             new Block(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.TERRACOTTA_RED)
                     .sound(SoundType.CHERRY_LEAVES)
@@ -768,7 +782,7 @@ public class GenesisBlocks {
             )
     );
 
-    public static final RegistryObject<Block> RAINBOW_CHALCOPYRITE_BLOCK = BLOCKS.register("rainbow_chalcopyrite_block", () ->
+    public static final DeferredHolder<Block, Block> RAINBOW_CHALCOPYRITE_BLOCK = BLOCKS.register("rainbow_chalcopyrite_block", () ->
             new Block(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.TERRACOTTA_YELLOW)
                     .sound(SoundType.CALCITE)
@@ -776,7 +790,7 @@ public class GenesisBlocks {
             )
     );
 
-    public static final RegistryObject<Block> RAINBOW_CHALCOPYRITE_CLUSTER = BLOCKS.register("rainbow_chalcopyrite_cluster", () ->
+    public static final DeferredHolder<Block, Block> RAINBOW_CHALCOPYRITE_CLUSTER = BLOCKS.register("rainbow_chalcopyrite_cluster", () ->
             new Block(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.TERRACOTTA_YELLOW)
                     .sound(SoundType.CALCITE)
@@ -784,7 +798,7 @@ public class GenesisBlocks {
             )
     );
 
-    public static final RegistryObject<Block> RAINBOW_CHALCOPYRITE_BRICK = BLOCKS.register("rainbow_chalcopyrite_brick", () ->
+    public static final DeferredHolder<Block, Block> RAINBOW_CHALCOPYRITE_BRICK = BLOCKS.register("rainbow_chalcopyrite_brick", () ->
             new Block(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.TERRACOTTA_YELLOW)
                     .sound(SoundType.CALCITE)
@@ -792,14 +806,14 @@ public class GenesisBlocks {
             )
     );
 
-    public static final RegistryObject<Block> WITHERING_WILLOW_LOG = BLOCKS.register("withering_willow_log", () ->
+    public static final DeferredHolder<Block, Block> WITHERING_WILLOW_LOG = BLOCKS.register("withering_willow_log", () ->
             new RotatedPillarBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.TERRACOTTA_BROWN)
                     .sound(SoundType.WOOD)
             )
     );
 
-    public static final RegistryObject<Block> WITHERING_WILLOW_BRANCH = BLOCKS.register("withering_willow_branch", () ->
+    public static final DeferredHolder<Block, Block> WITHERING_WILLOW_BRANCH = BLOCKS.register("withering_willow_branch", () ->
             new RotatedPillarBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.TERRACOTTA_BROWN)
                     .sound(SoundType.WOOD)
@@ -808,7 +822,7 @@ public class GenesisBlocks {
             )
     );
 
-    public static final RegistryObject<Block> WITHERING_WILLOW_LEAVES = BLOCKS.register("withering_willow_leaves", () ->
+    public static final DeferredHolder<Block, Block> WITHERING_WILLOW_LEAVES = BLOCKS.register("withering_willow_leaves", () ->
             new RotatedPillarBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.TERRACOTTA_BROWN)
                     .sound(SoundType.AZALEA_LEAVES)
@@ -816,14 +830,14 @@ public class GenesisBlocks {
             )
     );
 
-    public static final RegistryObject<Block> WITHERING_WILLOW_PLANKS = BLOCKS.register("withering_willow_planks", () ->
+    public static final DeferredHolder<Block, Block> WITHERING_WILLOW_PLANKS = BLOCKS.register("withering_willow_planks", () ->
             new RotatedPillarBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.TERRACOTTA_BROWN)
                     .sound(SoundType.WOOD)
             )
     );
 
-    public static final RegistryObject<Block> SMOLDERING_LILY = BLOCKS.register("smoldering_lily", () ->
+    public static final DeferredHolder<Block, Block> SMOLDERING_LILY = BLOCKS.register("smoldering_lily", () ->
             new SmolderingLilyBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.TERRACOTTA_PURPLE)
                     .sound(SoundType.AZALEA_LEAVES)
@@ -833,14 +847,14 @@ public class GenesisBlocks {
             )
     );
 
-    public static final RegistryObject<Block> SMOLDERING_TURNIP = BLOCKS.register("smoldering_turnip", () ->
+    public static final DeferredHolder<Block, Block> SMOLDERING_TURNIP = BLOCKS.register("smoldering_turnip", () ->
             new BaseCoralPlantBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_CYAN)
                     .sound(SoundType.NETHER_WOOD)
             )
     );
 
-    public static final RegistryObject<Block> VOID_CORE_REFLECTOR_PANEL = BLOCKS.register("void_core_reflector_panel", () ->
+    public static final DeferredHolder<Block, Block> VOID_CORE_REFLECTOR_PANEL = BLOCKS.register("void_core_reflector_panel", () ->
             new VoidCorePanelBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_GRAY)
                     .sound(SoundType.NETHERITE_BLOCK)
@@ -848,8 +862,7 @@ public class GenesisBlocks {
             )
     );
 
-
-    public static final RegistryObject<Block> VERDITE_VOID_COIL = BLOCKS.register("verdite_void_coil", () ->
+    public static final DeferredHolder<Block, Block> VERDITE_VOID_COIL = BLOCKS.register("verdite_void_coil", () ->
             new VerditeVoidCoilBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_GRAY)
                     .sound(SoundType.NETHERITE_BLOCK)
@@ -857,7 +870,7 @@ public class GenesisBlocks {
             )
     );
 
-    public static final RegistryObject<Block> VOID_FOCUS = BLOCKS.register("void_focus", () ->
+    public static final DeferredHolder<Block, Block> VOID_FOCUS = BLOCKS.register("void_focus", () ->
             new VoidFocusBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_GRAY)
                     .sound(SoundType.NETHERITE_BLOCK)
@@ -865,22 +878,19 @@ public class GenesisBlocks {
             )
     );
 
+    public static final DeferredHolder<Block, TulciteCatalyzerBlock> TULCITE_CATALYZER_BLOCK = BLOCKS.register("tulcite_catalyzer_block", TulciteCatalyzerBlock::new);
 
-
-    public static final RegistryObject<TulciteCatalyzerBlock> TULCITE_CATALYZER_BLOCK = BLOCKS.register("tulcite_catalyzer_block", TulciteCatalyzerBlock::new);
-
-    public static final RegistryObject<MenuType<TulciteCatalyzerContainer>> TULCITE_CATALYZER_CONTAINER = MENU_TYPES.register("tulcite_catalyzer_block",
-            () -> IForgeMenuType.create((windowId, inv, data) -> new TulciteCatalyzerContainer(windowId, inv.player, data.readBlockPos())));
-
+    public static final DeferredHolder<MenuType<?>, MenuType<TulciteCatalyzerContainer>> TULCITE_CATALYZER_CONTAINER = MENU_TYPES.register("tulcite_catalyzer_block",
+            () -> IMenuTypeExtension.create((windowId, inv, data) -> new TulciteCatalyzerContainer(windowId, inv.player, data.readBlockPos())));
 
     static {
         for (var entry : BlockDataGenerator.blocksToDatagen.entrySet()) {
             for (var type : entry.getValue()) {
                 switch (type) {
-                    case simple -> { /* registered manually */}
+                    case simple -> { /* registered manually */ }
                     case slab -> {
                         String id = entry.getKey() + "_slab";
-                        RegistryObject<Block> slab = BLOCKS.register(id,
+                        DeferredHolder<Block, Block> slab = BLOCKS.register(id,
                                 () -> new SlabBlock(((BlockBehaviourAccessor) blockLookup(entry.getKey()).get().get()).getProperties()));
 
                         GenesisItems.DYNAMIC_ITEMS.put(id, GenesisItems.ITEMS.register(id,
@@ -888,7 +898,7 @@ public class GenesisBlocks {
                     }
                     case stairs -> {
                         String id = entry.getKey() + "_stairs";
-                        RegistryObject<Block> stairs = BLOCKS.register(id,
+                        DeferredHolder<Block, Block> stairs = BLOCKS.register(id,
                                 () -> {
                                     Block block = blockLookup(entry.getKey()).get().get();
                                     return new StairBlock(block::defaultBlockState, ((BlockBehaviourAccessor) block).getProperties());

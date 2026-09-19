@@ -29,7 +29,7 @@ public class AsteroidBlock extends Block {
     public static final IntegerProperty VARIANT = IntegerProperty.create("variant", 0, 9);
     public static final IntegerProperty PALETTE = IntegerProperty.create("palette", 0, 5);
     private static final ConcurrentHashMap<BlockPos, Damage> damageMap = new ConcurrentHashMap<>();
-    private static final long DAMAGE_TIMEOUT_MS = 120_000; // 1 minute
+    private static final long DAMAGE_TIMEOUT_MS = 120_000; // 2 minutes
     private static final int DESTROY_THRESHOLD = 64;
     private static final int CLEANUP_INTERVAL = 20;
     private static final AtomicInteger damageCounter = new AtomicInteger(0);
@@ -111,9 +111,10 @@ public class AsteroidBlock extends Block {
         };
     }
 
-    public void onProjectileHit(Level level, BlockState blockState, BlockHitResult arg3, Projectile arg4) {
-        double speed = arg4.getDeltaMovement().length();
-        applyDamage(level, arg3.getBlockPos(), (int) Math.ceil(speed * 10));
+    @Override
+    protected void onProjectileHit(Level level, BlockState blockState, BlockHitResult hitResult, Projectile projectile) {
+        double speed = projectile.getDeltaMovement().length();
+        applyDamage(level, hitResult.getBlockPos(), (int) Math.ceil(speed * 10));
     }
 
     @Override

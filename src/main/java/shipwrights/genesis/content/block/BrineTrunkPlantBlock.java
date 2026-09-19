@@ -23,93 +23,104 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.pathfinder.PathComputationType;
+
 import shipwrights.genesis.content.GenesisTags;
 
 public class BrineTrunkPlantBlock extends PipeBlock implements SimpleWaterloggedBlock {
-    public static final BooleanProperty WATERLOGGED;
+    public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
 
-    public BrineTrunkPlantBlock(BlockBehaviour.Properties arg) {
-        super(0.3125F, arg);
-        this.registerDefaultState(this.stateDefinition.any().setValue(NORTH, false).setValue(EAST, false).setValue(SOUTH, false).setValue(WEST, false).setValue(UP, false).setValue(DOWN, false).setValue(WATERLOGGED, false));
+    public BrineTrunkPlantBlock(BlockBehaviour.Properties properties) {
+        super(0.3125F, properties);
+        this.registerDefaultState(this.stateDefinition.any()
+                .setValue(NORTH, false)
+                .setValue(EAST, false)
+                .setValue(SOUTH, false)
+                .setValue(WEST, false)
+                .setValue(UP, false)
+                .setValue(DOWN, false)
+                .setValue(WATERLOGGED, false));
     }
 
-    public BlockState getStateForPlacement(BlockPlaceContext arg) {
-        return this.getStateForPlacement(arg.getLevel(), arg.getClickedPos());
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        return this.getStateForPlacement(context.getLevel(), context.getClickedPos());
     }
 
-    public BlockState getStateForPlacement(BlockGetter arg, BlockPos arg2) {
-        FluidState fluidState = arg.getFluidState(arg2);
-        BlockState blockstate = arg.getBlockState(arg2.below());
-        BlockState blockstate1 = arg.getBlockState(arg2.above());
-        BlockState blockstate2 = arg.getBlockState(arg2.north());
-        BlockState blockstate3 = arg.getBlockState(arg2.east());
-        BlockState blockstate4 = arg.getBlockState(arg2.south());
-        BlockState blockstate5 = arg.getBlockState(arg2.west());
-        return this.defaultBlockState().setValue(DOWN, blockstate.is(this) || blockstate.is(GenesisBlocks.BRINE_FLOWER.get()) || blockstate.is(GenesisTags.Blocks.BRINE_TRUNK_PLANTABLE))
-        .setValue(UP, blockstate1.is(this) || blockstate1.is(GenesisBlocks.BRINE_FLOWER.get()))
-        .setValue(NORTH, blockstate2.is(this) || blockstate2.is(GenesisBlocks.BRINE_FLOWER.get()))
-        .setValue(EAST, blockstate3.is(this) || blockstate3.is(GenesisBlocks.BRINE_FLOWER.get()))
-        .setValue(SOUTH, blockstate4.is(this) || blockstate4.is(GenesisBlocks.BRINE_FLOWER.get()))
-        .setValue(WEST, blockstate5.is(this) || blockstate5.is(GenesisBlocks.BRINE_FLOWER.get()))
-        .setValue(WATERLOGGED, fluidState.is(FluidTags.WATER) && fluidState.getAmount() == 8);
+    public BlockState getStateForPlacement(BlockGetter level, BlockPos pos) {
+        FluidState fluidState = level.getFluidState(pos);
+        BlockState belowState = level.getBlockState(pos.below());
+        BlockState aboveState = level.getBlockState(pos.above());
+        BlockState northState = level.getBlockState(pos.north());
+        BlockState eastState = level.getBlockState(pos.east());
+        BlockState southState = level.getBlockState(pos.south());
+        BlockState westState = level.getBlockState(pos.west());
+
+        return this.defaultBlockState()
+                .setValue(DOWN, belowState.is(this) || belowState.is(GenesisBlocks.BRINE_FLOWER.get()) || belowState.is(GenesisTags.Blocks.BRINE_TRUNK_PLANTABLE))
+                .setValue(UP, aboveState.is(this) || aboveState.is(GenesisBlocks.BRINE_FLOWER.get()))
+                .setValue(NORTH, northState.is(this) || northState.is(GenesisBlocks.BRINE_FLOWER.get()))
+                .setValue(EAST, eastState.is(this) || eastState.is(GenesisBlocks.BRINE_FLOWER.get()))
+                .setValue(SOUTH, southState.is(this) || southState.is(GenesisBlocks.BRINE_FLOWER.get()))
+                .setValue(WEST, westState.is(this) || westState.is(GenesisBlocks.BRINE_FLOWER.get()))
+                .setValue(WATERLOGGED, fluidState.is(FluidTags.WATER) && fluidState.getAmount() == 8);
     }
 
-    public BlockState updateShape(BlockState arg, Direction arg2, BlockState arg3, LevelAccessor arg4, BlockPos arg5, BlockPos arg6) {
-        if (!arg.canSurvive(arg4, arg5)) {
-            arg4.scheduleTick(arg5, this, 1);
-            return super.updateShape(arg, arg2, arg3, arg4, arg5, arg6);
+    @Override
+    protected BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level, BlockPos currentPos, BlockPos neighborPos) {
+        if (!state.canSurvive(level, currentPos)) {
+            level.scheduleTick(currentPos, this, 1);
+            return super.updateShape(state, direction, neighborState, level, currentPos, neighborPos);
         } else {
-            boolean flag = arg3.is(this) || arg3.is(GenesisBlocks.BRINE_FLOWER.get()) || arg2 == Direction.DOWN && arg3.is(GenesisTags.Blocks.BRINE_TRUNK_PLANTABLE);
-            return arg.setValue((Property)PROPERTY_BY_DIRECTION.get(arg2), flag);
+            boolean flag = neighborState.is(this) || neighborState.is(GenesisBlocks.BRINE_FLOWER.get()) || (direction == Direction.DOWN && neighborState.is(GenesisTags.Blocks.BRINE_TRUNK_PLANTABLE));
+            return state.setValue(PROPERTY_BY_DIRECTION.get(direction), flag);
         }
     }
 
-    public void tick(BlockState arg, ServerLevel arg2, BlockPos arg3, RandomSource arg4) {
-        if (!arg.canSurvive(arg2, arg3)) {
-            arg2.destroyBlock(arg3, true);
+    @Override
+    protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+        if (!state.canSurvive(level, pos)) {
+            level.destroyBlock(pos, true);
         }
-
     }
 
-    public boolean canSurvive(BlockState arg, LevelReader arg2, BlockPos arg3) {
-        BlockState blockstate = arg2.getBlockState(arg3.below());
-        boolean flag = !arg2.getBlockState(arg3.above()).isAir() && !blockstate.isAir();
+    @Override
+    protected boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
+        BlockState belowState = level.getBlockState(pos.below());
+        boolean flag = !level.getBlockState(pos.above()).isAir() && !belowState.isAir();
 
-        for(Direction direction : Plane.HORIZONTAL) {
-            BlockPos blockpos = arg3.relative(direction);
-            BlockState blockstate1 = arg2.getBlockState(blockpos);
-            if (blockstate1.is(this)) {
+        for (Direction direction : Plane.HORIZONTAL) {
+            BlockPos relativePos = pos.relative(direction);
+            BlockState neighborState = level.getBlockState(relativePos);
+            if (neighborState.is(this)) {
                 if (flag) {
                     return false;
                 }
 
-                BlockState blockstate2 = arg2.getBlockState(blockpos.below());
-                if (blockstate2.is(this) || blockstate2.is(GenesisTags.Blocks.BRINE_TRUNK_PLANTABLE)) {
+                BlockState neighborBelow = level.getBlockState(relativePos.below());
+                if (neighborBelow.is(this) || neighborBelow.is(GenesisTags.Blocks.BRINE_TRUNK_PLANTABLE)) {
                     return true;
                 }
             }
         }
 
-        return blockstate.is(this) || blockstate.is(GenesisTags.Blocks.BRINE_TRUNK_PLANTABLE);
+        return belowState.is(this) || belowState.is(GenesisTags.Blocks.BRINE_TRUNK_PLANTABLE);
     }
 
-    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> arg) {
-        arg.add(new Property[]{NORTH, EAST, SOUTH, WEST, UP, DOWN, WATERLOGGED});
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        builder.add(NORTH, EAST, SOUTH, WEST, UP, DOWN, WATERLOGGED);
     }
 
-    public boolean isPathfindable(BlockState arg, BlockGetter arg2, BlockPos arg3, PathComputationType arg4) {
+    @Override
+    protected boolean isPathfindable(BlockState state, PathComputationType pathComputationType) {
         return false;
     }
 
-    public FluidState getFluidState(BlockState arg) {
-        return (Boolean)arg.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(arg);
-    }
-
-    static {
-        WATERLOGGED = BlockStateProperties.WATERLOGGED;
+    @Override
+    protected FluidState getFluidState(BlockState state) {
+        return state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
     }
 }

@@ -15,55 +15,58 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
-import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraftforge.common.ForgeHooks;
+
+import net.neoforged.neoforge.event.EventHooks;
+
 import shipwrights.genesis.content.GenesisTags;
 
 import javax.annotation.Nullable;
 
 public class BrineFlowerBlock extends Block {
     public static final int DEAD_AGE = 5;
-    public static final IntegerProperty AGE;
+    public static final IntegerProperty AGE = BlockStateProperties.AGE_5;
     private final BrineTrunkPlantBlock plant;
 
-    public BrineFlowerBlock(BrineTrunkPlantBlock arg, BlockBehaviour.Properties arg2) {
-        super(arg2);
-        this.plant = arg;
-        this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(AGE, 0));
+    public BrineFlowerBlock(BrineTrunkPlantBlock plant, BlockBehaviour.Properties properties) {
+        super(properties);
+        this.plant = plant;
+        this.registerDefaultState(this.stateDefinition.any().setValue(AGE, 0));
     }
 
-    public void tick(BlockState arg, ServerLevel arg2, BlockPos arg3, RandomSource arg4) {
-        if (!arg.canSurvive(arg2, arg3)) {
-            arg2.destroyBlock(arg3, true);
+    @Override
+    protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+        if (!state.canSurvive(level, pos)) {
+            level.destroyBlock(pos, true);
         }
-
     }
 
-    public boolean isRandomlyTicking(BlockState arg) {
-        return (Integer)arg.getValue(AGE) < 5;
+    @Override
+    protected boolean isRandomlyTicking(BlockState state) {
+        return state.getValue(AGE) < 5;
     }
 
-    public void randomTick(BlockState arg, ServerLevel arg2, BlockPos arg3, RandomSource arg4) {
-        BlockPos blockpos = arg3.above();
-        if (arg2.isEmptyBlock(blockpos) && blockpos.getY() < arg2.getMaxBuildHeight()) {
-            int i = (Integer)arg.getValue(AGE);
-            if (i < 5 && ForgeHooks.onCropsGrowPre(arg2, blockpos, arg, true)) {
+    @Override
+    protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+        BlockPos abovePos = pos.above();
+        if (level.isEmptyBlock(abovePos) && abovePos.getY() < level.getMaxBuildHeight()) {
+            int age = state.getValue(AGE);
+            if (age < 5 && EventHooks.onCropsGrowPre(level, abovePos, state, true)) {
                 boolean flag = false;
                 boolean flag1 = false;
-                BlockState blockstate = arg2.getBlockState(arg3.below());
-                if (!blockstate.is(GenesisTags.Blocks.SALT_PLANTABLE)) {
-                    if (!blockstate.is(this.plant)) {
-                        if (blockstate.isAir()) {
+                BlockState belowState = level.getBlockState(pos.below());
+                if (!belowState.is(GenesisTags.Blocks.SALT_PLANTABLE)) {
+                    if (!belowState.is(this.plant)) {
+                        if (belowState.isAir()) {
                             flag = true;
                         }
                     } else {
                         int j = 1;
 
-                        for(int k = 0; k < 4; ++k) {
-                            BlockState blockstate1 = arg2.getBlockState(arg3.below(j + 1));
-                            if (!blockstate1.is(this.plant)) {
-                                if (blockstate1.is(GenesisTags.Blocks.BRINE_TRUNK_PLANTABLE)) {
+                        for (int k = 0; k < 4; ++k) {
+                            BlockState state1 = level.getBlockState(pos.below(j + 1));
+                            if (!state1.is(this.plant)) {
+                                if (state1.is(GenesisTags.Blocks.BRINE_TRUNK_PLANTABLE)) {
                                     flag1 = true;
                                 }
                                 break;
@@ -72,7 +75,7 @@ public class BrineFlowerBlock extends Block {
                             ++j;
                         }
 
-                        if (j < 2 || j <= arg4.nextInt(flag1 ? 5 : 4)) {
+                        if (j < 2 || j <= random.nextInt(flag1 ? 5 : 4)) {
                             flag = true;
                         }
                     }
@@ -80,86 +83,84 @@ public class BrineFlowerBlock extends Block {
                     flag = true;
                 }
 
-                if (flag && allNeighborsEmpty(arg2, blockpos, (Direction)null) && arg2.isEmptyBlock(arg3.above(2))) {
-                    arg2.setBlock(arg3, this.plant.getStateForPlacement(arg2, arg3), 2);
-                    this.placeGrownFlower(arg2, blockpos, i);
-                } else if (i >= 4) {
-                    this.placeDeadFlower(arg2, arg3);
+                if (flag && allNeighborsEmpty(level, abovePos, null) && level.isEmptyBlock(pos.above(2))) {
+                    level.setBlock(pos, this.plant.getStateForPlacement(level, pos), 2);
+                    this.placeGrownFlower(level, abovePos, age);
+                } else if (age >= 4) {
+                    this.placeDeadFlower(level, pos);
                 } else {
-                    int l = arg4.nextInt(4);
+                    int l = random.nextInt(4);
                     if (flag1) {
                         ++l;
                     }
 
                     boolean flag2 = false;
 
-                    for(int i1 = 0; i1 < l; ++i1) {
-                        Direction direction = Direction.Plane.HORIZONTAL.getRandomDirection(arg4);
-                        BlockPos blockpos1 = arg3.relative(direction);
-                        if (arg2.isEmptyBlock(blockpos1) && arg2.isEmptyBlock(blockpos1.below()) && allNeighborsEmpty(arg2, blockpos1, direction.getOpposite())) {
-                            this.placeGrownFlower(arg2, blockpos1, i + 1);
+                    for (int i1 = 0; i1 < l; ++i1) {
+                        Direction direction = Direction.Plane.HORIZONTAL.getRandomDirection(random);
+                        BlockPos targetPos = pos.relative(direction);
+                        if (level.isEmptyBlock(targetPos) && level.isEmptyBlock(targetPos.below()) && allNeighborsEmpty(level, targetPos, direction.getOpposite())) {
+                            this.placeGrownFlower(level, targetPos, age + 1);
                             flag2 = true;
                         }
                     }
 
                     if (flag2) {
-                        arg2.setBlock(arg3, this.plant.getStateForPlacement(arg2, arg3), 2);
+                        level.setBlock(pos, this.plant.getStateForPlacement(level, pos), 2);
                     } else {
-                        this.placeDeadFlower(arg2, arg3);
+                        this.placeDeadFlower(level, pos);
                     }
                 }
 
-                ForgeHooks.onCropsGrowPost(arg2, arg3, arg);
+                EventHooks.onCropsGrowPost(level, pos, state);
             }
         }
-
     }
 
-    private void placeGrownFlower(Level arg, BlockPos arg2, int i) {
-        arg.setBlock(arg2, (BlockState)this.defaultBlockState().setValue(AGE, i), 2);
-        arg.levelEvent(1033, arg2, 0);
+    private void placeGrownFlower(Level level, BlockPos pos, int age) {
+        level.setBlock(pos, this.defaultBlockState().setValue(AGE, age), 2);
+        level.levelEvent(1033, pos, 0);
     }
 
-    private void placeDeadFlower(Level arg, BlockPos arg2) {
-        arg.setBlock(arg2, (BlockState)this.defaultBlockState().setValue(AGE, 5), 2);
-        arg.levelEvent(1034, arg2, 0);
+    private void placeDeadFlower(Level level, BlockPos pos) {
+        level.setBlock(pos, this.defaultBlockState().setValue(AGE, 5), 2);
+        level.levelEvent(1034, pos, 0);
     }
 
-    private static boolean allNeighborsEmpty(LevelReader arg, BlockPos arg2, @Nullable Direction arg3) {
-        for(Direction direction : Direction.Plane.HORIZONTAL) {
-            if (direction != arg3 && !arg.isEmptyBlock(arg2.relative(direction))) {
+    private static boolean allNeighborsEmpty(LevelReader level, BlockPos pos, @Nullable Direction ignoreDirection) {
+        for (Direction direction : Direction.Plane.HORIZONTAL) {
+            if (direction != ignoreDirection && !level.isEmptyBlock(pos.relative(direction))) {
                 return false;
             }
         }
-
         return true;
     }
 
-    public BlockState updateShape(BlockState arg, Direction arg2, BlockState arg3, LevelAccessor arg4, BlockPos arg5, BlockPos arg6) {
-        if (arg2 != Direction.UP && !arg.canSurvive(arg4, arg5)) {
-            arg4.scheduleTick(arg5, this, 1);
+    @Override
+    protected BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level, BlockPos currentPos, BlockPos neighborPos) {
+        if (direction != Direction.UP && !state.canSurvive(level, currentPos)) {
+            level.scheduleTick(currentPos, this, 1);
         }
-
-        return super.updateShape(arg, arg2, arg3, arg4, arg5, arg6);
+        return super.updateShape(state, direction, neighborState, level, currentPos, neighborPos);
     }
 
-    public boolean canSurvive(BlockState arg, LevelReader arg2, BlockPos arg3) {
-        BlockState blockstate = arg2.getBlockState(arg3.below());
-        if (!blockstate.is(this.plant) && !blockstate.is(GenesisTags.Blocks.BRINE_TRUNK_PLANTABLE)) {
-            if (!blockstate.isAir()) {
+    @Override
+    protected boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
+        BlockState belowState = level.getBlockState(pos.below());
+        if (!belowState.is(this.plant) && !belowState.is(GenesisTags.Blocks.BRINE_TRUNK_PLANTABLE)) {
+            if (!belowState.isAir()) {
                 return false;
             } else {
                 boolean flag = false;
 
-                for(Direction direction : Direction.Plane.HORIZONTAL) {
-                    BlockState blockstate1 = arg2.getBlockState(arg3.relative(direction));
-                    if (blockstate1.is(this.plant)) {
+                for (Direction direction : Direction.Plane.HORIZONTAL) {
+                    BlockState neighborState = level.getBlockState(pos.relative(direction));
+                    if (neighborState.is(this.plant)) {
                         if (flag) {
                             return false;
                         }
-
                         flag = true;
-                    } else if (!blockstate1.isAir()) {
+                    } else if (!neighborState.isAir()) {
                         return false;
                     }
                 }
@@ -171,66 +172,62 @@ public class BrineFlowerBlock extends Block {
         }
     }
 
-    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> arg) {
-        arg.add(new Property[]{AGE});
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        builder.add(AGE);
     }
 
-    public static void generatePlant(LevelAccessor arg, BlockPos arg2, RandomSource arg3, int i) {
-        arg.setBlock(arg2, ((BrineTrunkPlantBlock)GenesisBlocks.BRINE_TRUNK.get()).getStateForPlacement(arg, arg2), 2);
-        growTreeRecursive(arg, arg2, arg3, arg2, i, 0);
+    public static void generatePlant(LevelAccessor level, BlockPos pos, RandomSource random, int i) {
+        level.setBlock(pos, ((BrineTrunkPlantBlock) GenesisBlocks.BRINE_TRUNK.get()).getStateForPlacement(level, pos), 2);
+        growTreeRecursive(level, pos, random, pos, i, 0);
     }
 
-    private static void growTreeRecursive(LevelAccessor arg, BlockPos arg2, RandomSource arg3, BlockPos arg4, int m, int n) {
-        BrineTrunkPlantBlock brinetrunkplantblock = (BrineTrunkPlantBlock)GenesisBlocks.BRINE_TRUNK.get();
-        int i = arg3.nextInt(4) + 1;
+    private static void growTreeRecursive(LevelAccessor level, BlockPos pos, RandomSource random, BlockPos origin, int m, int n) {
+        BrineTrunkPlantBlock trunk = (BrineTrunkPlantBlock) GenesisBlocks.BRINE_TRUNK.get();
+        int i = random.nextInt(4) + 1;
         if (n == 0) {
             ++i;
         }
 
-        for(int j = 0; j < i; ++j) {
-            BlockPos blockpos = arg2.above(j + 1);
-            if (!allNeighborsEmpty(arg, blockpos, (Direction)null)) {
+        for (int j = 0; j < i; ++j) {
+            BlockPos abovePos = pos.above(j + 1);
+            if (!allNeighborsEmpty(level, abovePos, null)) {
                 return;
             }
 
-            arg.setBlock(blockpos, brinetrunkplantblock.getStateForPlacement(arg, blockpos), 2);
-            arg.setBlock(blockpos.below(), brinetrunkplantblock.getStateForPlacement(arg, blockpos.below()), 2);
+            level.setBlock(abovePos, trunk.getStateForPlacement(level, abovePos), 2);
+            level.setBlock(abovePos.below(), trunk.getStateForPlacement(level, abovePos.below()), 2);
         }
 
         boolean flag = false;
         if (n < 4) {
-            int l = arg3.nextInt(4);
+            int l = random.nextInt(4);
             if (n == 0) {
                 ++l;
             }
 
-            for(int k = 0; k < l; ++k) {
-                Direction direction = Direction.Plane.HORIZONTAL.getRandomDirection(arg3);
-                BlockPos blockpos1 = arg2.above(i).relative(direction);
-                if (Math.abs(blockpos1.getX() - arg4.getX()) < m && Math.abs(blockpos1.getZ() - arg4.getZ()) < m && arg.isEmptyBlock(blockpos1) && arg.isEmptyBlock(blockpos1.below()) && allNeighborsEmpty(arg, blockpos1, direction.getOpposite())) {
+            for (int k = 0; k < l; ++k) {
+                Direction direction = Direction.Plane.HORIZONTAL.getRandomDirection(random);
+                BlockPos targetPos = pos.above(i).relative(direction);
+                if (Math.abs(targetPos.getX() - origin.getX()) < m && Math.abs(targetPos.getZ() - origin.getZ()) < m && level.isEmptyBlock(targetPos) && level.isEmptyBlock(targetPos.below()) && allNeighborsEmpty(level, targetPos, direction.getOpposite())) {
                     flag = true;
-                    arg.setBlock(blockpos1, brinetrunkplantblock.getStateForPlacement(arg, blockpos1), 2);
-                    arg.setBlock(blockpos1.relative(direction.getOpposite()), brinetrunkplantblock.getStateForPlacement(arg, blockpos1.relative(direction.getOpposite())), 2);
-                    growTreeRecursive(arg, blockpos1, arg3, arg4, m, n + 1);
+                    level.setBlock(targetPos, trunk.getStateForPlacement(level, targetPos), 2);
+                    level.setBlock(targetPos.relative(direction.getOpposite()), trunk.getStateForPlacement(level, targetPos.relative(direction.getOpposite())), 2);
+                    growTreeRecursive(level, targetPos, random, origin, m, n + 1);
                 }
             }
         }
 
         if (!flag) {
-            arg.setBlock(arg2.above(i), (BlockState)GenesisBlocks.BRINE_FLOWER.get().defaultBlockState().setValue(AGE, 5), 2);
+            level.setBlock(pos.above(i), GenesisBlocks.BRINE_FLOWER.get().defaultBlockState().setValue(AGE, 5), 2);
         }
-
     }
 
-    public void onProjectileHit(Level arg, BlockState arg2, BlockHitResult arg3, Projectile arg4) {
-        BlockPos blockpos = arg3.getBlockPos();
-        if (!arg.isClientSide && arg4.mayInteract(arg, blockpos) && arg4.getType().is(EntityTypeTags.IMPACT_PROJECTILES)) {
-            arg.destroyBlock(blockpos, true, arg4);
+    @Override
+    protected void onProjectileHit(Level level, BlockState state, BlockHitResult hitResult, Projectile projectile) {
+        BlockPos pos = hitResult.getBlockPos();
+        if (!level.isClientSide && projectile.mayInteract(level, pos) && projectile.getType().is(EntityTypeTags.IMPACT_PROJECTILES)) {
+            level.destroyBlock(pos, true, projectile);
         }
-
-    }
-
-    static {
-        AGE = BlockStateProperties.AGE_5;
     }
 }
