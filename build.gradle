@@ -87,18 +87,13 @@ repositories {
         url = "https://api.modrinth.com/maven"
     }
 
-    exclusiveContent {
-        forRepository {
-            maven {
-                name = "RyanHCode Maven"
-                url = 'https://maven.ryanhcode.dev/releases'
-            }
-        }
-        filter {
-            includeGroup("dev.ryanhcode.sable")
-            includeGroup("dev.ryanhcode.sable-companion")
-        }
+
+    maven {
+        name = "RyanHCode Maven"
+        url = 'https://maven.ryanhcode.dev/releases'
     }
+
+
 
     maven {
         name = "Jared's maven"
@@ -138,9 +133,9 @@ dependencies {
         }
     }
 
-    // region Sable Physics Engine
-    implementation("dev.ryanhcode.sable:sable-common-1.21.1:${sable_version}")
-    implementation("dev.ryanhcode.sable:sable-neoforge-1.21.1:${sable_version}")
+
+    // region Sable Physics Engine (Local JARs)
+    implementation(fileTree(dir: 'libs', include: ['*.jar']))
     // endregion
 
     // Official Maven Coordinates for Curios and Pehkui
