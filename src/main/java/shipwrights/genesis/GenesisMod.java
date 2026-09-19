@@ -5,32 +5,35 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.projectile.Projectile;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.DataPackRegistryEvent;
+
+// NeoForge imports
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.neoforge.registries.DataPackRegistryEvent;
+
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3d;
 import org.joml.Vector3dc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.valkyrienskies.mod.api.ValkyrienSkies;
-import org.valkyrienskies.mod.common.entity.handling.DefaultShipyardEntityHandler;
-import org.valkyrienskies.mod.common.entity.handling.VSEntityManager;
+
+// Sable / Create Aeronautics imports
+import dev.ryanhcode.sable.api.SableApi;
+
 import shipwrights.genesis.commands.GenesisCommandArguments;
-import shipwrights.genesis.config.GenesisCommonConfig;
-import shipwrights.genesis.time.GenesisTimeData;
-import shipwrights.genesis.time.TimeTracker;
 import shipwrights.genesis.config.GenesisClientConfig;
+import shipwrights.genesis.config.GenesisCommonConfig;
 import shipwrights.genesis.content.block.GenesisBlocks;
 import shipwrights.genesis.content.fluid.GenesisFluids;
 import shipwrights.genesis.content.particle.GenesisParticles;
@@ -42,12 +45,13 @@ import shipwrights.genesis.teleportation.impl.ShipCollector;
 import shipwrights.genesis.teleportation.integration.PlanetToSpaceTeleporter;
 import shipwrights.genesis.teleportation.integration.SpaceToPlanetTeleporter;
 import shipwrights.genesis.tests.commands.GameTestCommands;
+import shipwrights.genesis.time.GenesisTimeData;
+import shipwrights.genesis.time.TimeTracker;
 import virtuoel.pehkui.api.ScaleData;
 import virtuoel.pehkui.api.ScaleTypes;
 
 import java.util.regex.Pattern;
 
-@Mod.EventBusSubscriber
 @Mod(GenesisMod.MOD_ID)
 public final class GenesisMod {
     public static final String MOD_ID = "genesis";
@@ -69,12 +73,10 @@ public final class GenesisMod {
     private static final Pattern SEAT_REGISTRY_NAME =
             Pattern.compile("(?<![a-z])(seat|chair)(?![a-z])", Pattern.CASE_INSENSITIVE);
 
-
-    public GenesisMod(FMLJavaModLoadingContext context) {
-        IEventBus eventBus = context.getModEventBus();
-
-        context.registerConfig(ModConfig.Type.CLIENT, GenesisClientConfig.CONFIG_SPEC);
-        context.registerConfig(ModConfig.Type.COMMON, GenesisCommonConfig.CONFIG_SPEC);
+    // Injected constructor parameters for NeoForge 1.21.1
+    public GenesisMod(IEventBus eventBus, ModContainer modContainer) {
+        modContainer.registerConfig(ModConfig.Type.CLIENT, GenesisClientConfig.CONFIG_SPEC);
+        modContainer.registerConfig(ModConfig.Type.COMMON, GenesisCommonConfig.CONFIG_SPEC);
 
         // Register the celestials datapack registry
         eventBus.addListener(GenesisMod::registerDataPackRegistries);
@@ -88,7 +90,7 @@ public final class GenesisMod {
         // Register celestial transform providers
         BuiltinTransformProviders.register();
 
-        // Register fluids using Registrate (must be called before other registrations)
+        // Register fluids using Registrate
         GenesisFluids.init();
 
         GenesisCommandArguments.register(eventBus);
@@ -103,15 +105,20 @@ public final class GenesisMod {
         shipwrights.genesis.content.item.GenesisCreativeTabs.register(eventBus);
         shipwrights.genesis.content.painting.GenesisPaintings.PAINTING_VARIANTS.register(eventBus);
 
-        ValkyrienSkies.api().getPhysTickEvent().on(ShipCollector::onPhysTick);
+        // Replaced VS phys tick listener with Sable/NeoForge server tick listener
+        NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post event) -> {
+            ShipCollector.onPhysTick(event.getServer());
+        });
 
-        boolean isGameTest = System.getProperty("forge.enabledGameTestNamespaces") != null;
-        MinecraftForge.EVENT_BUS.register(new PlanetToSpaceTeleporter(isGameTest));
-        MinecraftForge.EVENT_BUS.register(new SpaceToPlanetTeleporter(isGameTest));
-        MinecraftForge.EVENT_BUS.register(TimeTracker.class);
+        // Updated system property key for NeoForge
+        boolean isGameTest = System.getProperty("neoforge.enabledGameTestNamespaces") != null;
+
+        NeoForge.EVENT_BUS.register(new PlanetToSpaceTeleporter(isGameTest));
+        NeoForge.EVENT_BUS.register(new SpaceToPlanetTeleporter(isGameTest));
+        NeoForge.EVENT_BUS.register(TimeTracker.class);
 
         if (isGameTest) {
-            MinecraftForge.EVENT_BUS.addListener(GameTestCommands::onRegisterCommandsEvent);
+            NeoForge.EVENT_BUS.addListener(GameTestCommands::onRegisterCommandsEvent);
         }
     }
 
@@ -123,7 +130,8 @@ public final class GenesisMod {
         return level.registryAccess().registryOrThrow(CELESTIALS_KEY);
     }
 
-    @Nullable public static Celestial getCelestialForLevel(Level level) {
+    @Nullable
+    public static Celestial getCelestialForLevel(Level level) {
         return getCelestialRegistry(level).get(level.dimension().location());
     }
 
@@ -139,7 +147,7 @@ public final class GenesisMod {
 
     public static float getPartialTick(Level level, RenderLevelStageEvent event) {
         if (!level.getGameRules().getBoolean(GameRules.RULE_DAYLIGHT)) return 0f;
-        return event.getPartialTick();
+        return event.getPartialTick().getGameTimeDeltaPartialTick(true);
     }
 
     @Deprecated
@@ -197,9 +205,9 @@ public final class GenesisMod {
             explosionScaleData.setPersistence(true);
             if (isMiniScale(level)) {
                 ResourceLocation entityType = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
+                // Replaced VSEntityManager check with general entity/seat checks
                 if (
                         entity instanceof Projectile ||
-                                VSEntityManager.INSTANCE.getHandler(entity) != DefaultShipyardEntityHandler.INSTANCE ||
                                 SEAT_REGISTRY_NAME.matcher(entityType.getPath()).find()
                 ) {
                     scaleData.setScale(1 / 16f);
@@ -211,6 +219,6 @@ public final class GenesisMod {
                 explosionScaleData.setScale(1f);
                 entity.setNoGravity(false);
             }
-        } catch (Exception ignored) { /* not really sure what causes this, but I don't think it's critical */ }
+        } catch (Exception ignored) { }
     }
 }
