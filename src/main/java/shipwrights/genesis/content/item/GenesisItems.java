@@ -312,12 +312,18 @@ public class GenesisItems {
     public static final DeferredHolder<Item, Item> TULCITE_CATALYZER_BLOCK_ITEM = ITEMS.register("tulcite_catalyzer_block",
             () -> new BlockItem(GenesisBlocks.TULCITE_CATALYZER_BLOCK.get(), new Item.Properties()));
 
-    public static final DeferredHolder<Item, Item> TEST_ITEM = ITEMS.register("test_item", () -> new TestItem(new Item.Properties()));
+    public static final DeferredHolder<Item, Item> TEST_ITEM = ITEMS.register("test_item",
+            () -> new TestItem(new Item.Properties()));
 
-    public static final SpaceArmourMaterial SPACE_ARMOUR_MATERIAL = new SpaceArmourMaterial();
-    public static final DeferredHolder<Item, Item> SPACE_HELMET = ITEMS.register("space_helmet", () -> new SpaceArmourItem(SPACE_ARMOUR_MATERIAL, ArmorItem.Type.HELMET, new Item.Properties()));
-    public static final DeferredHolder<Item, Item> SPACE_CHESTPLATE = ITEMS.register("space_chestplate", () -> new SpaceArmourItem(SPACE_ARMOUR_MATERIAL, ArmorItem.Type.CHESTPLATE, new Item.Properties()));
-    public static final DeferredHolder<Item, Item> SPACE_LEGGINGS = ITEMS.register("space_leggings", () -> new SpaceArmourItem(SPACE_ARMOUR_MATERIAL, ArmorItem.Type.LEGGINGS, new Item.Properties()));
-    public static final DeferredHolder<Item, Item> SPACE_BOOTS = ITEMS.register("space_boots", () -> new SpaceArmourItem(SPACE_ARMOUR_MATERIAL, ArmorItem.Type.BOOTS, new Item.Properties()));
+    public static final DeferredHolder<Item, Item> SPACE_HELMET = ITEMS.register("space_helmet",
+            () -> new SpaceArmourItem(SpaceArmourMaterial.SPACE_SUIT, ArmorItem.Type.HELMET, new Item.Properties()));
 
+    public static final DeferredHolder<Item, Item> SPACE_CHESTPLATE = ITEMS.register("space_chestplate",
+            () -> new SpaceArmourItem(SpaceArmourMaterial.SPACE_SUIT, ArmorItem.Type.CHESTPLATE, new Item.Properties()));
+
+    public static final DeferredHolder<Item, Item> SPACE_LEGGINGS = ITEMS.register("space_leggings",
+            () -> new SpaceArmourItem(SpaceArmourMaterial.SPACE_SUIT, ArmorItem.Type.LEGGINGS, new Item.Properties()));
+
+    public static final DeferredHolder<Item, Item> SPACE_BOOTS = ITEMS.register("space_boots",
+            () -> new SpaceArmourItem(SpaceArmourMaterial.SPACE_SUIT, ArmorItem.Type.BOOTS, new Item.Properties()));
 }

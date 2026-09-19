@@ -1,6 +1,6 @@
 package shipwrights.genesis.content.blockentity;
 
-import net.minecraftforge.energy.IEnergyStorage;
+import net.neoforged.neoforge.energy.IEnergyStorage;
 
 public class AdaptedEnergyStorage implements IEnergyStorage {
 

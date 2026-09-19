@@ -92,7 +92,7 @@ public class GenesisBlocks {
                     .noOcclusion()));
 
     public static final DeferredHolder<Block, Block> VOID_ENGINE_FRAME = BLOCKS.register("void_engine_frame",
-            VoidEngineFrameBlock::new);
+            () -> new VoidEngineFrameBlock());
 
     public static final DeferredHolder<Block, Block> VOID_CORE = BLOCKS.register("void_core",
             () -> new VoidCoreBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK)
@@ -102,7 +102,7 @@ public class GenesisBlocks {
                     .lightLevel(state -> 15)));
 
     public static final DeferredHolder<Block, Block> VOID_ENGINE_VIEWPORT = BLOCKS.register("void_engine_viewport",
-            VoidEngineViewportBlock::new);
+            () -> new VoidEngineViewportBlock());
 
     // Alien stones
     public static final DeferredHolder<Block, Block> VOIDSTONE = BLOCKS.register("voidstone", () ->
@@ -892,7 +892,8 @@ public class GenesisBlocks {
             )
     );
 
-    public static final DeferredHolder<Block, TulciteCatalyzerBlock> TULCITE_CATALYZER_BLOCK = BLOCKS.register("tulcite_catalyzer_block", TulciteCatalyzerBlock::new);
+    public static final DeferredHolder<Block, TulciteCatalyzerBlock> TULCITE_CATALYZER_BLOCK = BLOCKS.register("tulcite_catalyzer_block",
+            () -> new TulciteCatalyzerBlock());
 
     public static final DeferredHolder<MenuType<?>, MenuType<TulciteCatalyzerContainer>> TULCITE_CATALYZER_CONTAINER = MENU_TYPES.register("tulcite_catalyzer_block",
             () -> IMenuTypeExtension.create((windowId, inv, data) -> new TulciteCatalyzerContainer(windowId, inv.player, data.readBlockPos())));

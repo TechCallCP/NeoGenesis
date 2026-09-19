@@ -8,7 +8,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.tags.PaintingVariantTags;
 import net.minecraft.world.entity.decoration.Painting;
 import net.minecraft.world.entity.decoration.PaintingVariant;
-import net.minecraft.world.item.*;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CustomData;
 
 import net.neoforged.bus.api.IEventBus;
@@ -148,22 +151,28 @@ public class GenesisCreativeTabs {
     }
 
     private static void addPaintings(CreativeModeTab.ItemDisplayParameters parameters, CreativeModeTab.Output output) {
-        parameters.holders().lookup(Registries.PAINTING_VARIANT).ifPresent((arg2x) -> generatePresetPaintings(output, arg2x, (arg) -> arg.is(PaintingVariantTags.PLACEABLE), CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS));
+        parameters.holders().lookup(Registries.PAINTING_VARIANT).ifPresent((lookup) ->
+                generatePresetPaintings(output, lookup, (variantHolder) -> variantHolder.is(PaintingVariantTags.PLACEABLE), CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS)
+        );
     }
 
-    private static void generatePresetPaintings(CreativeModeTab.Output arg, HolderLookup.RegistryLookup<PaintingVariant> arg2, Predicate<Holder<PaintingVariant>> predicate, CreativeModeTab.TabVisibility arg3) {
-        arg2.listElements().filter(predicate).sorted(PAINTING_COMPARATOR).forEach((arg3x) -> {
-            if (arg3x.key().location().getNamespace().equals(NeoGenesisMod.MOD_ID) || arg3x.key().location().getNamespace().equals("genesis")) {
+    private static void generatePresetPaintings(CreativeModeTab.Output output, HolderLookup.RegistryLookup<PaintingVariant> lookup, Predicate<Holder<PaintingVariant>> predicate, CreativeModeTab.TabVisibility visibility) {
+        lookup.listElements().filter(predicate).sorted(PAINTING_COMPARATOR).forEach((variantHolder) -> {
+            if (variantHolder.key().location().getNamespace().equals(NeoGenesisMod.MOD_ID) || variantHolder.key().location().getNamespace().equals("genesis")) {
                 ItemStack itemstack = new ItemStack(Items.PAINTING);
-                CustomData.update(DataComponents.ENTITY_DATA, itemstack, tag -> Painting.storeVariant(tag, arg3x));
-                arg.accept(itemstack, arg3);
+                CustomData.update(DataComponents.ENTITY_DATA, itemstack, tag -> Painting.storeVariant(tag, variantHolder));
+                output.accept(itemstack, visibility);
             }
         });
     }
 
-    private static final Comparator<Holder<PaintingVariant>> PAINTING_COMPARATOR = Comparator.comparing(Holder::value, Comparator.comparingInt((PaintingVariant arg) -> arg.height() * arg.width()).thenComparing(PaintingVariant::width));
+    private static final Comparator<Holder<PaintingVariant>> PAINTING_COMPARATOR = Comparator.comparing(
+            Holder::value,
+            Comparator.comparingInt((PaintingVariant variant) -> variant.height() * variant.width()).thenComparing(PaintingVariant::width)
+    );
 
     public static void register(IEventBus eventBus) {
         CREATIVE_MODE_TABS.register(eventBus);
+        SpaceArmourMaterial.ARMOR_MATERIALS.register(eventBus);
     }
 }

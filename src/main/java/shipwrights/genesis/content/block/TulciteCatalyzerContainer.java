@@ -9,7 +9,10 @@ import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.items.SlotItemHandler;
+
+import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.SlotItemHandler;
+
 import shipwrights.genesis.content.blockentity.TulciteCatalyzerBlockEntity;
 
 import static shipwrights.genesis.content.blockentity.TulciteCatalyzerBlockEntity.SLOT;
@@ -24,7 +27,8 @@ public class TulciteCatalyzerContainer extends AbstractContainerMenu {
         super(GenesisBlocks.TULCITE_CATALYZER_CONTAINER.get(), windowId);
         this.pos = pos;
         if (player.level().getBlockEntity(pos) instanceof TulciteCatalyzerBlockEntity generator) {
-            addSlot(new SlotItemHandler(generator.getItems(), SLOT, 64, 24));
+            IItemHandler items = generator.getItems();
+            addSlot(new SlotItemHandler(items, SLOT, 64, 24));
             addDataSlot(new DataSlot() {
                 @Override
                 public int get() {
@@ -56,7 +60,7 @@ public class TulciteCatalyzerContainer extends AbstractContainerMenu {
     }
 
     private int addSlotRange(Container playerInventory, int index, int x, int y, int amount, int dx) {
-        for (int i = 0 ; i < amount ; i++) {
+        for (int i = 0; i < amount; i++) {
             addSlot(new Slot(playerInventory, index, x, y));
             x += dx;
             index++;
@@ -65,7 +69,7 @@ public class TulciteCatalyzerContainer extends AbstractContainerMenu {
     }
 
     private int addSlotBox(Container playerInventory, int index, int x, int y, int horAmount, int dx, int verAmount, int dy) {
-        for (int j = 0 ; j < verAmount ; j++) {
+        for (int j = 0; j < verAmount; j++) {
             index = addSlotRange(playerInventory, index, x, y, horAmount, dx);
             y += dy;
         }
@@ -73,10 +77,8 @@ public class TulciteCatalyzerContainer extends AbstractContainerMenu {
     }
 
     private void layoutPlayerInventorySlots(Container playerInventory, int leftCol, int topRow) {
-        // Player inventory
         addSlotBox(playerInventory, 9, leftCol, topRow, 9, 18, 3, 18);
 
-        // Hotbar
         topRow += 58;
         addSlotRange(playerInventory, 0, leftCol, topRow, 9, 18);
     }
@@ -93,7 +95,7 @@ public class TulciteCatalyzerContainer extends AbstractContainerMenu {
                     return ItemStack.EMPTY;
                 }
             }
-            if (!this.moveItemStackTo(stack, SLOT, SLOT+1, false)) {
+            if (!this.moveItemStackTo(stack, SLOT, SLOT + 1, false)) {
                 if (index < 27 + SLOT_COUNT) {
                     if (!this.moveItemStackTo(stack, 27 + SLOT_COUNT, 36 + SLOT_COUNT, false)) {
                         return ItemStack.EMPTY;

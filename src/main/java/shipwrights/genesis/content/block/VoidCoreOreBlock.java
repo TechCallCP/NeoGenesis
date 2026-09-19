@@ -1,9 +1,10 @@
 package shipwrights.genesis.content.block;
 
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
@@ -11,19 +12,25 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.DropExperienceBlock;
-import net.minecraft.world.level.block.TorchBlock;
 import net.minecraft.world.level.block.state.BlockState;
+
 import shipwrights.genesis.content.sound.GenesisSounds;
 
 public class VoidCoreOreBlock extends DropExperienceBlock {
-    int soundTicks = 0;
+    public static final MapCodec<VoidCoreOreBlock> CODEC = simpleCodec(VoidCoreOreBlock::new);
+    private int soundTicks = 0;
 
     public VoidCoreOreBlock(Properties properties) {
-        super(properties);
+        super(ConstantInt.of(0), properties);
     }
 
     @Override
-    public void attack(BlockState state, Level level, BlockPos pos, Player player) {
+    public MapCodec<VoidCoreOreBlock> codec() {
+        return CODEC;
+    }
+
+    @Override
+    protected void attack(BlockState state, Level level, BlockPos pos, Player player) {
         player.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 20, 1, false, false, false));
         super.attack(state, level, pos, player);
     }
@@ -44,6 +51,5 @@ public class VoidCoreOreBlock extends DropExperienceBlock {
         } else {
             soundTicks++;
         }
-        //level.addParticle(ParticleTypes.ENCHANTED_HIT, pos.getX()+0.5, pos.getY()+1, pos.getZ()+0.5, 0.0f, 0.0f, 0.0f);
     }
 }

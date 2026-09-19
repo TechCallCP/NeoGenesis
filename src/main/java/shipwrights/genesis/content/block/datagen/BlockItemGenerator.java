@@ -1,13 +1,16 @@
 package shipwrights.genesis.content.block.datagen;
 
+import shipwrights.genesis.NeoGenesisMod;
+
 public class BlockItemGenerator {
+
     public static void generate(String name) {
         String json = """
             {
-              "parent": "genesis:block/%1$s"
+              "parent": "%1$s:block/%2$s"
             }
-            """.formatted(name);
-        String path = BlockDataGenerator.FOLDER + "assets/genesis/models/item/" + name + ".json";
+            """.formatted(NeoGenesisMod.MOD_ID, name);
+        String path = BlockDataGenerator.FOLDER + "assets/" + NeoGenesisMod.MOD_ID + "/models/item/" + name + ".json";
 
         FileWriter.writeFile(path, json);
     }

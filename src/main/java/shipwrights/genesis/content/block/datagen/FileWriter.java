@@ -6,11 +6,14 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
 public class FileWriter {
-    static void writeFile(String filename, String contents) {
+
+    public static void writeFile(String filename, String contents) {
         try {
             Path path = Path.of(filename);
 
-            Files.createDirectories(path.getParent());
+            if (path.getParent() != null) {
+                Files.createDirectories(path.getParent());
+            }
 
             Files.writeString(
                     path,
@@ -20,7 +23,7 @@ public class FileWriter {
             );
             System.out.println("File written successfully: " + filename);
         } catch (IOException e) {
-            System.err.println("Error writing file: " + e);
+            System.err.println("Error writing file " + filename + ": " + e.getMessage());
         }
     }
 }

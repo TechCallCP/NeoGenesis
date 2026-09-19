@@ -1,5 +1,6 @@
 package shipwrights.genesis.content.block;
 
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -7,105 +8,113 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.RedstoneTorchBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.phys.BlockHitResult;
 
 public class SmolderingRootBlock extends Block {
-    public static final BooleanProperty LIT;
+    public static final MapCodec<SmolderingRootBlock> CODEC = simpleCodec(SmolderingRootBlock::new);
+    public static final BooleanProperty LIT = BlockStateProperties.LIT;
 
-    public SmolderingRootBlock(Properties arg) {
-        super(arg);
-        this.registerDefaultState((BlockState)this.defaultBlockState().setValue(LIT, false));
+    public SmolderingRootBlock(Properties properties) {
+        super(properties);
+        this.registerDefaultState(this.defaultBlockState().setValue(LIT, false));
     }
 
-    public void attack(BlockState arg, Level arg2, BlockPos arg3, Player arg4) {
-        interact(arg, arg2, arg3);
-        super.attack(arg, arg2, arg3, arg4);
+    @Override
+    protected MapCodec<? extends Block> codec() {
+        return CODEC;
     }
 
-    public void stepOn(Level arg, BlockPos arg2, BlockState arg3, Entity arg4) {
-        if (!arg4.isSteppingCarefully()) {
-            interact(arg3, arg, arg2);
+    @Override
+    protected void attack(BlockState state, Level level, BlockPos pos, Player player) {
+        interact(state, level, pos);
+        super.attack(state, level, pos, player);
+    }
+
+    @Override
+    public void stepOn(Level level, BlockPos pos, BlockState state, Entity entity) {
+        if (!entity.isSteppingCarefully()) {
+            interact(state, level, pos);
         }
-
-        super.stepOn(arg, arg2, arg3, arg4);
+        super.stepOn(level, pos, state, entity);
     }
 
-    public InteractionResult use(BlockState arg, Level arg2, BlockPos arg3, Player arg4, InteractionHand arg5, BlockHitResult arg6) {
-        if (arg2.isClientSide) {
-            spawnParticles(arg2, arg3);
+    @Override
+    protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+        if (stack.getItem() instanceof BlockItem) {
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        }
+        if (level.isClientSide) {
+            spawnParticles(level, pos);
         } else {
-            interact(arg, arg2, arg3);
+            interact(state, level, pos);
         }
-
-        ItemStack itemstack = arg4.getItemInHand(arg5);
-        return itemstack.getItem() instanceof BlockItem && (new BlockPlaceContext(arg4, arg5, itemstack, arg6)).canPlace() ? InteractionResult.PASS : InteractionResult.SUCCESS;
+        return ItemInteractionResult.SUCCESS;
     }
 
-    private static void interact(BlockState arg, Level arg2, BlockPos arg3) {
-        spawnParticles(arg2, arg3);
-        if (!(Boolean)arg.getValue(LIT)) {
-            arg2.setBlock(arg3, (BlockState)arg.setValue(LIT, true), 3);
+    @Override
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
+        if (level.isClientSide) {
+            spawnParticles(level, pos);
+        } else {
+            interact(state, level, pos);
         }
-
+        return InteractionResult.SUCCESS;
     }
 
-    public boolean isRandomlyTicking(BlockState arg) {
-        return (Boolean)arg.getValue(LIT);
-    }
-
-    public void randomTick(BlockState arg, ServerLevel arg2, BlockPos arg3, RandomSource arg4) {
-        if ((Boolean)arg.getValue(LIT)) {
-            arg2.setBlock(arg3, (BlockState)arg.setValue(LIT, false), 3);
+    private static void interact(BlockState state, Level level, BlockPos pos) {
+        spawnParticles(level, pos);
+        if (!state.getValue(LIT)) {
+            level.setBlock(pos, state.setValue(LIT, true), 3);
         }
-
     }
 
-    public void spawnAfterBreak(BlockState arg, ServerLevel arg2, BlockPos arg3, ItemStack arg4, boolean bl) {
-        super.spawnAfterBreak(arg, arg2, arg3, arg4, bl);
+    @Override
+    protected boolean isRandomlyTicking(BlockState state) {
+        return state.getValue(LIT);
     }
 
-    public void animateTick(BlockState arg, Level arg2, BlockPos arg3, RandomSource arg4) {
-        if ((Boolean)arg.getValue(LIT)) {
-            spawnParticles(arg2, arg3);
+    @Override
+    protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+        if (state.getValue(LIT)) {
+            level.setBlock(pos, state.setValue(LIT, false), 3);
         }
-
     }
 
-    private static void spawnParticles(Level arg, BlockPos arg2) {
-        double d0 = (double)0.5625F;
-        RandomSource randomsource = arg.random;
+    @Override
+    public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
+        if (state.getValue(LIT)) {
+            spawnParticles(level, pos);
+        }
+    }
 
-        for(Direction direction : Direction.values()) {
-            BlockPos blockpos = arg2.relative(direction);
-            if (!arg.getBlockState(blockpos).isSolidRender(arg, blockpos)) {
-                Direction.Axis direction$axis = direction.getAxis();
-                double d1 = direction$axis == Direction.Axis.X ? (double)0.5F + (double)0.5625F * (double)direction.getStepX() : (double)randomsource.nextFloat();
-                double d2 = direction$axis == Direction.Axis.Y ? (double)0.5F + (double)0.5625F * (double)direction.getStepY() : (double)randomsource.nextFloat();
-                double d3 = direction$axis == Direction.Axis.Z ? (double)0.5F + (double)0.5625F * (double)direction.getStepZ() : (double)randomsource.nextFloat();
-                arg.addParticle(ParticleTypes.SMOKE, (double)arg2.getX() + d1, (double)arg2.getY() + d2, (double)arg2.getZ() + d3, (double)0.0F, (double)0.0F, (double)0.0F);
+    private static void spawnParticles(Level level, BlockPos pos) {
+        RandomSource random = level.random;
+
+        for (Direction direction : Direction.values()) {
+            BlockPos relativePos = pos.relative(direction);
+            if (!level.getBlockState(relativePos).isSolidRender(level, relativePos)) {
+                Direction.Axis axis = direction.getAxis();
+                double d1 = axis == Direction.Axis.X ? 0.5D + 0.5625D * direction.getStepX() : random.nextFloat();
+                double d2 = axis == Direction.Axis.Y ? 0.5D + 0.5625D * direction.getStepY() : random.nextFloat();
+                double d3 = axis == Direction.Axis.Z ? 0.5D + 0.5625D * direction.getStepZ() : random.nextFloat();
+                level.addParticle(ParticleTypes.SMOKE, pos.getX() + d1, pos.getY() + d2, pos.getZ() + d3, 0.0D, 0.0D, 0.0D);
             }
         }
-
     }
 
-    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> arg) {
-        arg.add(new Property[]{LIT});
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        builder.add(LIT);
     }
-
-    static {
-        LIT = RedstoneTorchBlock.LIT;
-    }
-
 }

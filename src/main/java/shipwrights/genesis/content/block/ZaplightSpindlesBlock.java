@@ -1,5 +1,6 @@
 package shipwrights.genesis.content.block;
 
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -11,111 +12,116 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SimpleWaterloggedBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+
 import shipwrights.genesis.content.particle.GenesisParticles;
 
 import javax.annotation.Nullable;
 
 public class ZaplightSpindlesBlock extends Block implements SimpleWaterloggedBlock {
-    public static final BooleanProperty WATERLOGGED;
-    private static final VoxelShape AABB;
+    public static final MapCodec<ZaplightSpindlesBlock> CODEC = simpleCodec(ZaplightSpindlesBlock::new);
+    public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
+    private static final VoxelShape AABB = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 4.0D, 14.0D);
 
-    public ZaplightSpindlesBlock(BlockBehaviour.Properties arg) {
-        super(arg);
-        this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(WATERLOGGED, true));
+    public ZaplightSpindlesBlock(BlockBehaviour.Properties properties) {
+        super(properties);
+        this.registerDefaultState(this.stateDefinition.any().setValue(WATERLOGGED, true));
     }
 
-    protected void tryScheduleDieTick(BlockState arg, LevelAccessor arg2, BlockPos arg3) {
-        if (!scanForWater(arg, arg2, arg3)) {
-            arg2.scheduleTick(arg3, this, 60 + arg2.getRandom().nextInt(40));
+    @Override
+    protected MapCodec<? extends Block> codec() {
+        return CODEC;
+    }
+
+    protected void tryScheduleDieTick(BlockState state, LevelAccessor level, BlockPos pos) {
+        if (!scanForWater(state, level, pos)) {
+            level.scheduleTick(pos, this, 60 + level.getRandom().nextInt(40));
         }
-
     }
 
-    protected static boolean scanForWater(BlockState arg, BlockGetter arg2, BlockPos arg3) {
-        if ((Boolean)arg.getValue(WATERLOGGED)) {
+    protected static boolean scanForWater(BlockState state, BlockGetter level, BlockPos pos) {
+        if (state.getValue(WATERLOGGED)) {
             return true;
         } else {
-            for(Direction direction : Direction.values()) {
-                if (arg2.getFluidState(arg3.relative(direction)).is(FluidTags.WATER)) {
+            for (Direction direction : Direction.values()) {
+                if (level.getFluidState(pos.relative(direction)).is(FluidTags.WATER)) {
                     return true;
                 }
             }
-
             return false;
         }
     }
 
-
-
     @Nullable
-    public BlockState getStateForPlacement(BlockPlaceContext arg) {
-        FluidState fluidState = arg.getLevel().getFluidState(arg.getClickedPos());
-        return (BlockState)this.defaultBlockState().setValue(WATERLOGGED, fluidState.is(FluidTags.WATER) && fluidState.getAmount() == 8);
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        FluidState fluidState = context.getLevel().getFluidState(context.getClickedPos());
+        return this.defaultBlockState().setValue(WATERLOGGED, fluidState.is(FluidTags.WATER) && fluidState.getAmount() == 8);
     }
 
-    public VoxelShape getShape(BlockState arg, BlockGetter arg2, BlockPos arg3, CollisionContext arg4) {
+    @Override
+    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return AABB;
     }
 
-    public BlockState updateShape(BlockState arg, Direction arg2, BlockState arg3, LevelAccessor arg4, BlockPos arg5, BlockPos arg6) {
-        if ((Boolean)arg.getValue(WATERLOGGED)) {
-            arg4.scheduleTick(arg5, Fluids.WATER, Fluids.WATER.getTickDelay(arg4));
+    @Override
+    protected BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level, BlockPos currentPos, BlockPos neighborPos) {
+        if (state.getValue(WATERLOGGED)) {
+            level.scheduleTick(currentPos, Fluids.WATER, Fluids.WATER.getTickDelay(level));
         }
 
-        return arg2 == Direction.DOWN && !this.canSurvive(arg, arg4, arg5) ? Blocks.AIR.defaultBlockState() : super.updateShape(arg, arg2, arg3, arg4, arg5, arg6);
+        return direction == Direction.DOWN && !this.canSurvive(state, level, currentPos) ? Blocks.AIR.defaultBlockState() : super.updateShape(state, direction, neighborState, level, currentPos, neighborPos);
     }
 
-    public void animateTick(BlockState arg, Level arg2, BlockPos arg3, RandomSource arg4) {
-        int i = arg3.getX();
-        int j = arg3.getY();
-        int k = arg3.getZ();
-        double d = (double)i + arg4.nextDouble();
-        double e = (double)j + arg4.nextDouble();
-        double f = (double)k + arg4.nextDouble();
+    @Override
+    public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
+        int x = pos.getX();
+        int y = pos.getY();
+        int z = pos.getZ();
+        double d = x + random.nextDouble();
+        double e = y + random.nextDouble();
+        double f = z + random.nextDouble();
 
-        if (arg4.nextInt(5) == 0) {
-            arg2.addParticle(GenesisParticles.ZAP_BUBBLE_PARTICLES.get(), d, e, f, (double) 0.0F, (double) 0.0F, (double) 0.0F);
+        if (random.nextInt(5) == 0) {
+            level.addParticle(GenesisParticles.ZAP_BUBBLE_PARTICLES.get(), d, e, f, 0.0D, 0.0D, 0.0D);
         }
 
         BlockPos.MutableBlockPos mutableBlockPos = new BlockPos.MutableBlockPos();
-        if (arg4.nextInt(10) == 0) {
+        if (random.nextInt(10) == 0) {
             for (int l = 0; l < 14; ++l) {
-                mutableBlockPos.set(i + Mth.nextInt(arg4, -10, 10), j - arg4.nextInt(10), k + Mth.nextInt(arg4, -10, 10));
-                BlockState blockState = arg2.getBlockState(mutableBlockPos);
-                if (!blockState.isCollisionShapeFullBlock(arg2, mutableBlockPos)) {
-                    arg2.addParticle(ParticleTypes.WARPED_SPORE, (double) mutableBlockPos.getX() + arg4.nextDouble(), (double) mutableBlockPos.getY() + arg4.nextDouble(), (double) mutableBlockPos.getZ() + arg4.nextDouble(), (double) 0.0F, (double) 0.0F, (double) 0.0F);
+                mutableBlockPos.set(x + Mth.nextInt(random, -10, 10), y - random.nextInt(10), z + Mth.nextInt(random, -10, 10));
+                BlockState blockState = level.getBlockState(mutableBlockPos);
+                if (!blockState.isCollisionShapeFullBlock(level, mutableBlockPos)) {
+                    level.addParticle(ParticleTypes.WARPED_SPORE, mutableBlockPos.getX() + random.nextDouble(), mutableBlockPos.getY() + random.nextDouble(), mutableBlockPos.getZ() + random.nextDouble(), 0.0D, 0.0D, 0.0D);
                 }
             }
         }
-
     }
 
-    public boolean canSurvive(BlockState arg, LevelReader arg2, BlockPos arg3) {
-        BlockPos blockPos = arg3.below();
-        return arg2.getBlockState(blockPos).isFaceSturdy(arg2, blockPos, Direction.UP);
+    @Override
+    protected boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
+        BlockPos belowPos = pos.below();
+        return level.getBlockState(belowPos).isFaceSturdy(level, belowPos, Direction.UP);
     }
 
-    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> arg) {
-        arg.add(new Property[]{WATERLOGGED});
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        builder.add(WATERLOGGED);
     }
 
-    public FluidState getFluidState(BlockState arg) {
-        return (Boolean)arg.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(arg);
-    }
-
-    static {
-        WATERLOGGED = BlockStateProperties.WATERLOGGED;
-        AABB = Block.box((double)2.0F, (double)0.0F, (double)2.0F, (double)14.0F, (double)4.0F, (double)14.0F);
+    @Override
+    protected FluidState getFluidState(BlockState state) {
+        return state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
     }
 }

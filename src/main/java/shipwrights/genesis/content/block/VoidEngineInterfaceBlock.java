@@ -1,13 +1,11 @@
 package shipwrights.genesis.content.block;
 
-import shipwrights.genesis.content.blockentity.GenesisBlockEntities;
-import shipwrights.genesis.content.blockentity.VoidCoreBlockEntity;
-import shipwrights.genesis.content.blockentity.VoidEngineInterfaceBlockEntity;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
@@ -21,15 +19,25 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import org.jetbrains.annotations.Nullable;
 
+import shipwrights.genesis.content.blockentity.GenesisBlockEntities;
+import shipwrights.genesis.content.blockentity.VoidCoreBlockEntity;
+import shipwrights.genesis.content.blockentity.VoidEngineInterfaceBlockEntity;
+
 public class VoidEngineInterfaceBlock extends BaseEntityBlock {
+    public static final MapCodec<VoidEngineInterfaceBlock> CODEC = simpleCodec(VoidEngineInterfaceBlock::new);
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
 
     public VoidEngineInterfaceBlock(Properties properties) {
         super(properties);
         this.registerDefaultState(this.stateDefinition.any()
-            .setValue(FACING, Direction.NORTH)
-            .setValue(POWERED, false));
+                .setValue(FACING, Direction.NORTH)
+                .setValue(POWERED, false));
+    }
+
+    @Override
+    protected MapCodec<? extends BaseEntityBlock> codec() {
+        return CODEC;
     }
 
     @Nullable
@@ -56,12 +64,12 @@ public class VoidEngineInterfaceBlock extends BaseEntityBlock {
             facing = facing.getOpposite();
         }
         return this.defaultBlockState()
-            .setValue(FACING, facing)
-            .setValue(POWERED, false);
+                .setValue(FACING, facing)
+                .setValue(POWERED, false);
     }
 
     @Override
-    public void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, BlockPos fromPos, boolean isMoving) {
+    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighborBlock, BlockPos neighborPos, boolean movedByPiston) {
         if (!level.isClientSide) {
             boolean isPowered = level.hasNeighborSignal(pos);
             if (isPowered != state.getValue(POWERED)) {
@@ -71,20 +79,14 @@ public class VoidEngineInterfaceBlock extends BaseEntityBlock {
     }
 
     @Override
-    public boolean canConnectRedstone(BlockState state, net.minecraft.world.level.BlockGetter level, BlockPos pos, @Nullable Direction direction) {
+    public boolean canConnectRedstone(BlockState state, BlockGetter level, BlockPos pos, @Nullable Direction direction) {
         return true;
     }
 
     @Override
-    public void onBlockStateChange(LevelReader level, BlockPos pos, BlockState oldState, BlockState newState) {
-        super.onBlockStateChange(level, pos, oldState, newState);
+    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
+        super.onRemove(state, level, pos, newState, isMoving);
         VoidCoreBlockEntity.updateVoidCore(pos, level);
-    }
-
-    @Override
-    public void onRemove(BlockState arg, Level arg2, BlockPos arg3, BlockState arg4, boolean bl) {
-        super.onRemove(arg, arg2, arg3, arg4, bl);
-        VoidCoreBlockEntity.updateVoidCore(arg3, arg2);
     }
 
     @Nullable

@@ -1,13 +1,13 @@
 package shipwrights.genesis.content.blockentity;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3d;
-import org.valkyrienskies.core.api.ships.Ship;
-import org.valkyrienskies.mod.common.VSGameUtilsKt;
-import org.valkyrienskies.mod.common.util.VectorConversionsMCKt;
+
 import shipwrights.genesis.content.block.RadarDisplayBlock;
 import shipwrights.genesis.content.radar.RadarDisplay;
 
@@ -30,37 +30,24 @@ public class RadarDisplayBlockEntity extends BlockEntity {
         if (level == null) return;
         BlockState state = level.getBlockState(getBlockPos());
         if (state.getBlock() instanceof RadarDisplayBlock) {
-            Ship ship = VSGameUtilsKt.getShipObjectManagingPos(level, getBlockPos());
-            Vec3i normalShip = state.getValue(RadarDisplayBlock.FACING).getOpposite().getNormal();
+            Vec3 center = getBlockPos().getCenter();
+            Vec3i normal = state.getValue(RadarDisplayBlock.FACING).getOpposite().getNormal();
 
-            Vector3d pos;
-            Vector3d dir;
-            Vector3d up;
-            List<Long> excludedShips = new ArrayList<>(1);
-            pos = VectorConversionsMCKt.toJOML(getBlockPos().getCenter());
-            dir = new Vector3d(normalShip.getX(), normalShip.getY(), normalShip.getZ());
+            Vector3d pos = new Vector3d(center.x, center.y, center.z);
+            Vector3d dir = new Vector3d(normal.getX(), normal.getY(), normal.getZ());
+            Vector3d up = getUpVectorForFacing(state.getValue(RadarDisplayBlock.FACING));
 
-            // Calculate up vector based on facing direction
-            up = getUpVectorForFacing(state.getValue(RadarDisplayBlock.FACING));
+            List<Long> excludedEntities = new ArrayList<>(1);
 
-            if (ship != null) {
-                pos = ship.getShipToWorld().transformPosition(pos);
-                dir = ship.getShipToWorld().transformDirection(dir);
-                up = ship.getShipToWorld().transformDirection(up);
-                excludedShips.add(ship.getId());
-            }
-
-            display.scan(level, pos, dir, up, excludedShips);
+            display.scan(level, pos, dir, up, excludedEntities);
         }
     }
 
-    private Vector3d getUpVectorForFacing(net.minecraft.core.Direction facing) {
-        // Return the up vector for the radar display based on facing direction
-        // This matches the rotation logic in the renderer
+    private Vector3d getUpVectorForFacing(Direction facing) {
         return switch (facing) {
-            case NORTH, SOUTH, EAST, WEST -> new Vector3d(0, 1, 0);  // Horizontal facings use world up
-            case UP -> new Vector3d(0, 0, -1);    // When facing up, north is "up" on screen
-            case DOWN -> new Vector3d(0, 0, 1);   // When facing down, south is "up" on screen
+            case NORTH, SOUTH, EAST, WEST -> new Vector3d(0, 1, 0);
+            case UP -> new Vector3d(0, 0, -1);
+            case DOWN -> new Vector3d(0, 0, 1);
         };
     }
 }

@@ -1,7 +1,10 @@
 package shipwrights.genesis.content.block.datagen;
 
+import shipwrights.genesis.NeoGenesisMod;
+
 public class PillarGenerator {
-    public static void generateSlab(String name) {
+
+    public static void generatePillar(String name) {
         generateBlockState(name);
         generateBlockModel(name);
         generateLootTable(name);
@@ -9,20 +12,16 @@ public class PillarGenerator {
     }
 
     private static void generateBlockModel(String name) {
-        generatePillarModel(name);
-    }
-
-    private static void generatePillarModel(String name) {
         String json = """
                 {
-                "parent": "minecraft:block/cube_column",
-                "textures": {
-                "end": "minecraft:block/%1$s_top",
-                "side": "minecraft:block/%1$s"
+                  "parent": "minecraft:block/cube_column",
+                  "textures": {
+                    "end": "%1$s:block/%2$s_top",
+                    "side": "%1$s:block/%2$s"
+                  }
                 }
-                }
-              """.formatted(name);
-        String path = BlockDataGenerator.FOLDER + "assets/genesis/models/block/" + name + "_pillar.json";
+              """.formatted(NeoGenesisMod.MOD_ID, name);
+        String path = BlockDataGenerator.FOLDER + "assets/" + NeoGenesisMod.MOD_ID + "/models/block/" + name + "_pillar.json";
 
         FileWriter.writeFile(path, json);
     }
@@ -32,50 +31,49 @@ public class PillarGenerator {
                 {
                   "variants": {
                     "axis=x": {
-                      "model": "zpl:block/%1$s",
-                        "y": 90,
-                        "x": 90
+                      "model": "%1$s:block/%2$s_pillar",
+                      "x": 90,
+                      "y": 90
                     },
                     "axis=y": {
-                      "model": "zpl:block/%1$s"
+                      "model": "%1$s:block/%2$s_pillar"
                     },
                     "axis=z": {
-                      "model": "zpl:block/%1$s",
-                        "x": 90
+                      "model": "%1$s:block/%2$s_pillar",
+                      "x": 90
                     }
                   }
                 }
-              """.formatted(name);
-        String path = BlockDataGenerator.FOLDER + "assets/genesis/blockstates/" + name + "_pillar.json";
+              """.formatted(NeoGenesisMod.MOD_ID, name);
+        String path = BlockDataGenerator.FOLDER + "assets/" + NeoGenesisMod.MOD_ID + "/blockstates/" + name + "_pillar.json";
 
         FileWriter.writeFile(path, json);
     }
 
     private static void generateLootTable(String name) {
         String json = """
+                {
+                  "type": "minecraft:block",
+                  "pools": [
+                    {
+                      "bonus_rolls": 0.0,
+                      "rolls": 1.0,
+                      "entries": [
                         {
-                          "type": "minecraft:block",
-                          "pools": [
-                            {
-                              "bonus_rolls": 0.0,
-                              "rolls": 1.0,
-                              "entries": [
-                                {
-                                  "type": "minecraft:item",
-                                  "name": "genesis:%1$s_pillar"
-                                }
-                              ],
-                              "conditions": [
-                                {
-                                  "condition": "minecraft:survives_explosion"
-                                }
-                              ]
-                            }
-                          ]
+                          "type": "minecraft:item",
+                          "name": "%1$s:%2$s_pillar"
                         }
-
-              """.formatted(name);
-        String path = BlockDataGenerator.FOLDER + "data/genesis/loot_tables/blocks/" + name + "_pillar.json";
+                      ],
+                      "conditions": [
+                        {
+                          "condition": "minecraft:survives_explosion"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              """.formatted(NeoGenesisMod.MOD_ID, name);
+        String path = BlockDataGenerator.FOLDER + "data/" + NeoGenesisMod.MOD_ID + "/loot_table/blocks/" + name + "_pillar.json";
 
         FileWriter.writeFile(path, json);
     }

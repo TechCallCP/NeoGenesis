@@ -1,50 +1,39 @@
 package shipwrights.genesis.content.item;
 
-import net.minecraft.sounds.SoundEvent;
+import net.minecraft.Util;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
-public class SpaceArmourMaterial implements ArmorMaterial {
-    @Override
-    public int getDurabilityForType(ArmorItem.Type arg) {
-        return 200;
-    }
+import shipwrights.genesis.NeoGenesisMod;
 
-    @Override
-    public int getDefenseForType(ArmorItem.Type arg) {
-        return 1;
-    }
+import java.util.EnumMap;
+import java.util.List;
 
-    @Override
-    public int getEnchantmentValue() {
-        return 5;
-    }
+public class SpaceArmourMaterial {
+    public static final DeferredRegister<ArmorMaterial> ARMOR_MATERIALS =
+            DeferredRegister.create(Registries.ARMOR_MATERIAL, NeoGenesisMod.MOD_ID);
 
-    @Override
-    public SoundEvent getEquipSound() {
-        return SoundEvents.WOOL_HIT;
-    }
-
-    @Override
-    public Ingredient getRepairIngredient() {
-        return Ingredient.of(Items.PHANTOM_MEMBRANE);
-    }
-
-    @Override
-    public String getName() {
-        return "genesis:space_suit";
-    }
-
-    @Override
-    public float getToughness() {
-        return 1;
-    }
-
-    @Override
-    public float getKnockbackResistance() {
-        return 0;
-    }
+    public static final DeferredHolder<ArmorMaterial, ArmorMaterial> SPACE_SUIT = ARMOR_MATERIALS.register("space_suit",
+            () -> new ArmorMaterial(
+                    Util.make(new EnumMap<>(ArmorItem.Type.class), map -> {
+                        map.put(ArmorItem.Type.BOOTS, 1);
+                        map.put(ArmorItem.Type.LEGGINGS, 1);
+                        map.put(ArmorItem.Type.CHESTPLATE, 1);
+                        map.put(ArmorItem.Type.HELMET, 1);
+                        map.put(ArmorItem.Type.BODY, 1);
+                    }),
+                    5,
+                    SoundEvents.WOOL_HIT,
+                    () -> Ingredient.of(Items.PHANTOM_MEMBRANE),
+                    List.of(new ArmorMaterial.Layer(ResourceLocation.fromNamespaceAndPath(NeoGenesisMod.MOD_ID, "space_suit"))),
+                    1.0F,
+                    0.0F
+            ));
 }

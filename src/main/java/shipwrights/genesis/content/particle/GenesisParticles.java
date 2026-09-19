@@ -20,7 +20,7 @@ public class GenesisParticles {
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> VERDITE_PARTICLES =
             PARTICLE_TYPES.register("verdite_particles", () -> new SimpleParticleType(true));
 
-    public static void register(IEventBus eventBus){
+    public static void register(IEventBus eventBus) {
         PARTICLE_TYPES.register(eventBus);
     }
 }

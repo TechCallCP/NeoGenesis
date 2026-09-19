@@ -1,10 +1,10 @@
 package shipwrights.genesis.content.block;
 
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
@@ -13,10 +13,11 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import org.jetbrains.annotations.Nullable;
+
 import shipwrights.genesis.content.blockentity.VoidCoreBlockEntity;
 
-
 public class VoidFocusBlock extends Block {
+    public static final MapCodec<VoidFocusBlock> CODEC = simpleCodec(VoidFocusBlock::new);
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
     public static final BooleanProperty ATTACHED = BlockStateProperties.ATTACHED;
 
@@ -25,6 +26,11 @@ public class VoidFocusBlock extends Block {
         this.registerDefaultState(this.stateDefinition.any()
                 .setValue(FACING, Direction.NORTH)
                 .setValue(ATTACHED, false));
+    }
+
+    @Override
+    protected MapCodec<? extends Block> codec() {
+        return CODEC;
     }
 
     @Override
@@ -53,20 +59,19 @@ public class VoidFocusBlock extends Block {
                     .setValue(ATTACHED, false);
         }
 
-
         return this.defaultBlockState()
                 .setValue(FACING, facing)
                 .setValue(ATTACHED, true);
     }
 
-    public void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, BlockPos fromPos, boolean isMoving) {
+    @Override
+    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighborBlock, BlockPos neighborPos, boolean movedByPiston) {
         if (level.isClientSide) return;
 
         Direction facing = state.getValue(FACING);
+        if (!neighborPos.equals(pos.relative(facing))) return;
 
-        if (!fromPos.equals(pos.relative(facing))) return;
-
-        boolean blocked = !level.getBlockState(fromPos).isAir();
+        boolean blocked = !level.getBlockState(neighborPos).isAir();
 
         if (state.getValue(ATTACHED) != blocked) {
             level.setBlock(pos, state.setValue(ATTACHED, blocked), 3);
@@ -74,17 +79,8 @@ public class VoidFocusBlock extends Block {
     }
 
     @Override
-    public void onBlockStateChange(LevelReader level, BlockPos pos, BlockState oldState, BlockState newState) {
-        super.onBlockStateChange(level, pos, oldState, newState);
+    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
+        super.onRemove(state, level, pos, newState, isMoving);
         VoidCoreBlockEntity.updateVoidCore(pos, level);
     }
-
-    @Override
-    public void onRemove(BlockState arg, Level arg2, BlockPos arg3, BlockState arg4, boolean bl) {
-        super.onRemove(arg, arg2, arg3, arg4, bl);
-        VoidCoreBlockEntity.updateVoidCore(arg3, arg2);
-    }
-
-
-
 }

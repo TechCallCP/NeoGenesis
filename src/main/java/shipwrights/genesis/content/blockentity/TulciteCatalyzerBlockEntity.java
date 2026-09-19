@@ -2,6 +2,7 @@ package shipwrights.genesis.content.blockentity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
@@ -9,18 +10,16 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.energy.EnergyStorage;
-import net.minecraftforge.energy.IEnergyStorage;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemStackHandler;
-import org.jetbrains.annotations.NotNull;
+
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.energy.EnergyStorage;
+import net.neoforged.neoforge.energy.IEnergyStorage;
+import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.ItemStackHandler;
+
 import shipwrights.genesis.content.item.GenesisItems;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 public class TulciteCatalyzerBlockEntity extends BlockEntity implements Container {
 
@@ -35,20 +34,7 @@ public class TulciteCatalyzerBlockEntity extends BlockEntity implements Containe
     public static int SLOT = 0;
 
     private final ItemStackHandler items = createItemHandler();
-    private final LazyOptional<IItemHandler> itemHandler = LazyOptional.of(() -> items);
-
     private final EnergyStorage energy = createEnergyStorage();
-    private final LazyOptional<IEnergyStorage> energyHandler = LazyOptional.of(() -> new AdaptedEnergyStorage(energy) {
-        @Override
-        public int receiveEnergy(int maxReceive, boolean simulate) {
-            return 0;
-        }
-
-        @Override
-        public boolean canReceive() {
-            return false;
-        }
-    });
 
     private int burnTime;
 
@@ -61,19 +47,17 @@ public class TulciteCatalyzerBlockEntity extends BlockEntity implements Containe
         distributeEnergy();
     }
 
-    // Check if we have a burnable item in the inventory and if so generate energy
     private void generateEnergy() {
         if (energy.getEnergyStored() < energy.getMaxEnergyStored()) {
             if (burnTime <= 0) {
                 ItemStack fuel = items.getStackInSlot(SLOT);
                 if (fuel.isEmpty() || !fuel.is(GenesisItems.TULCITE_CHUNK.get())) {
-                    // No fuel
                     return;
                 }
                 setBurnTime(600);
                 items.extractItem(SLOT, 1, false);
             } else {
-                setBurnTime(burnTime-1);
+                setBurnTime(burnTime - 1);
                 energy.receiveEnergy(GENERATE, false);
             }
             setChanged();
@@ -85,34 +69,29 @@ public class TulciteCatalyzerBlockEntity extends BlockEntity implements Containe
             return;
         }
         burnTime = bt;
-        if (getBlockState().getValue(BlockStateProperties.POWERED) != burnTime > 0) {
+        if (getBlockState().hasProperty(BlockStateProperties.POWERED) && getBlockState().getValue(BlockStateProperties.POWERED) != burnTime > 0) {
             level.setBlockAndUpdate(getBlockPos(), getBlockState().setValue(BlockStateProperties.POWERED, burnTime > 0));
         }
         setChanged();
     }
 
     private void distributeEnergy() {
-        // Check all sides of the block and send energy if that block supports the energy capability
+        if (level == null) return;
         for (Direction direction : Direction.values()) {
             if (energy.getEnergyStored() <= 0) {
                 return;
             }
-            BlockEntity be = level.getBlockEntity(getBlockPos().relative(direction));
-            if (be != null) {
-                be.getCapability(ForgeCapabilities.ENERGY).map(e -> {
-                    if (e.canReceive()) {
-                        int received = e.receiveEnergy(Math.min(energy.getEnergyStored(), MAXTRANSFER), false);
-                        energy.extractEnergy(received, false);
-                        setChanged();
-                        return received;
-                    }
-                    return 0;
-                });
+            BlockPos targetPos = getBlockPos().relative(direction);
+            IEnergyStorage targetEnergy = level.getCapability(Capabilities.EnergyStorage.BLOCK, targetPos, direction.getOpposite());
+            if (targetEnergy != null && targetEnergy.canReceive()) {
+                int received = targetEnergy.receiveEnergy(Math.min(energy.getEnergyStored(), MAXTRANSFER), false);
+                energy.extractEnergy(received, false);
+                setChanged();
             }
         }
     }
 
-    public ItemStackHandler getItems() {
+    public IItemHandler getItems() {
         return items;
     }
 
@@ -121,20 +100,24 @@ public class TulciteCatalyzerBlockEntity extends BlockEntity implements Containe
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
-        tag.put(ITEMS_TAG, items.serializeNBT());
-        tag.put(ENERGY_TAG, energy.serializeNBT());
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        tag.put(ITEMS_TAG, items.serializeNBT(registries));
+        tag.put(ENERGY_TAG, energy.serializeNBT(registries));
+        tag.putInt("BurnTime", burnTime);
     }
 
     @Override
-    public void load(CompoundTag tag) {
-        super.load(tag);
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
         if (tag.contains(ITEMS_TAG)) {
-            items.deserializeNBT(tag.getCompound(ITEMS_TAG));
+            items.deserializeNBT(registries, tag.getCompound(ITEMS_TAG));
         }
         if (tag.contains(ENERGY_TAG)) {
-            energy.deserializeNBT(tag.get(ENERGY_TAG));
+            energy.deserializeNBT(registries, tag.get(ENERGY_TAG));
+        }
+        if (tag.contains("BurnTime")) {
+            burnTime = tag.getInt("BurnTime");
         }
     }
 
@@ -151,18 +134,6 @@ public class TulciteCatalyzerBlockEntity extends BlockEntity implements Containe
     @Nonnull
     private EnergyStorage createEnergyStorage() {
         return new EnergyStorage(CAPACITY, MAXTRANSFER, MAXTRANSFER);
-    }
-
-    @NotNull
-    @Override
-    public <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
-        if (cap == ForgeCapabilities.ITEM_HANDLER) {
-            return itemHandler.cast();
-        } else if (cap == ForgeCapabilities.ENERGY) {
-            return energyHandler.cast();
-        } else {
-            return super.getCapability(cap, side);
-        }
     }
 
     @Override
@@ -192,7 +163,7 @@ public class TulciteCatalyzerBlockEntity extends BlockEntity implements Containe
 
     @Override
     public void setItem(int i, ItemStack itemStack) {
-
+        items.setStackInSlot(SLOT, itemStack);
     }
 
     @Override
