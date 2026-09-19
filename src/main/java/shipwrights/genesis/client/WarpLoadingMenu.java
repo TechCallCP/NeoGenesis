@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.ReceivingLevelScreen;
+import net.minecraft.client.renderer.MeshData;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.RandomSource;
@@ -13,13 +14,13 @@ import org.joml.Matrix4f;
 import java.util.ArrayList;
 import java.util.List;
 
-// This class is mostly GPT'd (the visuals atleast), feel free to improve
 public class WarpLoadingMenu extends ReceivingLevelScreen {
 
     private final int starBufferCount = 3;
     private final List<VertexBuffer> starBuffers = new ArrayList<>(starBufferCount);
 
     public WarpLoadingMenu() {
+        super(() -> true, ReceivingLevelScreen.Reason.OTHER);
         createStars();
     }
 
@@ -27,29 +28,24 @@ public class WarpLoadingMenu extends ReceivingLevelScreen {
         starBuffers.forEach(VertexBuffer::close);
         starBuffers.clear();
 
-        BufferBuilder bufferbuilder = Tesselator.getInstance().getBuilder();
-
         for (int i = 0; i < starBufferCount; i++) {
             VertexBuffer starBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
-            BufferBuilder.RenderedBuffer renderedBuffer = drawStars(bufferbuilder, 10842L / (i + 4));
+            MeshData meshData = drawStars(10842L / (i + 4));
             starBuffer.bind();
-            starBuffer.upload(renderedBuffer);
+            starBuffer.upload(meshData);
             VertexBuffer.unbind();
             starBuffers.add(starBuffer);
         }
     }
 
-
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float partialTicks) {
-        // Hide the crosshair
         Minecraft.getInstance().options.hideGui = true;
 
-        renderBackground(g);
+        renderBackground(g, mouseX, mouseY, partialTicks);
 
         PoseStack poseStack = g.pose();
 
-        // Create a projection matrix similar to world rendering
         Matrix4f projection = new Matrix4f().setPerspective(
                 (float) Math.toRadians(70),
                 (float) width / height,
@@ -61,8 +57,8 @@ public class WarpLoadingMenu extends ReceivingLevelScreen {
         float speed = 60f;
         float loopLength = 200f;
         int layerCount = 3;
-        float fadeStart = 0.1f;  // start fading at 10% of loop
-        float fadeEnd   = 0.9f;  // fully invisible at 90% of loop
+        float fadeStart = 0.1f;
+        float fadeEnd   = 0.9f;
 
         poseStack.pushPose();
         poseStack.scale(10f, 10f, 10f);
@@ -76,33 +72,27 @@ public class WarpLoadingMenu extends ReceivingLevelScreen {
 
             float t = (z % loopLength) / loopLength;
 
-            // map t to 0→1 inside fade window
             float alpha;
             if (t < fadeStart) {
-                alpha = 1f; // fully visible
+                alpha = 1f;
             } else if (t > fadeEnd) {
-                alpha = 0f; // fully invisible
+                alpha = 0f;
             } else {
-                // linear fade
                 alpha = 1f - (t - fadeStart) / (fadeEnd - fadeStart);
             }
 
-            // Set alpha via RenderSystem color
             RenderSystem.setShaderColor(1f, 1f, 1f, alpha);
 
-            render(poseStack, projection);
+            renderStars(poseStack, projection);
 
             poseStack.popPose();
         }
 
-        // reset color
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
         poseStack.popPose();
-
-        //super.render(g, mouseX, mouseY, partialTicks);
     }
 
-    public void render(PoseStack poseStack, Matrix4f projectionMatrix) {
+    public void renderStars(PoseStack poseStack, Matrix4f projectionMatrix) {
         ShaderInstance shader = ShaderRegistry.WORMHOLE_SHADER.getInstance().get();
 
         RenderSystem.setShader(() -> ShaderRegistry.WORMHOLE_SHADER.getInstance().get());
@@ -121,11 +111,12 @@ public class WarpLoadingMenu extends ReceivingLevelScreen {
         RenderSystem.enableDepthTest();
     }
 
-    private BufferBuilder.RenderedBuffer drawStars(BufferBuilder bufferbuilder, long seed) {
+    private MeshData drawStars(long seed) {
         RandomSource randomsource = RandomSource.create(seed);
-        bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_TEX);
+        Tesselator tesselator = Tesselator.getInstance();
+        BufferBuilder bufferbuilder = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_TEX);
 
-        for(int i = 0; i < 300; ++i) {
+        for (int i = 0; i < 300; ++i) {
             double d0 = (double)(randomsource.nextFloat() * 2.0F - 1.0F);
             double d1 = (double)(randomsource.nextFloat() * 2.0F - 1.0F);
             double d2 = (double)(randomsource.nextFloat() * 2.0F - 1.0F);
@@ -156,8 +147,7 @@ public class WarpLoadingMenu extends ReceivingLevelScreen {
                 int b = (int) (FastColor.ARGB32.blue(color) * 0.7);
                 int a = FastColor.ARGB32.alpha(color);
 
-
-                for(int j = 0; j < 4; ++j) {
+                for (int j = 0; j < 4; ++j) {
                     double d17 = 0.0;
                     double d18 = (double)((j & 2) - 1) * d3;
                     double d19 = (double)((j + 1 & 2) - 1) * d3;
@@ -168,17 +158,17 @@ public class WarpLoadingMenu extends ReceivingLevelScreen {
                     double d25 = d24 * d9 - d22 * d10;
                     double d26 = d22 * d9 + d24 * d10;
 
-                    // Map UV to match the quad vertex positions
-                    // d18 goes from -d3 to +d3, d19 goes from -d3 to +d3
                     float u = ((j & 2) == 0) ? 0.0f : 1.0f;
                     float v = ((j + 1 & 2) == 0) ? 1.0f : 0.0f;
 
-                    bufferbuilder.vertex(d5 + d25, d6 + d23, d7 + d26).color(r, g, b, a).uv(u, v).endVertex();
+                    bufferbuilder.addVertex((float) (d5 + d25), (float) (d6 + d23), (float) (d7 + d26))
+                            .setColor(r, g, b, a)
+                            .setUv(u, v);
                 }
             }
         }
 
-        return bufferbuilder.end();
+        return bufferbuilder.buildOrThrow();
     }
 
     @Override

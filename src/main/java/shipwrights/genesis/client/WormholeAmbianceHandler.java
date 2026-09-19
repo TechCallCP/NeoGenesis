@@ -5,14 +5,16 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundSource;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import shipwrights.genesis.GenesisMod;
+
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+
+import shipwrights.genesis.NeoGenesisMod;
 import shipwrights.genesis.content.sound.GenesisSounds;
 
-@Mod.EventBusSubscriber(value = Dist.CLIENT)
+@EventBusSubscriber(modid = NeoGenesisMod.MOD_ID, value = Dist.CLIENT)
 public class WormholeAmbianceHandler {
     private static SimpleSoundInstance voidEngineStartSound = null;
     private static SimpleSoundInstance currentAmbianceSound = null;
@@ -21,17 +23,13 @@ public class WormholeAmbianceHandler {
     private static int soundDurationTicks = 0;
     private static int currentTick = 0;
     private static int fadeOutTicksRemaining = 0;
-    private static final int CROSSFADE_DURATION_TICKS = 40; // 2 seconds at 20 ticks/sec
+    private static final int CROSSFADE_DURATION_TICKS = 40;
 
-    public static BlockPos wormholeTravelPos = new BlockPos(0,0,0);
-    public static BlockPos voidEngineStartPos = new BlockPos(0,0,0);
+    public static BlockPos wormholeTravelPos = new BlockPos(0, 0, 0);
+    public static BlockPos voidEngineStartPos = new BlockPos(0, 0, 0);
 
     @SubscribeEvent
-    public static void onClientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) {
-            return;
-        }
-
+    public static void onClientTick(ClientTickEvent.Post event) {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.level == null || minecraft.player == null) {
             stopAmbiance();
@@ -40,15 +38,12 @@ public class WormholeAmbianceHandler {
             return;
         }
 
-        boolean isInWormhole = minecraft.level.dimension().location().equals(GenesisMod.WORMHOLE_DIM);
+        boolean isInWormhole = minecraft.level.dimension().location().equals(NeoGenesisMod.WORMHOLE_DIM);
 
         if (isInWormhole && !wasInWormhole) {
-            // Just entered wormhole dimension
             startAmbiance(minecraft.getSoundManager());
-
             playTravelSound(minecraft);
         } else if (!isInWormhole && wasInWormhole) {
-            // Just left wormhole dimension
             stopAmbiance();
             playTravelSound(minecraft);
             SimpleSoundInstance stopSound = new SimpleSoundInstance(
@@ -69,7 +64,6 @@ public class WormholeAmbianceHandler {
         } else if (isInWormhole) {
             currentTick++;
 
-            // Handle fading out the old sound
             if (fadeOutTicksRemaining > 0) {
                 fadeOutTicksRemaining--;
                 if (fadeOutTicksRemaining == 0 && fadingOutSound != null) {
@@ -78,15 +72,13 @@ public class WormholeAmbianceHandler {
                 }
             }
 
-            // Start crossfade before the sound ends
             if (currentAmbianceSound != null &&
-                soundDurationTicks > 0 &&
-                currentTick >= soundDurationTicks - CROSSFADE_DURATION_TICKS &&
-                fadingOutSound == null) {
+                    soundDurationTicks > 0 &&
+                    currentTick >= soundDurationTicks - CROSSFADE_DURATION_TICKS &&
+                    fadingOutSound == null) {
                 startCrossfade(minecraft.getSoundManager());
             }
 
-            // Check if current sound finished and we didn't crossfade (fallback)
             if (currentAmbianceSound != null && !minecraft.getSoundManager().isActive(currentAmbianceSound)) {
                 startAmbiance(minecraft.getSoundManager());
             }
@@ -96,22 +88,20 @@ public class WormholeAmbianceHandler {
     }
 
     private static void startCrossfade(SoundManager soundManager) {
-        // Move current sound to fading out
         fadingOutSound = currentAmbianceSound;
         fadeOutTicksRemaining = CROSSFADE_DURATION_TICKS;
 
-        // Start new sound
         currentAmbianceSound = new SimpleSoundInstance(
-            GenesisSounds.WORMHOLE_AMBIANCE.get().getLocation(),
-            SoundSource.AMBIENT,
-            1.0f,
-            1.0f,
-            Minecraft.getInstance().player.getRandom(),
-            false, // Not looping - we handle the loop manually for crossfade
-            0,
-            SimpleSoundInstance.Attenuation.NONE,
-            0.0, 0.0, 0.0,
-            true
+                GenesisSounds.WORMHOLE_AMBIANCE.get().getLocation(),
+                SoundSource.AMBIENT,
+                1.0f,
+                1.0f,
+                Minecraft.getInstance().player.getRandom(),
+                false,
+                0,
+                SimpleSoundInstance.Attenuation.NONE,
+                0.0, 0.0, 0.0,
+                true
         );
 
         soundManager.play(currentAmbianceSound);
@@ -119,26 +109,24 @@ public class WormholeAmbianceHandler {
     }
 
     private static void startAmbiance(SoundManager soundManager) {
-        stopAmbiance(); // Stop any existing sound first
+        stopAmbiance();
 
         currentAmbianceSound = new SimpleSoundInstance(
-            GenesisSounds.WORMHOLE_AMBIANCE.get().getLocation(),
-            SoundSource.AMBIENT,
-            1.0f,
-            1.0f,
-            Minecraft.getInstance().player.getRandom(),
-            false, // Not looping - we handle the loop manually for crossfade
-            0,
-            SimpleSoundInstance.Attenuation.NONE,
-            0.0, 0.0, 0.0,
-            true
+                GenesisSounds.WORMHOLE_AMBIANCE.get().getLocation(),
+                SoundSource.AMBIENT,
+                1.0f,
+                1.0f,
+                Minecraft.getInstance().player.getRandom(),
+                false,
+                0,
+                SimpleSoundInstance.Attenuation.NONE,
+                0.0, 0.0, 0.0,
+                true
         );
 
         soundManager.play(currentAmbianceSound);
         currentTick = 0;
 
-        // Estimate sound duration (you may need to adjust this based on your actual sound file length)
-        // This is in ticks (20 ticks = 1 second)
         soundDurationTicks = estimateSoundDuration();
     }
 
@@ -167,7 +155,7 @@ public class WormholeAmbianceHandler {
                 false,
                 0,
                 SimpleSoundInstance.Attenuation.LINEAR,
-                wormholeTravelPos.getX(), wormholeTravelPos.getY(), wormholeTravelPos.getZ(), //get block pos from packet
+                wormholeTravelPos.getX(), wormholeTravelPos.getY(), wormholeTravelPos.getZ(),
                 true
         );
         minecraft.getSoundManager().play(travelSound);
@@ -184,7 +172,7 @@ public class WormholeAmbianceHandler {
                     false,
                     0,
                     SimpleSoundInstance.Attenuation.LINEAR,
-                    0.0, 0.0, 0.0, //get block pos from packet
+                    0.0, 0.0, 0.0,
                     true
             );
         }
