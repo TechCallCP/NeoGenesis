@@ -58,6 +58,11 @@ repositories {
     flatDir { dir 'libs'}
 
     maven {
+        name = "ParchmentMC"
+        url = "https://maven.parchmentmc.org"
+    }
+
+    maven {
         name = "Modrinth"
         url = "https://api.modrinth.com/maven"
     }
