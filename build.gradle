@@ -62,7 +62,8 @@ repositories {
         name = "tterrag Maven"
         url = "https://maven.tterrag.com"
     }
-
+    maven { url = "https://maven.ithundxr.dev/snapshots" }
+    // Backup Registrate
     // JitPack (Fallback for Pehkui)
     maven {
         name = "JitPack"
