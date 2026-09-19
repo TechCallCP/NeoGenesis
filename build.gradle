@@ -1,6 +1,6 @@
 plugins {
     id 'maven-publish'
-    id 'net.neoforged.moddev.userdev' version '21.1.238'
+    id 'net.neoforged.moddev' version '1.0.21'
 }
 
 configurations {
