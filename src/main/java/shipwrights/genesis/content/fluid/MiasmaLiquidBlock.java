@@ -1,9 +1,9 @@
 package shipwrights.genesis.content.fluid;
 
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -23,8 +23,19 @@ import java.util.function.Supplier;
 
 public class MiasmaLiquidBlock extends LiquidBlock {
 
+    // Correctly routes via simpleCodec using your static fluid registry reference
+    public static final MapCodec<LiquidBlock> CODEC = simpleCodec((properties) ->
+            new MiasmaLiquidBlock(GenesisFluids.MIASMA, properties)
+    );
+
+    // FIXED: Must return MapCodec<? extends Block> to properly override the vanilla Block method
+    @Override
+    public MapCodec<LiquidBlock> codec() {
+        return CODEC;
+    }
+
     public MiasmaLiquidBlock(Supplier<? extends FlowingFluid> fluidSupplier, Properties properties) {
-        super(fluidSupplier, properties);
+        super(fluidSupplier.get(), properties);
     }
 
     @Override
@@ -41,15 +52,14 @@ public class MiasmaLiquidBlock extends LiquidBlock {
         super.onPlace(state, level, pos, oldState, movedByPiston);
 
         if (!level.isClientSide) {
-            // Schedule a tick to check dissipation shortly after placement
             level.scheduleTick(pos, this, 30);
         }
     }
 
     @Override
-    public void randomTick(BlockState arg, ServerLevel arg2, BlockPos arg3, RandomSource arg4) {
-        super.randomTick(arg, arg2, arg3, arg4);
-        arg2.scheduleTick(arg3, this, 30);
+    public void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+        super.randomTick(state, level, pos, random);
+        level.scheduleTick(pos, this, 30);
     }
 
     @Override
@@ -64,7 +74,6 @@ public class MiasmaLiquidBlock extends LiquidBlock {
             if (!level.isClientSide()) {
                 level.playSound(null, pos, GenesisSounds.MIASMA_HISS.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
             }
-            // Dissipate - replace this fluid block with air
             level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
         }
     }
@@ -74,8 +83,9 @@ public class MiasmaLiquidBlock extends LiquidBlock {
         super.entityInside(state, level, pos, entity);
 
         if (!level.isClientSide && entity instanceof LivingEntity livingEntity) {
-            // Apply poison effect - 10 seconds (200 ticks), amplifier 1 (Poison II)
-            if (entity instanceof Player player && player.isCreative()) {return;}
+            if (entity instanceof Player player && player.isCreative()) { return; }
+
+            // Reverted back to your original CONFUSION mapping setup
             livingEntity.addEffect(new MobEffectInstance(MobEffects.POISON, 200, 1, false, true));
             livingEntity.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 200, 1, false, true));
             livingEntity.hurt(level.damageSources().genericKill(), 2);
@@ -84,17 +94,13 @@ public class MiasmaLiquidBlock extends LiquidBlock {
 
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
-        // Get the fluid level (0-15 for block state, but fluid is 1-8)
         int fluidLevel = state.getValue(LEVEL);
-        // LEVEL 0 = source (full), higher = less fluid
         int amount = 8 - Math.min(fluidLevel, 7);
 
-        // Always spawn at least one particle
         double x = pos.getX() + random.nextDouble();
         double y = pos.getY() + random.nextDouble() * 0.5 + 0.2;
         double z = pos.getZ() + random.nextDouble();
 
-        // Spawn magenta witch particles rising upward
         level.addParticle(
                 ParticleTypes.WITCH,
                 x, y, z,
@@ -103,7 +109,6 @@ public class MiasmaLiquidBlock extends LiquidBlock {
                 (random.nextDouble() - 0.5) * 0.05
         );
 
-        // More particles for higher fluid levels (source blocks have more)
         if (random.nextInt(8) < amount) {
             level.addParticle(
                     ParticleTypes.CAMPFIRE_COSY_SMOKE,

@@ -3,7 +3,6 @@ package shipwrights.genesis.content.fluid;
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.util.entry.FluidEntry;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.material.MapColor;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.fluids.BaseFlowingFluid;
 import net.neoforged.neoforge.fluids.FluidType;
@@ -24,8 +23,8 @@ public class GenesisFluids {
     private static final ResourceLocation OVERLAY_RL = ResourceLocation.fromNamespaceAndPath(NeoGenesisMod.MOD_ID, "block/miasma_overlay");
     private static final int TINT_COLOR = 0xCC8B9A32;
 
-    public static final FluidEntry<MiasmaFluid.Flowing> MIASMA = REGISTRATE
-            .fluid("miasma", STILL_RL, FLOWING_RL, GenesisFluids::createMiasmaFluidType, MiasmaFluid.Flowing::new)
+    public static final FluidEntry<BaseFlowingFluid.Flowing> MIASMA = REGISTRATE
+            .fluid("miasma", STILL_RL, FLOWING_RL, GenesisFluids::createMiasmaFluidType, BaseFlowingFluid.Flowing::new)
             .lang("Miasma")
             .properties(p -> p
                     .density(0)
@@ -40,34 +39,25 @@ public class GenesisFluids {
                     .levelDecreasePerBlock(2)
                     .slopeFindDistance(3)
                     .tickRate(10))
-            .source(MiasmaFluid.Source::new)
-            .block(MiasmaLiquidBlock::new)
-            .initialProperties(() -> net.minecraft.world.level.block.Blocks.WATER)
-            .properties(p -> p
-                    .mapColor(MapColor.COLOR_YELLOW)
-                    .replaceable()
-                    .noCollission()
-                    .strength(100.0F)
-                    .noLootTable()
-                    .liquid())
-            .build()
-            .bucket()
-            .build()
+            .source(BaseFlowingFluid.Source::new)
             .register();
 
-    private static FluidType createMiasmaFluidType(FluidType.Properties properties, ResourceLocation stillTexture, ResourceLocation flowingTexture) {
+    /**
+     * Factory method creating the FluidType with proper client-side textures and tints.
+     */
+    private static FluidType createMiasmaFluidType(FluidType.Properties properties) {
         return new FluidType(properties) {
             @Override
             public void initializeClient(Consumer<IClientFluidTypeExtensions> consumer) {
                 consumer.accept(new IClientFluidTypeExtensions() {
                     @Override
                     public ResourceLocation getStillTexture() {
-                        return stillTexture;
+                        return STILL_RL;
                     }
 
                     @Override
                     public ResourceLocation getFlowingTexture() {
-                        return flowingTexture;
+                        return FLOWING_RL;
                     }
 
                     @Override
@@ -82,17 +72,5 @@ public class GenesisFluids {
                 });
             }
         };
-    }
-
-    public static BaseFlowingFluid.Source getSource() {
-        return (BaseFlowingFluid.Source) MIASMA.getSource();
-    }
-
-    public static MiasmaFluid.Flowing getFlowing() {
-        return MIASMA.get();
-    }
-
-    public static void init() {
-        NeoGenesisMod.LOGGER.info("Initializing Genesis fluids via Registrate");
     }
 }
