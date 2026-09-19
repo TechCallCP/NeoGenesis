@@ -87,6 +87,10 @@ repositories {
         url = "https://api.modrinth.com/maven"
     }
 
+    maven {
+        name = "Create Mod Maven"
+        url = "https://maven.createmod.net"
+    }
 
     maven {
         name = "RyanHCode Maven"
@@ -137,6 +141,10 @@ dependencies {
     // region Sable Physics Engine (Local JARs)
     implementation(fileTree(dir: 'libs', include: ['*.jar']))
     // endregion
+    implementation("com.simibubi.create:create-${minecraft_version}:${create_version}:slim") { transitive = false }
+    implementation("net.createmod.ponder:ponder-neoforge:${ponder_version}+mc${minecraft_version}")
+    compileOnly("dev.engine-room.flywheel:flywheel-neoforge-api-${minecraft_version}:${flywheel_version}")
+    runtimeOnly("dev.engine-room.flywheel:flywheel-neoforge-${minecraft_version}:${flywheel_version}")
 
     // Official Maven Coordinates for Curios and Pehkui
     implementation("top.theillusivec4.curios:curios-neoforge:9.5.1+1.21.1")
