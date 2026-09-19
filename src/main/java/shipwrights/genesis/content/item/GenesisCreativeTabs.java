@@ -6,7 +6,6 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.PaintingVariantTags;
-import net.minecraft.world.entity.decoration.Painting;
 import net.minecraft.world.entity.decoration.PaintingVariant;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
@@ -20,6 +19,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 
 import shipwrights.genesis.NeoGenesisMod;
 import shipwrights.genesis.content.block.datagen.BlockType;
+import shipwrights.genesis.content.fluid.GenesisFluids;
 
 import java.util.Comparator;
 import java.util.HashSet;
@@ -121,7 +121,7 @@ public class GenesisCreativeTabs {
                         output.accept(GenesisItems.WITHERING_WILLOW_LOG.get());
                         output.accept(GenesisItems.WITHERING_WILLOW_BRANCH.get());
                         output.accept(GenesisItems.WITHERING_WILLOW_LEAVES.get());
-                        output.accept(shipwrights.genesis.content.fluid.GenesisFluids.MIASMA.getBucket().get());
+                        output.accept(GenesisFluids.MIASMA_BUCKET.get());
 
                         output.accept(GenesisItems.VERDITE_ORE.get());
                         output.accept(GenesisItems.VERDITE_CLUSTER.get());
@@ -160,7 +160,7 @@ public class GenesisCreativeTabs {
         lookup.listElements().filter(predicate).sorted(PAINTING_COMPARATOR).forEach((variantHolder) -> {
             if (variantHolder.key().location().getNamespace().equals(NeoGenesisMod.MOD_ID) || variantHolder.key().location().getNamespace().equals("genesis")) {
                 ItemStack itemstack = new ItemStack(Items.PAINTING);
-                CustomData.update(DataComponents.ENTITY_DATA, itemstack, tag -> Painting.storeVariant(tag, variantHolder));
+                CustomData.update(DataComponents.ENTITY_DATA, itemstack, tag -> tag.putString("variant", variantHolder.key().location().toString()));
                 output.accept(itemstack, visibility);
             }
         });
