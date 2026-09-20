@@ -8,6 +8,7 @@ import com.mojang.brigadier.tree.RootCommandNode;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -22,8 +23,8 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import net.minecraft.core.Registry;
-import shipwrights.genesis.GenesisMod;
+
+import shipwrights.genesis.NeoGenesisMod;
 import shipwrights.genesis.commands.CelestialArgument;
 import shipwrights.genesis.space.Celestial;
 import shipwrights.genesis.teleportation.impl.EntityTeleporter;
@@ -37,7 +38,7 @@ public class TeleportCommandMixin {
     private static final com.mojang.brigadier.exceptions.SimpleCommandExceptionType ERROR_SPACE_NOT_LOADED =
             new com.mojang.brigadier.exceptions.SimpleCommandExceptionType(Component.literal("Space dimension not loaded"));
 
-    @Inject(method = "register", at = @At("TAIL"))
+    @Inject(method = "register", at = @At("TAIL"), remap = false)
     private static void registerCelestialTeleport(CommandDispatcher<CommandSourceStack> dispatcher, CallbackInfo ci) {
         RootCommandNode<CommandSourceStack> root = dispatcher.getRoot();
         LiteralCommandNode<CommandSourceStack> teleportNode = genesis$getLiteral(root, "teleport");
@@ -100,7 +101,7 @@ public class TeleportCommandMixin {
             EntityTeleporter.teleportEntityAndPassengers(entity, spaceLevel, pos);
         }
 
-        Registry<Celestial> registry = GenesisMod.getCelestialRegistry(spaceLevel);
+        Registry<Celestial> registry = NeoGenesisMod.getCelestialRegistry(spaceLevel);
         String celestialId = registry.getResourceKey(celestial).orElseThrow().location().toString();
 
         if (targets.size() == 1) {
@@ -119,7 +120,7 @@ public class TeleportCommandMixin {
 
     @Unique
     private static ServerLevel genesis$getSpaceLevel(CommandSourceStack source) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
-        ResourceKey<Level> spaceKey = ResourceKey.create(Registries.DIMENSION, GenesisMod.SPACE_DIM);
+        ResourceKey<Level> spaceKey = ResourceKey.create(Registries.DIMENSION, NeoGenesisMod.SPACE_DIM);
         ServerLevel level = source.getServer().getLevel(spaceKey);
         if (level == null) {
             throw ERROR_SPACE_NOT_LOADED.create();
@@ -129,8 +130,8 @@ public class TeleportCommandMixin {
 
     @Unique
     private static Vec3 genesis$toVec3(Celestial celestial, ServerLevel spaceLevel) {
-        long ticks = GenesisMod.getTicks(spaceLevel);
-        Registry<Celestial> registry = GenesisMod.getCelestialRegistry(spaceLevel);
+        long ticks = NeoGenesisMod.getTicks(spaceLevel);
+        Registry<Celestial> registry = NeoGenesisMod.getCelestialRegistry(spaceLevel);
         Vector3dc pos = celestial.getPosition(ticks, registry);
         return new Vec3(pos.x(), pos.y() + celestial.getActualSize(), pos.z());
     }

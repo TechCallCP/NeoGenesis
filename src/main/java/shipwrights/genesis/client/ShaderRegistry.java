@@ -5,14 +5,11 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.resources.ResourceLocation;
-
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RegisterShadersEvent;
-
 import shipwrights.genesis.NeoGenesisMod;
-
 import team.lodestar.lodestone.registry.client.LodestoneRenderTypeRegistry;
 import team.lodestar.lodestone.systems.rendering.LodestoneRenderType;
 import team.lodestar.lodestone.systems.rendering.StateShards;
@@ -22,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static team.lodestar.lodestone.registry.client.LodestoneShaderRegistry.registerShader;
 
-@EventBusSubscriber(value = Dist.CLIENT, modid = NeoGenesisMod.MOD_ID)
+@EventBusSubscriber(value = Dist.CLIENT, modid = NeoGenesisMod.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
 public class ShaderRegistry {
 
     public static final ShaderHolder SUN_SHADER = new ShaderHolder(ResourceLocation.fromNamespaceAndPath(NeoGenesisMod.MOD_ID, "sun"), DefaultVertexFormat.POSITION_COLOR);

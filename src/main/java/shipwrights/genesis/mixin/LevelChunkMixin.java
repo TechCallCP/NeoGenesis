@@ -26,8 +26,8 @@ import java.util.Map;
 @Mixin(value = LevelChunk.class, priority = 1500)
 public abstract class LevelChunkMixin extends ChunkAccess {
 
-    public LevelChunkMixin(ChunkPos arg, UpgradeData arg2, LevelHeightAccessor arg3, Registry<Biome> arg4, long l, @Nullable LevelChunkSection[] args, @Nullable BlendingData arg5) {
-        super(arg, arg2, arg3, arg4, l, args, arg5);
+    public LevelChunkMixin(ChunkPos pos, UpgradeData upgradeData, LevelHeightAccessor levelHeightAccessor, Registry<Biome> biomeRegistry, long injectedData, @Nullable LevelChunkSection[] sections, @Nullable BlendingData blendingData) {
+        super(pos, upgradeData, levelHeightAccessor, biomeRegistry, injectedData, sections, blendingData);
     }
 
     @Final
@@ -38,7 +38,7 @@ public abstract class LevelChunkMixin extends ChunkAccess {
     @Final
     private static TickingBlockEntity NULL_TICKER;
 
-    @Inject(method = "clearAllBlockEntities", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "clearAllBlockEntities", at = @At("HEAD"), cancellable = true, remap = false)
     public void clearAllBlockEntities(CallbackInfo ci) {
         if (!this.blockEntities.isEmpty()) {
             List<BlockEntity> blockEntitiesSnapshot = List.copyOf(this.blockEntities.values());
@@ -59,12 +59,11 @@ public abstract class LevelChunkMixin extends ChunkAccess {
                     List.copyOf(this.tickersInLevel.values());
 
             for (LevelChunk.RebindableTickingBlockEntityWrapper ticker : tickerSnapshot) {
-                ticker.rebind(NULL_TICKER);
+                ((RebindableTickingBlockEntityWrapperInvoker) (Object) ticker).invokeRebind(NULL_TICKER);
             }
 
             this.tickersInLevel.clear();
         }
         ci.cancel();
     }
-
 }

@@ -1,9 +1,7 @@
 package shipwrights.genesis.mixin;
 
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.particle.BreakingItemParticle;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.core.BlockPos;
@@ -18,19 +16,26 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import shipwrights.genesis.GenesisMod;
+
+import shipwrights.genesis.NeoGenesisMod;
 
 @Mixin(ParticleEngine.class)
-public class ParticleEngineMixin {
+public abstract class ParticleEngineMixin {
 
-    @Inject(method = "createParticle", at = @At("HEAD"), cancellable = true)
-    public void createParticleMixin(ParticleOptions arg, double d, double e, double f, double g, double h, double i, CallbackInfoReturnable<Particle> cir) {
+    @Shadow(remap = false)
+    public abstract void add(Particle particle);
+
+    @Shadow(remap = false)
+    private Particle makeParticle(ParticleOptions options, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
+        return null;
+    }
+
+    @Inject(method = "createParticle", at = @At("HEAD"), cancellable = true, remap = false)
+    public void createParticleMixin(ParticleOptions particleData, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed, CallbackInfoReturnable<Particle> cir) {
         ClientLevel level = Minecraft.getInstance().level;
-        if (level != null && GenesisMod.isMiniScale(level)) {
-
-            Particle particle = this.makeParticle(arg, d, e, f, g, h, i);
+        if (level != null && NeoGenesisMod.isMiniScale(level)) {
+            Particle particle = this.makeParticle(particleData, x, y, z, xSpeed, ySpeed, zSpeed);
             if (particle != null) {
-
                 particle.scale(1 / 16f);
                 this.add(particle);
                 cir.setReturnValue(particle);
@@ -40,42 +45,30 @@ public class ParticleEngineMixin {
         }
     }
 
-    @Inject(method = "destroy", at = @At("HEAD"), cancellable = true)
-    public void destroyMixin(BlockPos arg, BlockState arg2, CallbackInfo ci) {
+    @Inject(method = "destroy", at = @At("HEAD"), cancellable = true, remap = false)
+    public void destroyMixin(BlockPos pos, BlockState state, CallbackInfo ci) {
         ClientLevel level = Minecraft.getInstance().level;
-        if (level != null && GenesisMod.isMiniScale(level)) {
-
+        if (level != null && NeoGenesisMod.isMiniScale(level)) {
             for (int i = 0; i < 10; i++) {
                 level.addParticle(
-                        new BlockParticleOption(ParticleTypes.BLOCK, arg2),
-                        arg.getX() + Math.random(),
-                        arg.getY() + Math.random(),
-                        arg.getZ() + Math.random(),
+                        new BlockParticleOption(ParticleTypes.BLOCK, state),
+                        pos.getX() + Math.random(),
+                        pos.getY() + Math.random(),
+                        pos.getZ() + Math.random(),
                         0,
                         0,
                         0
                 );
             }
-
             ci.cancel();
         }
     }
 
-    @Inject(method = "crack", at = @At("HEAD"), cancellable = true)
-    public void crackMixin(BlockPos arg, Direction arg2, CallbackInfo ci) {
+    @Inject(method = "crack", at = @At("HEAD"), cancellable = true, remap = false)
+    public void crackMixin(BlockPos pos, Direction side, CallbackInfo ci) {
         ClientLevel level = Minecraft.getInstance().level;
-        if (level == null || GenesisMod.isMiniScale(level)) {
+        if (level == null || NeoGenesisMod.isMiniScale(level)) {
             ci.cancel();
         }
-    }
-
-
-    @Shadow
-    public void add(Particle particle) {
-    }
-
-    @Shadow
-    private Particle makeParticle(ParticleOptions arg, double d, double e, double f, double g, double h, double i) {
-        return null;
     }
 }

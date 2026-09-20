@@ -2,36 +2,35 @@ package shipwrights.genesis.mixin;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.debug.ChunkBorderRenderer;
 import net.minecraft.world.entity.Entity;
 import org.joml.Matrix4f;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
-import shipwrights.genesis.GenesisMod;
+
+import shipwrights.genesis.NeoGenesisMod;
 
 @Mixin(ChunkBorderRenderer.class)
 public class ChunkBorderRendererMixin {
 
-    @Final
-    @Shadow
-    private Minecraft minecraft;
-
-    @Inject(method = "render", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "render", at = @At("HEAD"), cancellable = true, remap = false)
     public void renderMixin(PoseStack poseStack, MultiBufferSource bufferSource, double camX, double camY, double camZ, CallbackInfo ci) {
-        ClientLevel level = this.minecraft.level;
-        if (level == null || !GenesisMod.isMiniScale(level)) {
+        Minecraft minecraft = Minecraft.getInstance();
+        ClientLevel level = minecraft.level;
+        if (level == null || !NeoGenesisMod.isMiniScale(level)) {
             return;
         }
 
-        Entity entity = this.minecraft.gameRenderer.getMainCamera().getEntity();
+        Entity entity = minecraft.gameRenderer.getMainCamera().getEntity();
+        if (entity == null) {
+            return;
+        }
 
         double entityX = entity.getX();
         double entityY = entity.getY();

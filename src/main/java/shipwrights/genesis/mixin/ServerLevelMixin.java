@@ -9,15 +9,15 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.biome.Biome;
+import org.sable.api.SableUtils;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import org.valkyrienskies.core.api.ships.Ship;
-import org.valkyrienskies.mod.common.VSGameUtilsKt;
-import shipwrights.genesis.GenesisMod;
+
+import shipwrights.genesis.NeoGenesisMod;
 import shipwrights.genesis.networking.GenesisNetworking;
 import shipwrights.genesis.networking.SyncTimeOffsetPacket;
 import shipwrights.genesis.time.GenesisTimeData;
@@ -27,12 +27,12 @@ public abstract class ServerLevelMixin {
 
     @Shadow public abstract ServerLevel getLevel();
 
-    @Inject(method = "setDayTime", at = @At("HEAD"))
+    @Inject(method = "setDayTime", at = @At("HEAD"), remap = false)
     private void genesis$onSetDayTime(long newDayTime, CallbackInfo ci) {
         ServerLevel self = getLevel();
         if (!self.dimension().equals(Level.OVERWORLD)) return;
 
-        long oldDayTime = GenesisMod.getTicks(self);
+        long oldDayTime = NeoGenesisMod.getTicks(self);
         long delta = newDayTime - oldDayTime;
         if (delta == 0) return;
 
@@ -41,29 +41,29 @@ public abstract class ServerLevelMixin {
         GenesisNetworking.sendToAll(GenesisNetworking.INSTANCE, new SyncTimeOffsetPacket(data.getTimeOffset()));
     }
 
-    @WrapOperation(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;getDayTime()J"))
+    @WrapOperation(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;getDayTime()J"), remap = false)
     private static long useGenesisDayTime(ServerLevel instance, Operation<Long> original) {
-        return GenesisMod.getTicks(instance);
+        return NeoGenesisMod.getTicks(instance);
     }
 
-    @Inject(method = "addEntity", at = @At("HEAD"))
+    @Inject(method = "addEntity", at = @At("HEAD"), remap = false)
     private void addEntityMixin(Entity entity, CallbackInfoReturnable<Boolean> cir) {
-        GenesisMod.refreshEntityScaling(entity, getLevel());
+        NeoGenesisMod.refreshEntityScaling(entity, getLevel());
     }
 
-    @Inject(method = "addPlayer", at = @At("HEAD"))
+    @Inject(method = "addPlayer", at = @At("HEAD"), remap = false)
     private void addPlayerMixin(ServerPlayer arg, CallbackInfo ci) {
-        GenesisMod.refreshEntityScaling(arg, getLevel());
+        NeoGenesisMod.refreshEntityScaling(arg, getLevel());
     }
 
-    @WrapOperation(method = "tickChunk", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/biome/Biome;shouldSnow(Lnet/minecraft/world/level/LevelReader;Lnet/minecraft/core/BlockPos;)Z"))
+    @WrapOperation(method = "tickChunk", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/biome/Biome;shouldSnow(Lnet/minecraft/world/level/LevelReader;Lnet/minecraft/core/BlockPos;)Z"), remap = false)
     private boolean genesis$shouldSnow(Biome instance, LevelReader levelReader, BlockPos pos, Operation<Boolean> original) {
         ServerLevel level = getLevel();
-        if (GenesisMod.shouldCancelVoidDamage(level)) {
+        if (NeoGenesisMod.shouldCancelVoidDamage(level)) {
             return false;
         }
-        Ship ship = VSGameUtilsKt.getShipManagingPos(level, pos);
 
+        var ship = SableUtils.getShipManagingPos(level, pos);
         if (ship != null && ship.getTransform().getPositionInWorld().y() > 400) {
             return false;
         }

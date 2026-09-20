@@ -11,19 +11,19 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
+
 import shipwrights.genesis.client.sound.AudioFilterManager;
 import shipwrights.genesis.client.sound.SoundFilterHandler;
 
 @Mixin(SoundEngine.class)
 public abstract class SoundEngineMixin {
 
-    @Inject(method = "loadLibrary", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/audio/Listener;reset()V"))
+    @Inject(method = "loadLibrary", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/audio/Listener;reset()V"), remap = false)
     private void initAudioFilters(CallbackInfo ci) {
         AudioFilterManager.attemptInitialize();
     }
 
-    @Inject(method = "destroy", at = @At("HEAD"))
+    @Inject(method = "destroy", at = @At("HEAD"), remap = false)
     private void disposeAudioFilters(CallbackInfo ci) {
         AudioFilterManager.dispose();
     }
@@ -33,7 +33,7 @@ public abstract class SoundEngineMixin {
             target = "Lnet/minecraft/client/sounds/ChannelAccess$ChannelHandle;execute(Ljava/util/function/Consumer;)V",
             shift = At.Shift.AFTER,
             ordinal = 0
-    ))
+    ), remap = false)
     private void applyFilterOnPlay(
             SoundInstance sound,
             CallbackInfo ci,
@@ -47,7 +47,7 @@ public abstract class SoundEngineMixin {
         genesis$executeFilterApplication(channelHandle, targetFilterId);
     }
 
-    @Inject(method = "tickNonPaused", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Options;getSoundSourceVolume(Lnet/minecraft/sounds/SoundSource;)F"))
+    @Inject(method = "tickNonPaused", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Options;getSoundSourceVolume(Lnet/minecraft/sounds/SoundSource;)F"), remap = false)
     private void updateFilterOnStateChange(
             CallbackInfo ci,
             @Local(ordinal = 0) ChannelAccess.ChannelHandle channelHandle,

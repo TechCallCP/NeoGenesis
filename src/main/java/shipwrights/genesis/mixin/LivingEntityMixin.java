@@ -9,7 +9,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import shipwrights.genesis.GenesisMod;
+
+import shipwrights.genesis.NeoGenesisMod;
 
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin extends Entity {
@@ -18,10 +19,10 @@ public abstract class LivingEntityMixin extends Entity {
         super(type, level);
     }
 
-    @Inject(method = "hurt", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "hurt", at = @At("HEAD"), cancellable = true, remap = false)
     private void hurtMixin(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         if (source == this.damageSources().fellOutOfWorld()) {
-            if (GenesisMod.shouldCancelVoidDamage(this.level())) {
+            if (NeoGenesisMod.shouldCancelVoidDamage(this.level())) {
                 cir.setReturnValue(false);
             }
         }

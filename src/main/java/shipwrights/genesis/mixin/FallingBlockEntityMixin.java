@@ -13,7 +13,8 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import shipwrights.genesis.GenesisMod;
+
+import shipwrights.genesis.NeoGenesisMod;
 import shipwrights.genesis.mixin_extension.FallingBlockEntityExtension;
 
 @Mixin(FallingBlockEntity.class)
@@ -26,16 +27,16 @@ public class FallingBlockEntityMixin implements FallingBlockEntityExtension {
     @Unique
     private static final EntityDataAccessor<Float> GENESIS_ROT_Z = SynchedEntityData.defineId(FallingBlockEntity.class, EntityDataSerializers.FLOAT);
 
-    @Inject(method = "defineSynchedData", at = @At("RETURN"))
-    private void defineRotationData(CallbackInfo ci) {
-        ((FallingBlockEntity)(Object)this).getEntityData().define(GENESIS_ROT_X, 0.0f);
-        ((FallingBlockEntity)(Object)this).getEntityData().define(GENESIS_ROT_Y, 0.0f);
-        ((FallingBlockEntity)(Object)this).getEntityData().define(GENESIS_ROT_Z, 0.0f);
+    @Inject(method = "defineSynchedData", at = @At("RETURN"), remap = false)
+    private void defineRotationData(SynchedEntityData.Builder builder, CallbackInfo ci) {
+        builder.define(GENESIS_ROT_X, 0.0f);
+        builder.define(GENESIS_ROT_Y, 0.0f);
+        builder.define(GENESIS_ROT_Z, 0.0f);
     }
 
     @Override
     public void genesis$setRotation(Vector3d rotation) {
-        FallingBlockEntity entity = (FallingBlockEntity)(Object)this;
+        FallingBlockEntity entity = (FallingBlockEntity) (Object) this;
         entity.getEntityData().set(GENESIS_ROT_X, (float) rotation.x);
         entity.getEntityData().set(GENESIS_ROT_Y, (float) rotation.y);
         entity.getEntityData().set(GENESIS_ROT_Z, (float) rotation.z);
@@ -43,7 +44,7 @@ public class FallingBlockEntityMixin implements FallingBlockEntityExtension {
 
     @Override
     public Vector3d genesis$getRotation() {
-        FallingBlockEntity entity = (FallingBlockEntity)(Object)this;
+        FallingBlockEntity entity = (FallingBlockEntity) (Object) this;
         return new Vector3d(
                 entity.getEntityData().get(GENESIS_ROT_X),
                 entity.getEntityData().get(GENESIS_ROT_Y),
@@ -51,7 +52,7 @@ public class FallingBlockEntityMixin implements FallingBlockEntityExtension {
         );
     }
 
-    @Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
+    @Inject(method = "addAdditionalSaveData", at = @At("TAIL"), remap = false)
     private void saveRotation(CompoundTag compound, CallbackInfo ci) {
         Vector3d rotation = genesis$getRotation();
         compound.putDouble("genesis_rotX", rotation.x);
@@ -59,7 +60,7 @@ public class FallingBlockEntityMixin implements FallingBlockEntityExtension {
         compound.putDouble("genesis_rotZ", rotation.z);
     }
 
-    @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
+    @Inject(method = "readAdditionalSaveData", at = @At("TAIL"), remap = false)
     private void loadRotation(CompoundTag compound, CallbackInfo ci) {
         if (compound.contains("genesis_rotX")) {
             genesis$setRotation(new Vector3d(
@@ -75,10 +76,11 @@ public class FallingBlockEntityMixin implements FallingBlockEntityExtension {
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/world/entity/item/FallingBlockEntity;discard()V"
-            )
+            ),
+            remap = false
     )
     private void genesis$preventEarlyDespawn(FallingBlockEntity entity, Operation<Void> original) {
-        if (entity.time >= 600 || !GenesisMod.shouldCancelVoidDamage(entity.level()) || entity.getBlockState().isAir()) {
+        if (entity.time >= 600 || !NeoGenesisMod.shouldCancelVoidDamage(entity.level()) || entity.getBlockState().isAir()) {
             original.call(entity);
         }
     }

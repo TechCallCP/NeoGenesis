@@ -1,27 +1,28 @@
 package shipwrights.genesis.client.blockentityRenderer;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.NotNull;
-import net.minecraft.core.Registry;
-import shipwrights.genesis.GenesisMod;
-import shipwrights.genesis.content.blockentity.NavProjectorBlockEntity;
-import shipwrights.genesis.space.Celestial;
-import shipwrights.genesis.space.VantagePoint;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import org.jetbrains.annotations.NotNull;
 import org.joml.*;
-import org.valkyrienskies.core.api.ships.Ship;
-import org.valkyrienskies.mod.common.VSGameUtilsKt;
+
+import aeronautics.api.AeronauticsApi;
+import aeronautics.api.Ship;
+
+import shipwrights.genesis.NeoGenesisMod;
+import shipwrights.genesis.content.blockentity.NavProjectorBlockEntity;
+import shipwrights.genesis.space.Celestial;
+import shipwrights.genesis.space.VantagePoint;
 import shipwrights.genesis.space.type.BuiltinCelestialTypes;
 
-import java.lang.Math;
 import java.util.Objects;
 
 @SuppressWarnings("deprecation")
@@ -34,25 +35,25 @@ public class NavProjectorBlockEntityRenderer implements BlockEntityRenderer<NavP
         poseStack.pushPose();
 
         BlockRenderDispatcher blockRenderer = Minecraft.getInstance().getBlockRenderer();
-
         Level level = blockEntity.getLevel();
 
         if (level == null) {
+            poseStack.popPose();
             return;
         }
 
-        long ticks = GenesisMod.getTicks(level);
+        long ticks = NeoGenesisMod.getTicks(level);
 
         // Move to center of block
         poseStack.translate(0.5D, 1.5D, 0.5D);
         poseStack.scale(0.02f, 0.02f, 0.02f);
         BlockPos pos = blockEntity.getBlockPos();
 
-        Ship ship = VSGameUtilsKt.getShipManagingPos(level, pos);
+        // Query ship managing position via Create Aeronautics API
+        Ship ship = AeronauticsApi.getShipManagingPos(level, pos);
         boolean isOnShip = ship != null;
 
         Vector3dc currentPos = null;
-
         int scale_factor = 1000;
 
         poseStack.translate(-0.5D, -0.5D, -0.5D);
@@ -66,7 +67,7 @@ public class NavProjectorBlockEntityRenderer implements BlockEntityRenderer<NavP
 
         poseStack.translate(0.5D, 0.5D, 0.5D);
 
-        Registry<Celestial> registry = GenesisMod.getCelestialRegistry(level);
+        Registry<Celestial> registry = NeoGenesisMod.getCelestialRegistry(level);
         VantagePoint vp = VantagePoint.get(level, new Vector3d(), ticks, partialTick);
         Celestial currentPlanet = vp instanceof VantagePoint.OnCelestial oc ? oc.celestial() : null;
 
@@ -81,7 +82,7 @@ public class NavProjectorBlockEntityRenderer implements BlockEntityRenderer<NavP
             currentPos = currentPlanet.getPosition(ticks, partialTick, registry);
 
             poseStack.translate((float) -currentPos.x() / scale_factor, (float) -currentPos.y() / scale_factor, (float) -currentPos.z() / scale_factor);
-        } else if(!isOnShip) {
+        } else if (!isOnShip) {
             poseStack.translate((float) -pos.getX() / scale_factor, (float) -pos.getY() / scale_factor, (float) -pos.getZ() / scale_factor);
         } else {
             Quaterniondc rot = ship.getTransform().getShipToWorldRotation().invert(new Quaterniond());
@@ -89,7 +90,7 @@ public class NavProjectorBlockEntityRenderer implements BlockEntityRenderer<NavP
             currentPos = ship.getWorldAABB().center(new Vector3d());
             ResourceLocation currentDimension = Objects.requireNonNull(blockEntity.getLevel()).dimension().location();
 
-            if (currentDimension.toString().equals(GenesisMod.WORMHOLE_DIM.toString())) {
+            if (currentDimension.toString().equals(NeoGenesisMod.WORMHOLE_DIM.toString())) {
                 currentPos = currentPos.mul(32.0, new Vector3d());
             }
 
@@ -107,7 +108,7 @@ public class NavProjectorBlockEntityRenderer implements BlockEntityRenderer<NavP
         Vector3d celestialPos = new Vector3d(celestial.getPosition(ticks, partialTick, registry));
 
         if (isOnShip) {
-            if (celestialPos.sub(new Vector3d(shipPos), new Vector3d()).length() > 120000) return;
+            if (shipPos != null && celestialPos.sub(new Vector3d(shipPos), new Vector3d()).length() > 120000) return;
         } else {
             if (celestialPos.sub(new Vector3d(pos.getX(), pos.getY(), pos.getZ()), new Vector3d()).length() > 120000)
                 return;

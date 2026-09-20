@@ -9,7 +9,8 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import shipwrights.genesis.GenesisMod;
+
+import shipwrights.genesis.NeoGenesisMod;
 
 @Mixin(Sound.class)
 public class SoundMixin {
@@ -18,10 +19,10 @@ public class SoundMixin {
     @Shadow
     private int attenuationDistance;
 
-    @Inject(method = "getAttenuationDistance", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "getAttenuationDistance", at = @At("HEAD"), cancellable = true, remap = false)
     public void attenuateSounds(CallbackInfoReturnable<Integer> cir) {
         Level level = Minecraft.getInstance().level;
-        if (level != null && GenesisMod.isMiniScale(level)) {
+        if (level != null && NeoGenesisMod.isMiniScale(level)) {
             cir.setReturnValue(attenuationDistance / 16);
         }
     }

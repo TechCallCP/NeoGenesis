@@ -19,11 +19,12 @@ public abstract class ClientLevelMixin {
     public final RandomSource genesis$random = RandomSource.create();
 
     @ModifyExpressionValue(
-            method = "doAnimateTick",
+            method = "animateTick",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/world/level/biome/Biome;getAmbientParticle()Ljava/util/Optional;"
-            )
+            ),
+            remap = false
     )
     private Optional<AmbientParticleSettings> genesis$fadeBiomeParticles(
             Optional<AmbientParticleSettings> original

@@ -7,18 +7,19 @@ import net.minecraft.server.commands.TimeCommand;
 import net.minecraft.server.level.ServerLevel;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import shipwrights.genesis.GenesisMod;
+
+import shipwrights.genesis.NeoGenesisMod;
 
 @Mixin(TimeCommand.class)
 public class TimeCommandMixin {
 
-    @WrapMethod(method = "getDayTime")
+    @WrapMethod(method = "getDayTime", remap = false)
     private static int getDayTimeWrap(ServerLevel level, Operation<Integer> original) {
-        return Math.toIntExact(Math.min(Integer.MAX_VALUE, GenesisMod.getTicks(level)));
+        return Math.toIntExact(Math.min(Integer.MAX_VALUE, NeoGenesisMod.getTicks(level)));
     }
 
-    @WrapOperation(method = "addTime", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;getDayTime()J"))
+    @WrapOperation(method = "addTime", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;getDayTime()J"), remap = false)
     private static long fixAddTime(ServerLevel instance, Operation<Long> original) {
-        return GenesisMod.getTicks(instance);
+        return NeoGenesisMod.getTicks(instance);
     }
 }

@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(GameRenderer.class)
 public class GameRendererMixin {
 
-    @Inject(method = "getDepthFar", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "getDepthFar", at = @At("HEAD"), cancellable = true, remap = false)
     public void getDepthFarMixin(CallbackInfoReturnable<Float> cir) {
         cir.setReturnValue(Float.POSITIVE_INFINITY);
     }

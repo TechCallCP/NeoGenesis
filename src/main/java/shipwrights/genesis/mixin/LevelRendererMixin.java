@@ -21,7 +21,9 @@ public class LevelRendererMixin {
                     value = "STORE",
                     ordinal = 0
             ),
-            name = "f")
+            ordinal = 0,
+            remap = false
+    )
     private float modifyK2(float f, LightTexture lightTexture,
                            float partialTick,
                            double camX,
@@ -32,8 +34,8 @@ public class LevelRendererMixin {
         return (float) (f * densityFade);
     }
 
-    @WrapMethod(method = "renderClouds")
-    public void genesis$renderClouds(PoseStack poseStack, Matrix4f projectionMatrix, float partialTick,
+    @WrapMethod(method = "renderClouds", remap = false)
+    public void genesis$renderClouds(PoseStack poseStack, Matrix4f modelViewMatrix, Matrix4f projectionMatrix, float partialTick,
                                      double camX, double camY, double camZ, Operation<Void> original) {
 
         float fade = 1.0f - (float)((camY - 320.0) / 80.0);
@@ -42,7 +44,7 @@ public class LevelRendererMixin {
         // Apply fade BEFORE rendering
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, fade);
 
-        original.call(poseStack, projectionMatrix, partialTick, camX, camY, camZ);
+        original.call(poseStack, modelViewMatrix, projectionMatrix, partialTick, camX, camY, camZ);
 
         // Reset after
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
