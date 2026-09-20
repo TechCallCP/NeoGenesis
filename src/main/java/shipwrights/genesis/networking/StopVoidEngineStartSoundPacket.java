@@ -1,33 +1,33 @@
 package shipwrights.genesis.networking;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.loading.FMLEnvironment;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+
+import net.neoforged.neoforge.network.handling.IPayloadContext;
+
+import shipwrights.genesis.NeoGenesisMod;
 import shipwrights.genesis.client.WormholeAmbianceHandler;
 
-import java.util.function.Supplier;
+public record StopVoidEngineStartSoundPacket() implements CustomPacketPayload {
 
-public record StopVoidEngineStartSoundPacket() {
+    public static final CustomPacketPayload.Type<StopVoidEngineStartSoundPacket> TYPE =
+            new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(NeoGenesisMod.MOD_ID, "stop_void_engine_start_sound"));
 
-    public static void encode(StopVoidEngineStartSoundPacket packet, FriendlyByteBuf buf) {
+    public static final StreamCodec<FriendlyByteBuf, StopVoidEngineStartSoundPacket> STREAM_CODEC =
+            StreamCodec.unit(new StopVoidEngineStartSoundPacket());
+
+    @Override
+    public CustomPacketPayload.Type<StopVoidEngineStartSoundPacket> type() {
+        return TYPE;
     }
 
-    public static StopVoidEngineStartSoundPacket decode(FriendlyByteBuf buf) {
-        return new StopVoidEngineStartSoundPacket();
-    }
-
-    public void handle(Supplier<NetworkEvent.Context> ctx) {
-        NetworkEvent.Context context = ctx.get();
-        if (FMLEnvironment.dist == Dist.CLIENT) {
-            context.enqueueWork(() -> ClientHandler.handle(this));
-        }
-        context.setPacketHandled(true);
+    public static void handle(StopVoidEngineStartSoundPacket payload, IPayloadContext context) {
+        context.enqueueWork(() -> ClientHandler.handle(payload));
     }
 
     private static class ClientHandler {
-
         public static void handle(StopVoidEngineStartSoundPacket packet) {
             WormholeAmbianceHandler.stopVoidEngineStart();
         }

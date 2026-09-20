@@ -1,25 +1,31 @@
 package shipwrights.genesis.networking;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+
+import net.neoforged.neoforge.network.handling.IPayloadContext;
+
+import shipwrights.genesis.NeoGenesisMod;
 import shipwrights.genesis.client.ClientStorage;
-import shipwrights.genesis.client.WarpLoadingMenu;
 
-import java.util.function.Supplier;
+public record EnteringWarpPacket() implements CustomPacketPayload {
 
-public class EnteringWarpPacket {
+    public static final CustomPacketPayload.Type<EnteringWarpPacket> TYPE =
+            new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(NeoGenesisMod.MOD_ID, "entering_warp"));
 
-    public static void encode(EnteringWarpPacket msg, FriendlyByteBuf buf) {}
+    public static final StreamCodec<FriendlyByteBuf, EnteringWarpPacket> STREAM_CODEC =
+            StreamCodec.unit(new EnteringWarpPacket());
 
-    public static EnteringWarpPacket decode(FriendlyByteBuf buf) {
-        return new EnteringWarpPacket();
+    @Override
+    public CustomPacketPayload.Type<EnteringWarpPacket> type() {
+        return TYPE;
     }
 
-    public static void handle(EnteringWarpPacket msg, Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
+    public static void handle(EnteringWarpPacket payload, IPayloadContext context) {
+        context.enqueueWork(() -> {
             ClientStorage.goingToFromWormhole = true;
         });
-        ctx.get().setPacketHandled(true);
     }
 }
