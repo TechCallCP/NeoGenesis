@@ -8,8 +8,6 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Quaterniondc;
 import org.joml.Vector3d;
 import org.joml.Vector3dc;
-import org.joml.primitives.AABBd;
-import org.joml.primitives.AABBic;
 import org.sable.api.SableUtils;
 
 import shipwrights.genesis.NeoGenesisMod;
@@ -39,27 +37,30 @@ public class EntityCollector {
     }
 
     private void addEntitiesForShip(Ship ship, Vector3dc origin, Vector3dc newPos, Quaterniondc rotation) {
-        AABBd worldAABB = new AABBd(ship.getWorldAABB());
-        AABBic shipAABB = ship.getShipAABB();
+        var worldAABB = ship.getWorldAABB();
+        var shipAABB = ship.getShipAABB();
 
         if (shipAABB != null) {
-            AABBd shipAABBd = new AABBd(shipAABB.minX(), shipAABB.minY(), shipAABB.minZ(), shipAABB.maxX(), shipAABB.maxY(), shipAABB.maxZ());
-            AABB mcBox = new AABB(shipAABBd.minX(), shipAABBd.minY(), shipAABBd.minZ(), shipAABBd.maxX(), shipAABBd.maxY(), shipAABBd.maxZ());
+            AABB mcShipBox = new AABB(
+                    shipAABB.minX(), shipAABB.minY(), shipAABB.minZ(),
+                    shipAABB.maxX(), shipAABB.maxY(), shipAABB.maxZ()
+            );
 
             oldLevel.getEntities(
                     (Entity) null,
-                    mcBox.inflate(48),
+                    mcShipBox.inflate(48),
                     entity -> !entityStorage.containsKey(entity)
             ).forEach(entity -> addEntity(entity, origin, newPos, rotation));
-
-            worldAABB.union(shipAABBd.transform(ship.getPrevTickTransform().getShipToWorld()));
         }
 
-        AABB worldMcBox = new AABB(worldAABB.minX(), worldAABB.minY(), worldAABB.minZ(), worldAABB.maxX(), worldAABB.maxY(), worldAABB.maxZ());
+        AABB mcWorldBox = new AABB(
+                worldAABB.minX(), worldAABB.minY(), worldAABB.minZ(),
+                worldAABB.maxX(), worldAABB.maxY(), worldAABB.maxZ()
+        );
 
         oldLevel.getEntities(
                 (Entity) null,
-                worldMcBox.inflate(8 * NeoGenesisMod.getDimensionScale(oldLevel)),
+                mcWorldBox.inflate(8 * NeoGenesisMod.getDimensionScale(oldLevel)),
                 entity -> !entityStorage.containsKey(entity)
         ).forEach(entity ->
                 addEntity(entity, origin, newPos, rotation)
