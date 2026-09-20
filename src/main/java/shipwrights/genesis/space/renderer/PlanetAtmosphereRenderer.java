@@ -119,34 +119,32 @@ public class PlanetAtmosphereRenderer implements CelestialRenderer {
                 ? vantagePoint.getRotation().mul(oc.cameraRotationFromNorthPole(), new Quaterniond())
                 : toRender.getRotation(ticks, partialTick, reg);
         Vector3d lightDir = new Vector3d(planetPosition).sub(starPosition).rotate(new Quaterniond(lightRot).conjugate());
-        ShaderInstance shader = ShaderRegistry.PLANET_ATMOSPHERE_SHADER.getInstance().get();
-        shader.safeGetUniform("LightDirection").set((float) lightDir.x, (float) lightDir.y, (float) lightDir.z);
-        Uniform uniform = shader.getUniform("CameraPosition");
-        if (uniform != null) {
-            uniform.set(rotatedCameraPos.x, rotatedCameraPos.y, rotatedCameraPos.z);
+        ShaderInstance shader = ShaderRegistry.PLANET_ATMOSPHERE_SHADER;
+        if (shader != null) {
+            shader.safeGetUniform("LightDirection").set((float) lightDir.x, (float) lightDir.y, (float) lightDir.z);
+
+            Uniform uniform = shader.getUniform("CameraPosition");
+            if (uniform != null) {
+                uniform.set(rotatedCameraPos.x, rotatedCameraPos.y, rotatedCameraPos.z);
+            }
+
+            Uniform uniform1 = shader.getUniform("HalfSize");
+            if (uniform1 != null) {
+                uniform1.set(halfSize);
+            }
+
+            Uniform uniformThickness = shader.getUniform("AtmosphereThickness");
+            if (uniformThickness != null) {
+                uniformThickness.set(relativeAtmosphereSize);
+            }
+
+            Uniform uniformDensity = shader.getUniform("Density");
+            if (uniformDensity != null) {
+                uniformDensity.set((float) (props.atmosphere().density() * densityFade));
+            }
         }
 
-        Uniform uniform1 = shader.getUniform("HalfSize");
-        if (uniform1 != null) {
-            uniform1.set(halfSize);
-        }
-
-        Uniform uniformThickness = shader.getUniform("AtmosphereThickness");
-        if (uniformThickness != null) {
-            uniformThickness.set(relativeAtmosphereSize);
-        }
-
-        Uniform uniformDensity = shader.getUniform("Density");
-        if (uniformDensity != null) {
-            uniformDensity.set((float) (props.atmosphere().density() * densityFade));
-        }
-
-        Matrix4f matrix;
-        try {
-            matrix = (Matrix4f) poseStack.last().pose().clone();
-        } catch (CloneNotSupportedException e) {
-            throw new RuntimeException(e);
-        }
+        Matrix4f matrix = new Matrix4f(poseStack.last().pose());
 
         matrix.translate(cameraPos0.negate(new Vector3f()));
         matrix.rotate(new Quaternionf(localRotation));

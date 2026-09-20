@@ -5,6 +5,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexBuffer;
@@ -177,7 +178,7 @@ public class SpaceDimensionEffects extends DimensionSpecialEffects {
 
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-        ShaderInstance shader = ShaderRegistry.STAR_GLOW_SHADER.getInstance().get();
+        ShaderInstance shader = ShaderRegistry.STAR_GLOW_SHADER;
         if (shader == null) {
             RenderSystem.disableBlend();
             return;
@@ -188,11 +189,10 @@ public class SpaceDimensionEffects extends DimensionSpecialEffects {
             baseAlpha.set(innerAlpha);
         }
 
-        BufferBuilder bufferbuilder = Tesselator.getInstance().getBuilder();
+        BufferBuilder bufferbuilder = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
         Matrix4f pose = poseStack.last().pose();
         Vector3d center = new Vector3d(toStar).mul(glowDistance);
-        bufferbuilder.begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
-        bufferbuilder.vertex(pose, (float) center.x, (float) center.y, (float) center.z).color(r, g, b, 0.0F).endVertex();
+        bufferbuilder.addVertex(pose, (float) center.x, (float) center.y, (float) center.z).setColor(r, g, b, 0.0F);
 
         int steps = 32;
         for (int i = 0; i <= steps; i++) {
@@ -201,10 +201,10 @@ public class SpaceDimensionEffects extends DimensionSpecialEffects {
             double sin = Math.sin(angle);
             Vector3d offset = new Vector3d(right).mul(cos * outerRadius).add(new Vector3d(upPerp).mul(sin * outerRadius));
             Vector3d pos = new Vector3d(center).add(offset);
-            bufferbuilder.vertex(pose, (float) pos.x, (float) pos.y, (float) pos.z).color(r, g, b, 1.0F).endVertex();
+            bufferbuilder.addVertex(pose, (float) pos.x, (float) pos.y, (float) pos.z).setColor(r, g, b, 1.0F);
         }
 
-        BufferUploader.drawWithShader(bufferbuilder.end());
+        BufferUploader.drawWithShader(bufferbuilder.buildOrThrow());
         RenderSystem.disableBlend();
     }
 
@@ -212,20 +212,19 @@ public class SpaceDimensionEffects extends DimensionSpecialEffects {
         starBuffers.forEach(VertexBuffer::close);
         starBuffers.clear();
 
-        BufferBuilder bufferbuilder = Tesselator.getInstance().getBuilder();
         for (int i = 0; i < starBufferCount; i++) {
             VertexBuffer starBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
-            BufferBuilder.RenderedBuffer renderedBuffer = this.drawStars(bufferbuilder, 10842L / (i + 4));
+            MeshData meshData = this.drawStars(10842L / (i + 4));
             starBuffer.bind();
-            starBuffer.upload(renderedBuffer);
+            starBuffer.upload(meshData);
             VertexBuffer.unbind();
             starBuffers.add(starBuffer);
         }
     }
 
-    private BufferBuilder.RenderedBuffer drawStars(BufferBuilder bufferbuilder, long seed) {
+    private MeshData drawStars(long seed) {
         RandomSource randomsource = RandomSource.create(seed);
-        bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
+        BufferBuilder bufferbuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
 
         for (int i = 0; i < 1600; ++i) {
             double d0 = (double) (randomsource.nextFloat() * 2.0F - 1.0F);
@@ -261,11 +260,11 @@ public class SpaceDimensionEffects extends DimensionSpecialEffects {
                     double d24 = d17 * d12 - d21 * d13;
                     double d25 = d24 * d9 - d22 * d10;
                     double d26 = d22 * d9 + d24 * d10;
-                    bufferbuilder.vertex(d5 + d25, d6 + d23, d7 + d26).endVertex();
+                    bufferbuilder.addVertex((float) (d5 + d25), (float) (d6 + d23), (float) (d7 + d26));
                 }
             }
         }
 
-        return bufferbuilder.end();
+        return bufferbuilder.buildOrThrow();
     }
 }

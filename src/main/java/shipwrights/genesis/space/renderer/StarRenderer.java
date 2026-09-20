@@ -92,7 +92,7 @@ public class StarRenderer implements CelestialRenderer {
 
         float halfSize = (float) size / 2.0F;
 
-        ShaderInstance shader = ShaderRegistry.SUN_SHADER.getInstance().get();
+        ShaderInstance shader = ShaderRegistry.SUN_SHADER;
         if (shader != null) {
             Uniform uniform = shader.getUniform("CameraPosition");
             if (uniform != null) {
@@ -128,12 +128,7 @@ public class StarRenderer implements CelestialRenderer {
             }
         }
 
-        Matrix4f matrix;
-        try {
-            matrix = (Matrix4f) poseStack.last().pose().clone();
-        } catch (CloneNotSupportedException e) {
-            throw new RuntimeException(e);
-        }
+        Matrix4f matrix = new Matrix4f(poseStack.last().pose());
 
         matrix.translate(cameraPos0.negate(new Vector3f()));
         matrix.rotate(new Quaternionf(localRotation));

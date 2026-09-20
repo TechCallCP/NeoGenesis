@@ -1,14 +1,21 @@
 package shipwrights.genesis.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.*;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.MeshData;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexBuffer;
+import com.mojang.blaze3d.vertex.VertexFormat;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.ReceivingLevelScreen;
-import net.minecraft.client.renderer.MeshData;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.RandomSource;
+
 import org.joml.Matrix4f;
 
 import java.util.ArrayList;
@@ -49,19 +56,19 @@ public class WarpLoadingMenu extends ReceivingLevelScreen {
         Matrix4f projection = new Matrix4f().setPerspective(
                 (float) Math.toRadians(70),
                 (float) width / height,
-                0.05f,
-                1000f
+                0.05F,
+                1000F
         );
 
-        float time = (System.currentTimeMillis() % 1000000L) / 1000f;
-        float speed = 60f;
-        float loopLength = 200f;
+        float time = (System.currentTimeMillis() % 1000000L) / 1000F;
+        float speed = 60F;
+        float loopLength = 200F;
         int layerCount = 3;
-        float fadeStart = 0.1f;
-        float fadeEnd   = 0.9f;
+        float fadeStart = 0.1F;
+        float fadeEnd   = 0.9F;
 
         poseStack.pushPose();
-        poseStack.scale(10f, 10f, 10f);
+        poseStack.scale(10F, 10F, 10F);
 
         for (int i = 0; i < layerCount; i++) {
             poseStack.pushPose();
@@ -74,53 +81,54 @@ public class WarpLoadingMenu extends ReceivingLevelScreen {
 
             float alpha;
             if (t < fadeStart) {
-                alpha = 1f;
+                alpha = 1F;
             } else if (t > fadeEnd) {
-                alpha = 0f;
+                alpha = 0F;
             } else {
-                alpha = 1f - (t - fadeStart) / (fadeEnd - fadeStart);
+                alpha = 1F - (t - fadeStart) / (fadeEnd - fadeStart);
             }
 
-            RenderSystem.setShaderColor(1f, 1f, 1f, alpha);
+            RenderSystem.setShaderColor(1F, 1F, 1F, alpha);
 
             renderStars(poseStack, projection);
 
             poseStack.popPose();
         }
 
-        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+        RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
         poseStack.popPose();
     }
 
     public void renderStars(PoseStack poseStack, Matrix4f projectionMatrix) {
-        ShaderInstance shader = ShaderRegistry.WORMHOLE_SHADER.getInstance().get();
+        ShaderInstance shader = ShaderRegistry.WORMHOLE_SHADER;
 
-        RenderSystem.setShader(() -> ShaderRegistry.WORMHOLE_SHADER.getInstance().get());
+        if (shader != null) {
+            RenderSystem.setShader(() -> shader);
 
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.disableDepthTest();
+            RenderSystem.enableBlend();
+            RenderSystem.defaultBlendFunc();
+            RenderSystem.disableDepthTest();
 
-        for (VertexBuffer buffer : starBuffers) {
-            buffer.bind();
-            buffer.drawWithShader(poseStack.last().pose(), projectionMatrix, shader);
+            for (VertexBuffer buffer : starBuffers) {
+                buffer.bind();
+                buffer.drawWithShader(poseStack.last().pose(), projectionMatrix, shader);
+            }
+
+            VertexBuffer.unbind();
+            RenderSystem.disableBlend();
+            RenderSystem.enableDepthTest();
         }
-
-        VertexBuffer.unbind();
-        RenderSystem.disableBlend();
-        RenderSystem.enableDepthTest();
     }
 
     private MeshData drawStars(long seed) {
         RandomSource randomsource = RandomSource.create(seed);
-        Tesselator tesselator = Tesselator.getInstance();
-        BufferBuilder bufferbuilder = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_TEX);
+        BufferBuilder bufferbuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
 
         for (int i = 0; i < 300; ++i) {
-            double d0 = (double)(randomsource.nextFloat() * 2.0F - 1.0F);
-            double d1 = (double)(randomsource.nextFloat() * 2.0F - 1.0F);
-            double d2 = (double)(randomsource.nextFloat() * 2.0F - 1.0F);
-            double d3 = (double)(15.5F + randomsource.nextFloat() * 12.5F);
+            double d0 = (double) (randomsource.nextFloat() * 2.0F - 1.0F);
+            double d1 = (double) (randomsource.nextFloat() * 2.0F - 1.0F);
+            double d2 = (double) (randomsource.nextFloat() * 2.0F - 1.0F);
+            double d3 = (double) (15.5F + randomsource.nextFloat() * 12.5F);
             double d4 = d0 * d0 + d1 * d1 + d2 * d2;
             if (d4 < 1.0 && d4 > 0.01) {
                 d4 = 1.0 / Math.sqrt(d4);
@@ -149,8 +157,8 @@ public class WarpLoadingMenu extends ReceivingLevelScreen {
 
                 for (int j = 0; j < 4; ++j) {
                     double d17 = 0.0;
-                    double d18 = (double)((j & 2) - 1) * d3;
-                    double d19 = (double)((j + 1 & 2) - 1) * d3;
+                    double d18 = (double) ((j & 2) - 1) * d3;
+                    double d19 = (double) ((j + 1 & 2) - 1) * d3;
                     double d21 = d18 * d16 - d19 * d15;
                     double d22 = d19 * d16 + d18 * d15;
                     double d23 = d21 * d12 + d17 * d13;
@@ -158,12 +166,12 @@ public class WarpLoadingMenu extends ReceivingLevelScreen {
                     double d25 = d24 * d9 - d22 * d10;
                     double d26 = d22 * d9 + d24 * d10;
 
-                    float u = ((j & 2) == 0) ? 0.0f : 1.0f;
-                    float v = ((j + 1 & 2) == 0) ? 1.0f : 0.0f;
+                    float u = ((j & 2) == 0) ? 0.0F : 1.0F;
+                    float v = ((j + 1 & 2) == 0) ? 1.0F : 0.0F;
 
                     bufferbuilder.addVertex((float) (d5 + d25), (float) (d6 + d23), (float) (d7 + d26))
-                            .setColor(r, g, b, a)
-                            .setUv(u, v);
+                            .setUv(u, v)
+                            .setColor(r, g, b, a);
                 }
             }
         }

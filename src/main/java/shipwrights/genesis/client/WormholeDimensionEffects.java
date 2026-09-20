@@ -3,20 +3,22 @@ package shipwrights.genesis.client;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.blaze3d.vertex.VertexFormat;
+
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.MeshData;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
+
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
@@ -26,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class WormholeDimensionEffects extends DimensionSpecialEffects {
+
     public WormholeDimensionEffects() {
         super(Float.NaN, false, SkyType.NONE, false, false);
         createStars();
@@ -36,9 +39,9 @@ public class WormholeDimensionEffects extends DimensionSpecialEffects {
     private final List<VertexBuffer> starBuffers = new ArrayList<>(starBufferCount);
 
     private final List<Vector4fc> starColors = List.of(
-            new Vector4f(1f, 1f, 1f, 0.8f),
-            new Vector4f(0.8f, 0.8f, 1f, 0.8f),
-            new Vector4f(1f, 1f, 0.8f, 0.8f)
+            new Vector4f(1.0F, 1.0F, 1.0F, 0.8F),
+            new Vector4f(0.8F, 0.8F, 1.0F, 0.8F),
+            new Vector4f(1.0F, 1.0F, 0.8F, 0.8F)
     );
 
     @Override
@@ -70,18 +73,20 @@ public class WormholeDimensionEffects extends DimensionSpecialEffects {
     public boolean renderSky(ClientLevel level, int ticks, float partialTick, Matrix4f modelViewMatrix, Camera camera, Matrix4f projectionMatrix, boolean isFoggy, Runnable setupFog) {
         FogRenderer.setupNoFog();
 
-        ShaderInstance shader = ShaderRegistry.WORMHOLE_SHADER.getInstance().get();
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
+        ShaderInstance shader = ShaderRegistry.WORMHOLE_SHADER;
+        if (shader != null) {
+            RenderSystem.enableBlend();
+            RenderSystem.defaultBlendFunc();
 
-        for (int i = 0; i < starBufferCount; i++) {
-            VertexBuffer starBuffer = starBuffers.get(i);
-            starBuffer.bind();
-            starBuffer.drawWithShader(modelViewMatrix, projectionMatrix, shader);
-            VertexBuffer.unbind();
+            for (int i = 0; i < starBufferCount; i++) {
+                VertexBuffer starBuffer = starBuffers.get(i);
+                starBuffer.bind();
+                starBuffer.drawWithShader(modelViewMatrix, projectionMatrix, shader);
+                VertexBuffer.unbind();
+            }
+
+            RenderSystem.disableBlend();
         }
-
-        RenderSystem.disableBlend();
 
         setupFog.run();
 
@@ -104,14 +109,13 @@ public class WormholeDimensionEffects extends DimensionSpecialEffects {
 
     private MeshData drawStars(long seed) {
         RandomSource randomsource = RandomSource.create(seed);
-        Tesselator tesselator = Tesselator.getInstance();
-        BufferBuilder bufferbuilder = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_TEX);
+        BufferBuilder bufferbuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
 
         for (int i = 0; i < 300; ++i) {
-            double d0 = (double)(randomsource.nextFloat() * 2.0F - 1.0F);
-            double d1 = (double)(randomsource.nextFloat() * 2.0F - 1.0F);
-            double d2 = (double)(randomsource.nextFloat() * 2.0F - 1.0F);
-            double d3 = (double)(15.5F + randomsource.nextFloat() * 12.5F);
+            double d0 = (double) (randomsource.nextFloat() * 2.0F - 1.0F);
+            double d1 = (double) (randomsource.nextFloat() * 2.0F - 1.0F);
+            double d2 = (double) (randomsource.nextFloat() * 2.0F - 1.0F);
+            double d3 = (double) (15.5F + randomsource.nextFloat() * 12.5F);
             double d4 = d0 * d0 + d1 * d1 + d2 * d2;
             if (d4 < 1.0 && d4 > 0.01) {
                 d4 = 1.0 / Math.sqrt(d4);
@@ -140,8 +144,8 @@ public class WormholeDimensionEffects extends DimensionSpecialEffects {
 
                 for (int j = 0; j < 4; ++j) {
                     double d17 = 0.0;
-                    double d18 = (double)((j & 2) - 1) * d3;
-                    double d19 = (double)((j + 1 & 2) - 1) * d3;
+                    double d18 = (double) ((j & 2) - 1) * d3;
+                    double d19 = (double) ((j + 1 & 2) - 1) * d3;
                     double d21 = d18 * d16 - d19 * d15;
                     double d22 = d19 * d16 + d18 * d15;
                     double d23 = d21 * d12 + d17 * d13;
@@ -149,12 +153,12 @@ public class WormholeDimensionEffects extends DimensionSpecialEffects {
                     double d25 = d24 * d9 - d22 * d10;
                     double d26 = d22 * d9 + d24 * d10;
 
-                    float u = ((j & 2) == 0) ? 0.0f : 1.0f;
-                    float v = ((j + 1 & 2) == 0) ? 1.0f : 0.0f;
+                    float u = ((j & 2) == 0) ? 0.0F : 1.0F;
+                    float v = ((j + 1 & 2) == 0) ? 1.0F : 0.0F;
 
                     bufferbuilder.addVertex((float) (d5 + d25), (float) (d6 + d23), (float) (d7 + d26))
-                            .setColor(r, g, b, a)
-                            .setUv(u, v);
+                            .setUv(u, v)
+                            .setColor(r, g, b, a);
                 }
             }
         }

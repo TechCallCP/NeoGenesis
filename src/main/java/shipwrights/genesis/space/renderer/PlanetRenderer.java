@@ -88,8 +88,11 @@ public class PlanetRenderer implements CelestialRenderer {
         }
 
         Vector3d lightDir = new Vector3d(position).sub(starPosition).rotate(vantagePoint.getRotation().conjugate(new Quaterniond()));
-        ShaderInstance shader = ShaderRegistry.PLANET_TEXTURED_SHADER.getInstance().get();
-        shader.safeGetUniform("LightDirection").set((float) lightDir.x, (float) lightDir.y, (float) lightDir.z);
+        ShaderInstance shader = ShaderRegistry.PLANET_TEXTURED_SHADER;
+        if (shader != null) {
+            shader.safeGetUniform("LightDirection").set((float) lightDir.x, (float) lightDir.y, (float) lightDir.z);
+        }
+
         Vec3 skyColor = Vec3.ZERO;
 
         if (vantagePoint instanceof VantagePoint.OnCelestial oc && oc.celestial().equals(toRender)) {
@@ -135,7 +138,9 @@ public class PlanetRenderer implements CelestialRenderer {
             rotation = new Quaterniond(inverseVantageRot).mul(new Quaterniond(rotation));
         }
 
-        shader.safeGetUniform("SkyColor").set((float) skyColor.x, (float) skyColor.y, (float) skyColor.z);
+        if (shader != null) {
+            shader.safeGetUniform("SkyColor").set((float) skyColor.x, (float) skyColor.y, (float) skyColor.z);
+        }
 
         renderPlanetAt(registry.getResourceKey(toRender).orElseThrow().location(), shadows, event.getPoseStack(), position.x(), position.y(), position.z(), halfExtent, rotation, alpha);
 
@@ -149,12 +154,7 @@ public class PlanetRenderer implements CelestialRenderer {
         var renderType = getTexturedPlanetRenderType(textureLocation);
         VertexConsumer buffer = bufferSource.getBuffer(renderType);
 
-        Matrix4f matrix;
-        try {
-            matrix = (Matrix4f) poseStack.last().pose().clone();
-        } catch (CloneNotSupportedException e) {
-            throw new RuntimeException(e);
-        }
+        Matrix4f matrix = new Matrix4f(poseStack.last().pose());
 
         matrix.translate((float) x, (float) y, (float) z);
 
@@ -225,17 +225,12 @@ public class PlanetRenderer implements CelestialRenderer {
             MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
             VertexConsumer shadowBuffer = bufferSource.getBuffer(getPlanetShadowRenderType());
 
-            Matrix4f matrix;
-            try {
-                matrix = (Matrix4f) poseStack.last().pose().clone();
-            } catch (CloneNotSupportedException e) {
-                throw new RuntimeException(e);
-            }
+            Matrix4f matrix = new Matrix4f(poseStack.last().pose());
 
             matrix.translate((float) x, (float) y, (float) z);
             matrix.rotate(new Quaternionf(localRotation));
 
-            ShaderInstance shader = ShaderRegistry.PLANET_SHADOW_SHADER.getInstance().get();
+            ShaderInstance shader = ShaderRegistry.PLANET_SHADOW_SHADER;
             if (shader != null) {
                 List<Vector2dc> polygon = shadow.polygon();
                 AAPlane plane = shadow.plane();
