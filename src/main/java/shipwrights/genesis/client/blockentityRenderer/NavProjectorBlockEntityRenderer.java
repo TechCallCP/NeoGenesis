@@ -1,6 +1,7 @@
 package shipwrights.genesis.client.blockentityRenderer;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
@@ -11,11 +12,14 @@ import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
-import org.jetbrains.annotations.NotNull;
-import org.joml.*;
+import net.minecraft.world.phys.AABB;
 
-import aeronautics.api.AeronauticsApi;
-import aeronautics.api.Ship;
+import org.jetbrains.annotations.NotNull;
+import org.joml.Quaterniond;
+import org.joml.Quaterniondc;
+import org.joml.Quaternionf;
+import org.joml.Vector3d;
+import org.joml.Vector3dc;
 
 import shipwrights.genesis.NeoGenesisMod;
 import shipwrights.genesis.content.blockentity.NavProjectorBlockEntity;
@@ -23,10 +27,12 @@ import shipwrights.genesis.space.Celestial;
 import shipwrights.genesis.space.VantagePoint;
 import shipwrights.genesis.space.type.BuiltinCelestialTypes;
 
+import java.lang.reflect.Method;
 import java.util.Objects;
 
 @SuppressWarnings("deprecation")
 public class NavProjectorBlockEntityRenderer implements BlockEntityRenderer<NavProjectorBlockEntity> {
+
     public NavProjectorBlockEntityRenderer(BlockEntityRendererProvider.Context context) {}
 
     @Override
@@ -44,13 +50,11 @@ public class NavProjectorBlockEntityRenderer implements BlockEntityRenderer<NavP
 
         long ticks = NeoGenesisMod.getTicks(level);
 
-        // Move to center of block
         poseStack.translate(0.5D, 1.5D, 0.5D);
-        poseStack.scale(0.02f, 0.02f, 0.02f);
+        poseStack.scale(0.02F, 0.02F, 0.02F);
         BlockPos pos = blockEntity.getBlockPos();
 
-        // Query ship managing position via Create Aeronautics API
-        Ship ship = AeronauticsApi.getShipManagingPos(level, pos);
+        Object ship = getSableSubLevel(level, pos);
         boolean isOnShip = ship != null;
 
         Vector3dc currentPos = null;
@@ -75,7 +79,7 @@ public class NavProjectorBlockEntityRenderer implements BlockEntityRenderer<NavP
             poseStack.mulPose(new Quaternionf(currentPlanet.getRotation(ticks, partialTick, registry)).invert());
 
             if (isOnShip) {
-                Quaterniondc rot1 = ship.getTransform().getShipToWorldRotation().invert(new Quaterniond());
+                Quaterniondc rot1 = getSubLevelRotation(ship).invert(new Quaterniond());
                 poseStack.mulPose(new Quaternionf(rot1));
             }
 
@@ -85,20 +89,29 @@ public class NavProjectorBlockEntityRenderer implements BlockEntityRenderer<NavP
         } else if (!isOnShip) {
             poseStack.translate((float) -pos.getX() / scale_factor, (float) -pos.getY() / scale_factor, (float) -pos.getZ() / scale_factor);
         } else {
-            Quaterniondc rot = ship.getTransform().getShipToWorldRotation().invert(new Quaterniond());
+            Quaterniondc rot = getSubLevelRotation(ship).invert(new Quaterniond());
             poseStack.mulPose(new Quaternionf(rot.x(), rot.y(), rot.z(), rot.w()));
-            currentPos = ship.getWorldAABB().center(new Vector3d());
+
+            AABB box = getSubLevelAABB(ship);
+            if (box != null) {
+                currentPos = new Vector3d(box.getCenter().x, box.getCenter().y, box.getCenter().z);
+            } else {
+                currentPos = new Vector3d(pos.getX(), pos.getY(), pos.getZ());
+            }
+
             ResourceLocation currentDimension = Objects.requireNonNull(blockEntity.getLevel()).dimension().location();
 
-            if (currentDimension.toString().equals(NeoGenesisMod.WORMHOLE_DIM.toString())) {
+            if (currentDimension.getPath().contains("wormhole")) {
                 currentPos = currentPos.mul(32.0, new Vector3d());
             }
 
             poseStack.translate((float) -currentPos.x() / scale_factor, (float) -currentPos.y() / scale_factor, (float) -currentPos.z() / scale_factor);
         }
 
-        for (Celestial body : registry) {
-            renderCelestialProjection(poseStack, bufferSource, packedLight, packedOverlay, body, registry, isOnShip, currentPos, pos, scale_factor, blockRenderer, ticks, partialTick, body.type().equals(BuiltinCelestialTypes.STAR));
+        if (registry != null) {
+            for (Celestial body : registry) {
+                renderCelestialProjection(poseStack, bufferSource, packedLight, packedOverlay, body, registry, isOnShip, currentPos, pos, scale_factor, blockRenderer, ticks, partialTick, body.type().equals(BuiltinCelestialTypes.STAR));
+            }
         }
 
         poseStack.popPose();
@@ -146,6 +159,78 @@ public class NavProjectorBlockEntityRenderer implements BlockEntityRenderer<NavP
             poseStack.scale(1 / scale, 1 / scale, 1 / scale);
             poseStack.translate(-celestialPos.x / scale_factor, -celestialPos.y / scale_factor, -celestialPos.z / scale_factor);
         }
+    }
+
+    private static Object getSableSubLevel(Level level, BlockPos pos) {
+        try {
+            Class<?> sableClass = Class.forName("dev.ryanhcode.sable.Sable");
+            Object subLevelsObj = null;
+
+            try {
+                Method getSubLevelsMethod = sableClass.getMethod("getSubLevels", Level.class);
+                subLevelsObj = getSubLevelsMethod.invoke(null, level);
+            } catch (Exception e1) {
+                try {
+                    Method getContainer = sableClass.getMethod("getSubLevelContainer", Level.class);
+                    Object container = getContainer.invoke(null, level);
+                    if (container != null) {
+                        Method getAll = container.getClass().getMethod("getAllSubLevels");
+                        subLevelsObj = getAll.invoke(container);
+                    }
+                } catch (Exception ignored) {
+                }
+            }
+
+            if (subLevelsObj instanceof Iterable<?> subLevels) {
+                for (Object sl : subLevels) {
+                    if (sl == null) continue;
+                    AABB box = getSubLevelAABB(sl);
+                    if (box != null && box.contains(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5)) {
+                        return sl;
+                    }
+                }
+            }
+        } catch (Throwable ignored) {
+        }
+        return null;
+    }
+
+    private static AABB getSubLevelAABB(Object subLevel) {
+        if (subLevel == null) return null;
+        try {
+            Method boxMethod = subLevel.getClass().getMethod("getWorldAABB");
+            Object obj = boxMethod.invoke(subLevel);
+            if (obj instanceof AABB aabb) return aabb;
+        } catch (Exception e) {
+            try {
+                Method boxMethod = subLevel.getClass().getMethod("getBoundingBox");
+                Object obj = boxMethod.invoke(subLevel);
+                if (obj instanceof AABB aabb) return aabb;
+            } catch (Exception ignored) {
+            }
+        }
+        return null;
+    }
+
+    private static Quaterniondc getSubLevelRotation(Object subLevel) {
+        if (subLevel == null) return new Quaterniond();
+        try {
+            Method rotMethod = subLevel.getClass().getMethod("getRotation");
+            Object obj = rotMethod.invoke(subLevel);
+            if (obj instanceof Quaterniondc q) return q;
+        } catch (Exception e) {
+            try {
+                Method transformMethod = subLevel.getClass().getMethod("getTransform");
+                Object transform = transformMethod.invoke(subLevel);
+                if (transform != null) {
+                    Method rotMethod = transform.getClass().getMethod("getShipToWorldRotation");
+                    Object obj = rotMethod.invoke(transform);
+                    if (obj instanceof Quaterniondc q) return q;
+                }
+            } catch (Exception ignored) {
+            }
+        }
+        return new Quaterniond();
     }
 
     @Override
