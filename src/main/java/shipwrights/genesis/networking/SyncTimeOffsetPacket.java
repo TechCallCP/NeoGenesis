@@ -1,29 +1,35 @@
 package shipwrights.genesis.networking;
 
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
-import shipwrights.genesis.GenesisMod;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 
-import java.util.function.Supplier;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-public class SyncTimeOffsetPacket {
+import shipwrights.genesis.NeoGenesisMod;
 
-    public final long timeOffset;
+public record SyncTimeOffsetPacket(long timeOffset) implements CustomPacketPayload {
 
-    public SyncTimeOffsetPacket(long timeOffset) {
-        this.timeOffset = timeOffset;
+    public static final CustomPacketPayload.Type<SyncTimeOffsetPacket> TYPE =
+            new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(NeoGenesisMod.MOD_ID, "sync_time_offset"));
+
+    public static final StreamCodec<FriendlyByteBuf, SyncTimeOffsetPacket> STREAM_CODEC =
+            StreamCodec.composite(
+                    ByteBufCodecs.VAR_LONG,
+                    SyncTimeOffsetPacket::timeOffset,
+                    SyncTimeOffsetPacket::new
+            );
+
+    @Override
+    public CustomPacketPayload.Type<SyncTimeOffsetPacket> type() {
+        return TYPE;
     }
 
-    public static void encode(SyncTimeOffsetPacket msg, FriendlyByteBuf buf) {
-        buf.writeLong(msg.timeOffset);
-    }
-
-    public static SyncTimeOffsetPacket decode(FriendlyByteBuf buf) {
-        return new SyncTimeOffsetPacket(buf.readLong());
-    }
-
-    public static void handle(SyncTimeOffsetPacket msg, Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> GenesisMod.clientTimeOffset = msg.timeOffset);
-        ctx.get().setPacketHandled(true);
+    public static void handle(SyncTimeOffsetPacket payload, IPayloadContext context) {
+        context.enqueueWork(() -> {
+            NeoGenesisMod.clientTimeOffset = payload.timeOffset();
+        });
     }
 }
