@@ -1,6 +1,6 @@
 package shipwrights.genesis.space.renderer;
 
-import net.minecraftforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.jetbrains.annotations.NotNull;
 import shipwrights.genesis.space.Celestial;
 import shipwrights.genesis.space.VantagePoint;

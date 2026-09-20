@@ -4,12 +4,16 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.MapLike;
+
 import kotlin.Pair;
+
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
+
 import org.jetbrains.annotations.NotNull;
 import org.joml.Quaterniondc;
 import org.joml.Vector3dc;
+
 import shipwrights.genesis.math.OBB;
 import shipwrights.genesis.space.properties.CelestialProperties;
 import shipwrights.genesis.space.transformProvider.CelestialTransformProvider;
@@ -38,7 +42,7 @@ public record Celestial(
     }
 
     public Vector3dc getPosition(long ticks, Registry<Celestial> registry) {
-        return getPosition(ticks, 0f, registry);
+        return getPosition(ticks, 0.0F, registry);
     }
 
     public Quaterniondc getRotation(long ticks, float partialTick, Registry<Celestial> registry) {
@@ -46,7 +50,7 @@ public record Celestial(
     }
 
     public OBB getOBB(long ticks, Registry<Celestial> registry) {
-        return getOBB(ticks, 0, registry);
+        return getOBB(ticks, 0.0F, registry);
     }
 
     public OBB getOBB(long ticks, float subticks, Registry<Celestial> registry) {
@@ -77,9 +81,9 @@ public record Celestial(
                 });
                 DataResult<Double> sizeResult = field(ops, map, "size", Codec.DOUBLE);
                 DataResult<Double> gravityResult = field(ops, map, "gravity", Codec.DOUBLE);
-                float r = optional(ops, map, "r", Codec.FLOAT, 0.5f);
-                float g = optional(ops, map, "g", Codec.FLOAT, 0.5f);
-                float b = optional(ops, map, "b", Codec.FLOAT, 0.5f);
+                float r = optional(ops, map, "r", Codec.FLOAT, 0.5F);
+                float g = optional(ops, map, "g", Codec.FLOAT, 0.5F);
+                float b = optional(ops, map, "b", Codec.FLOAT, 0.5F);
                 DataResult<CelestialTransformProvider> tpResult = field(ops, map, "transformProvider", CelestialTransformProvider.DISPATCH_CODEC);
 
                 return typeResult.flatMap(type -> {
@@ -87,16 +91,16 @@ public record Celestial(
                     DataResult<? extends CelestialProperties> propsResult = type.propertiesCodec().parse(ops, propsRaw);
 
                     return sizeResult.flatMap(size ->
-                        gravityResult.flatMap(gravity ->
-                            tpResult.flatMap(tp ->
-                                propsResult.map(props ->
-                                    com.mojang.datafixers.util.Pair.of(
-                                        new Celestial(tp, type, size, gravity, r, g, b, props),
-                                        input
+                            gravityResult.flatMap(gravity ->
+                                    tpResult.flatMap(tp ->
+                                            propsResult.map(props ->
+                                                    com.mojang.datafixers.util.Pair.of(
+                                                            new Celestial(tp, type, size, gravity, r, g, b, props),
+                                                            input
+                                                    )
+                                            )
                                     )
-                                )
                             )
-                        )
                     );
                 });
             });

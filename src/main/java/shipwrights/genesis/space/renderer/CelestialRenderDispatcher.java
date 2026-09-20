@@ -5,15 +5,17 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.Registry;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.common.Mod;
+
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModList;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+
 import org.joml.Vector3d;
 import org.joml.Vector3dc;
-import org.valkyrienskies.mod.common.util.VectorConversionsMCKt;
-import shipwrights.genesis.GenesisMod;
+
+import shipwrights.genesis.NeoGenesisMod;
 import shipwrights.genesis.config.GenesisClientConfig;
 import shipwrights.genesis.space.Celestial;
 import shipwrights.genesis.space.VantagePoint;
@@ -22,7 +24,7 @@ import shipwrights.genesis.space.type.CelestialType;
 import java.util.Comparator;
 import java.util.List;
 
-@Mod.EventBusSubscriber(Dist.CLIENT)
+@EventBusSubscriber(modid = NeoGenesisMod.MOD_ID, value = Dist.CLIENT)
 public class CelestialRenderDispatcher {
 
     private static Boolean oculusLoaded = null;
@@ -43,21 +45,21 @@ public class CelestialRenderDispatcher {
             return;
         }
 
-        Registry<Celestial> registry = GenesisMod.getCelestialRegistry(level);
+        Registry<Celestial> registry = NeoGenesisMod.getCelestialRegistry(level);
 
-        long ticks = GenesisMod.getTicks(level);
-        float partialTick = GenesisMod.getPartialTick(level, event);
+        long ticks = NeoGenesisMod.getTicks(level);
+        float partialTick = NeoGenesisMod.getPartialTick(level, event);
         Vec3 cameraPos = event.getCamera().getPosition();
 
         VantagePoint vantagePoint = VantagePoint.get(level, new Vector3d(cameraPos.x, cameraPos.y, cameraPos.z), ticks, partialTick);
 
-        Vector3dc cameraForRenderOrder = vantagePoint instanceof VantagePoint.OnCelestial ? vantagePoint.getPosition() : VectorConversionsMCKt.toJOML(cameraPos);
+        Vector3dc cameraForRenderOrder = vantagePoint instanceof VantagePoint.OnCelestial ? vantagePoint.getPosition() : new Vector3d(cameraPos.x, cameraPos.y, cameraPos.z);
 
         if (vantagePoint != null) {
             final Registry<Celestial> reg = registry;
             List<Celestial> celestials = registry.stream()
-                .sorted(Comparator.comparingDouble(a -> -a.getPosition(ticks, partialTick, reg).distanceSquared(cameraForRenderOrder)))
-                .toList();
+                    .sorted(Comparator.comparingDouble(a -> -a.getPosition(ticks, partialTick, reg).distanceSquared(cameraForRenderOrder)))
+                    .toList();
 
             boolean shouldSkipCurrentPlanet = !GenesisClientConfig.shouldRenderCurrentPlanet();
             MultiBufferSource.BufferSource bufferSource = minecraft.renderBuffers().bufferSource();
@@ -74,9 +76,6 @@ public class CelestialRenderDispatcher {
                 renderer.invoke(event, celestial, vantagePoint);
                 renderer.teardown(event, vantagePoint);
 
-                // Celestial shaders rely on per-object uniforms. Flush any
-                // leftover batched geometry before the next celestial mutates
-                // shared shader state.
                 bufferSource.endBatch();
             }
         }

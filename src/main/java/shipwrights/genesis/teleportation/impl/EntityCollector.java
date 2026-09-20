@@ -3,15 +3,18 @@ package shipwrights.genesis.teleportation.impl;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
+
+import org.joml.Quaterniondc;
 import org.joml.Vector3d;
 import org.joml.Vector3dc;
-import org.joml.Quaterniondc;
 import org.joml.primitives.AABBd;
 import org.joml.primitives.AABBic;
+
 import org.valkyrienskies.core.api.ships.ServerShip;
 import org.valkyrienskies.mod.common.VSGameUtilsKt;
 import org.valkyrienskies.mod.common.util.VectorConversionsMCKt;
-import shipwrights.genesis.GenesisMod;
+
+import shipwrights.genesis.NeoGenesisMod;
 
 import java.util.HashMap;
 import java.util.List;
@@ -55,10 +58,10 @@ public class EntityCollector {
 
         oldLevel.getEntities(
                 (Entity) null,
-                VectorConversionsMCKt.toMinecraft(worldAABB).inflate(8 * GenesisMod.getDimensionScale(oldLevel)),
+                VectorConversionsMCKt.toMinecraft(worldAABB).inflate(8.0 * NeoGenesisMod.getDimensionScale(oldLevel)),
                 entity -> !entityStorage.containsKey(entity)
         ).forEach(entity ->
-            addEntity(entity, origin, newPos, rotation)
+                addEntity(entity, origin, newPos, rotation)
         );
     }
 
