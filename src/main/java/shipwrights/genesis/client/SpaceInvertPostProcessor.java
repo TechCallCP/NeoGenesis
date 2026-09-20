@@ -28,6 +28,7 @@ public class SpaceInvertPostProcessor {
     public static final SpaceInvertPostProcessor INSTANCE = new SpaceInvertPostProcessor();
 
     private PostChain postChain;
+    private boolean active;
 
     public ResourceLocation getPostChainLocation() {
         return ResourceLocation.fromNamespaceAndPath(NeoGenesisMod.MOD_ID, "space_invert");
@@ -41,8 +42,16 @@ public class SpaceInvertPostProcessor {
         return this.postChain;
     }
 
+    public boolean isActive() {
+        return this.active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
     public void beforeProcess(PoseStack viewModelStack) {
-        if (this.postChain == null) {
+        if (!this.active || this.postChain == null) {
             return;
         }
 
