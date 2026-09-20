@@ -1,5 +1,6 @@
 package shipwrights.genesis.space;
 
+import com.mojang.datafixers.util.Pair;
 import kotlin.Pair;
 
 import net.minecraft.core.Registry;
@@ -25,7 +26,7 @@ public class SpaceLevel {
     /**
      * Returns a pair of the nearest Celestial matching the predicate, if found, and the distance squared to its center.
      */
-    public @Nullable static Pair<Celestial, Double> nearestCelestialWhere(Registry<Celestial> registry, Vector3dc position, long ticks, float partialTick, Predicate<CelestialType> predicate) {
+    public static Pair<Celestial, Double> nearestCelestialWhere(Registry<Celestial> registry, Vector3dc position, long ticks, float partialTick, Predicate<CelestialType> predicate) {
         return registry.stream()
                 .filter(it -> predicate.test(it.type()))
                 .map(it -> new Pair<>(it, position.distanceSquared(it.getPosition(ticks, 0.0F, registry))))

@@ -2,17 +2,15 @@ package shipwrights.genesis.client;
 
 import com.mojang.blaze3d.shaders.Uniform;
 import com.mojang.blaze3d.vertex.PoseStack;
-
-import kotlin.Pair;
-
+import com.mojang.datafixers.util.Pair;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.EffectInstance;
+import net.minecraft.client.renderer.PostChain;
+import net.minecraft.client.renderer.PostPass;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
-
 import org.joml.Vector3d;
 import org.joml.Vector3dc;
 
@@ -21,32 +19,27 @@ import shipwrights.genesis.space.Celestial;
 import shipwrights.genesis.space.SpaceLevel;
 import shipwrights.genesis.space.type.BuiltinCelestialTypes;
 
-import team.lodestar.lodestone.systems.postprocess.PostProcessor;
-
 import java.util.function.Predicate;
 
-public class SpaceInvertPostProcessor extends PostProcessor {
+public class SpaceInvertPostProcessor {
     public static final SpaceInvertPostProcessor INSTANCE = new SpaceInvertPostProcessor();
 
-    @Override
+    private PostChain postChain;
+
     public ResourceLocation getPostChainLocation() {
         return ResourceLocation.fromNamespaceAndPath(NeoGenesisMod.MOD_ID, "space_invert");
     }
 
-    @Override
-    public void init() {
-        super.init();
-        if (effects != null) {
-            for (EffectInstance effect : effects) {
-                effect.setSampler("PlanetMaskSampler", PlanetMaskTarget::getColorTextureId);
-                effect.setSampler("PlanetDepthSampler", PlanetMaskTarget::getDepthTextureId);
-            }
-        }
+    public void setPostChain(PostChain postChain) {
+        this.postChain = postChain;
     }
 
-    @Override
+    public PostChain getPostChain() {
+        return this.postChain;
+    }
+
     public void beforeProcess(PoseStack viewModelStack) {
-        if (effects == null) {
+        if (this.postChain == null) {
             return;
         }
 
@@ -57,9 +50,9 @@ public class SpaceInvertPostProcessor extends PostProcessor {
             return;
         }
 
-        long ticks = NeoGenesisMod.getTicks(level);
-        float partialTick = mc.getFrameTime();
-        Vec3 camPos = localPlayer.getPosition(partialTick);
+        Long ticks = NeoGenesisMod.getTicks(level);
+        Float partialTick = Float.valueOf(mc.getTimer().getGameTimeDeltaPartialTick(Boolean.TRUE));
+        Vec3 camPos = localPlayer.getPosition(partialTick.floatValue());
         Vector3d camPosJoml = new Vector3d(camPos.x, camPos.y, camPos.z);
 
         Registry<Celestial> registry = NeoGenesisMod.getCelestialRegistry(level);
@@ -75,27 +68,22 @@ public class SpaceInvertPostProcessor extends PostProcessor {
             starPos = result.getFirst().getPosition(ticks, partialTick, registry);
         }
 
-        float camX = (float) camPos.x;
-        float camY = (float) camPos.y;
-        float camZ = (float) camPos.z;
-        float starX = starPos != null ? (float) starPos.x() : 0.0F;
-        float starY = starPos != null ? (float) starPos.y() : 0.0F;
-        float starZ = starPos != null ? (float) starPos.z() : 0.0F;
+        Float camX = Float.valueOf((float) camPos.x);
+        Float camY = Float.valueOf((float) camPos.y);
+        Float camZ = Float.valueOf((float) camPos.z);
+        Float starX = Float.valueOf(starPos != null ? (float) starPos.x() : 0.0F);
+        Float starY = Float.valueOf(starPos != null ? (float) starPos.y() : 0.0F);
+        Float starZ = Float.valueOf(starPos != null ? (float) starPos.z() : 0.0F);
 
-        for (EffectInstance effect : effects) {
-            Uniform cameraUniform = effect.getUniform("cameraPos");
+        for (PostPass pass : this.postChain.passes) {
+            Uniform cameraUniform = pass.getEffect().getUniform("cameraPos");
             if (cameraUniform != null) {
-                cameraUniform.set(camX, camY, camZ);
+                cameraUniform.set(camX.floatValue(), camY.floatValue(), camZ.floatValue());
             }
-            Uniform uniform = effect.getUniform("starPos");
+            Uniform uniform = pass.getEffect().getUniform("starPos");
             if (uniform != null) {
-                uniform.set(starX, starY, starZ);
+                uniform.set(starX.floatValue(), starY.floatValue(), starZ.floatValue());
             }
         }
-    }
-
-    @Override
-    public void afterProcess() {
-
     }
 }
