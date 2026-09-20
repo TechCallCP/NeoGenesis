@@ -8,9 +8,10 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(LevelRenderer.class)
 public interface LevelRendererAccessor {
-    @Accessor
+
+    @Accessor(value = "level", remap = false)
     ClientLevel getLevel();
-    
-    @Accessor
+
+    @Accessor(value = "skyBuffer", remap = false)
     VertexBuffer getSkyBuffer();
 }

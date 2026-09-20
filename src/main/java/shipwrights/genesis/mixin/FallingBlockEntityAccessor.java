@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 @Mixin(FallingBlockEntity.class)
 public interface FallingBlockEntityAccessor {
 
-    @Invoker("<init>")
+    @Invoker(value = "<init>", remap = false)
     static FallingBlockEntity invokeConstructor(Level level, double x, double y, double z, BlockState blockState) {
         throw new AssertionError();
     }
