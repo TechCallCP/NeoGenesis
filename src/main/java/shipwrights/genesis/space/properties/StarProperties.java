@@ -2,6 +2,9 @@ package shipwrights.genesis.space.properties;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 
 public record StarProperties(
         int r0,
@@ -19,4 +22,14 @@ public record StarProperties(
             Codec.INT.fieldOf("g1").forGetter(StarProperties::g1),
             Codec.INT.fieldOf("b1").forGetter(StarProperties::b1)
     ).apply(instance, StarProperties::new));
+
+    public static final StreamCodec<ByteBuf, StarProperties> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.VAR_INT, StarProperties::r0,
+            ByteBufCodecs.VAR_INT, StarProperties::g0,
+            ByteBufCodecs.VAR_INT, StarProperties::b0,
+            ByteBufCodecs.VAR_INT, StarProperties::r1,
+            ByteBufCodecs.VAR_INT, StarProperties::g1,
+            ByteBufCodecs.VAR_INT, StarProperties::b1,
+            StarProperties::new
+    );
 }

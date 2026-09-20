@@ -3,10 +3,14 @@ package shipwrights.genesis.space.transformProvider;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Registry;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import org.joml.Quaterniond;
 import org.joml.Quaterniondc;
 import org.joml.Vector3d;
+
 import shipwrights.genesis.space.Celestial;
 
 public class StaticTransformProvider implements CelestialTransformProvider {
@@ -20,7 +24,6 @@ public class StaticTransformProvider implements CelestialTransformProvider {
     private final double yRot;
     private final double zRot;
     private final Quaterniondc rotation;
-
 
     /**
      * Creates a static transform provider with position and rotation.
@@ -80,8 +83,18 @@ public class StaticTransformProvider implements CelestialTransformProvider {
             ).apply(instance, StaticTransformProvider::new)
     );
 
-    // Example registration method (call this during mod initialization)
+    // StreamCodec for network synchronization
+    public static final StreamCodec<RegistryFriendlyByteBuf, StaticTransformProvider> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.DOUBLE, p -> p.x,
+            ByteBufCodecs.DOUBLE, p -> p.y,
+            ByteBufCodecs.DOUBLE, p -> p.z,
+            ByteBufCodecs.DOUBLE, p -> p.xRot,
+            ByteBufCodecs.DOUBLE, p -> p.yRot,
+            ByteBufCodecs.DOUBLE, p -> p.zRot,
+            StaticTransformProvider::new
+    );
+
     public static void register() {
-        CelestialTransformProvider.register(TYPE, CODEC);
+        CelestialTransformProvider.register(TYPE, CODEC, STREAM_CODEC);
     }
 }
