@@ -6,6 +6,10 @@ public class AdaptedEnergyStorage implements IEnergyStorage {
 
     private final IEnergyStorage energyStorage;
 
+    public AdaptedEnergyStorage(IEnergyStorage energyStorage) {
+        this.energyStorage = energyStorage;
+    }
+
     @Override
     public int receiveEnergy(int maxReceive, boolean simulate) {
         return energyStorage.receiveEnergy(maxReceive, simulate);

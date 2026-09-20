@@ -1,6 +1,6 @@
 package shipwrights.genesis.space.transformProvider;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Registry;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -117,13 +117,13 @@ public class OrbitingTransformProvider implements CelestialTransformProvider {
         return TYPE;
     }
 
-    public static final Codec<OrbitingTransformProvider> CODEC = RecordCodecBuilder.create(instance ->
+    public static final MapCodec<OrbitingTransformProvider> CODEC = RecordCodecBuilder.mapCodec(instance ->
             instance.group(
                     ResourceLocation.CODEC.fieldOf("parentID").forGetter(p -> p.parentID),
-                    Codec.INT.fieldOf("seed").forGetter(p -> p.seed),
-                    Codec.DOUBLE.fieldOf("orbitDistance").forGetter(p -> p.orbitDistance),
-                    Codec.DOUBLE.fieldOf("orbitTime").forGetter(p -> p.orbitTime),
-                    Codec.DOUBLE.optionalFieldOf("dayLength", 1.0).forGetter(p -> p.dayLength)
+                    com.mojang.serialization.Codec.INT.fieldOf("seed").forGetter(p -> p.seed),
+                    com.mojang.serialization.Codec.DOUBLE.fieldOf("orbitDistance").forGetter(p -> p.orbitDistance),
+                    com.mojang.serialization.Codec.DOUBLE.fieldOf("orbitTime").forGetter(p -> p.orbitTime),
+                    com.mojang.serialization.Codec.DOUBLE.optionalFieldOf("dayLength", 1.0).forGetter(p -> p.dayLength)
             ).apply(instance, OrbitingTransformProvider::new)
     );
 

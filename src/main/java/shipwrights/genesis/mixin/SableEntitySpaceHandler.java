@@ -8,9 +8,11 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 
 import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
+import org.spongepowered.asm.mixin.Mixin;
 import shipwrights.genesis.NeoGenesisMod;
 
 @EventBusSubscriber(modid = NeoGenesisMod.MOD_ID)
+@Mixin(Entity.class)
 public class SableEntitySpaceHandler {
 
     @SubscribeEvent

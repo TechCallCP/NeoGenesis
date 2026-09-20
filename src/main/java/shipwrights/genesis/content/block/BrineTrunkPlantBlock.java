@@ -5,6 +5,7 @@
 
 package shipwrights.genesis.content.block;
 
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Plane;
@@ -26,10 +27,12 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.pathfinder.PathComputationType;
+import org.jetbrains.annotations.NotNull;
 
 import shipwrights.genesis.content.GenesisTags;
 
 public class BrineTrunkPlantBlock extends PipeBlock implements SimpleWaterloggedBlock {
+    public static final MapCodec<BrineTrunkPlantBlock> CODEC = simpleCodec(BrineTrunkPlantBlock::new);
     public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
 
     public BrineTrunkPlantBlock(BlockBehaviour.Properties properties) {
@@ -42,6 +45,11 @@ public class BrineTrunkPlantBlock extends PipeBlock implements SimpleWaterlogged
                 .setValue(UP, false)
                 .setValue(DOWN, false)
                 .setValue(WATERLOGGED, false));
+    }
+
+    @Override
+    protected @NotNull MapCodec<? extends PipeBlock> codec() {
+        return CODEC;
     }
 
     @Override
@@ -69,7 +77,7 @@ public class BrineTrunkPlantBlock extends PipeBlock implements SimpleWaterlogged
     }
 
     @Override
-    protected BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level, BlockPos currentPos, BlockPos neighborPos) {
+    protected @NotNull BlockState updateShape(@NotNull BlockState state, @NotNull Direction direction, @NotNull BlockState neighborState, @NotNull LevelAccessor level, @NotNull BlockPos currentPos, @NotNull BlockPos neighborPos) {
         if (!state.canSurvive(level, currentPos)) {
             level.scheduleTick(currentPos, this, 1);
             return super.updateShape(state, direction, neighborState, level, currentPos, neighborPos);
@@ -80,14 +88,14 @@ public class BrineTrunkPlantBlock extends PipeBlock implements SimpleWaterlogged
     }
 
     @Override
-    protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+    protected void tick(@NotNull BlockState state, @NotNull ServerLevel level, @NotNull BlockPos pos, @NotNull RandomSource random) {
         if (!state.canSurvive(level, pos)) {
             level.destroyBlock(pos, true);
         }
     }
 
     @Override
-    protected boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
+    protected boolean canSurvive(@NotNull BlockState state, @NotNull LevelReader level, @NotNull BlockPos pos) {
         BlockState belowState = level.getBlockState(pos.below());
         boolean flag = !level.getBlockState(pos.above()).isAir() && !belowState.isAir();
 
@@ -115,12 +123,12 @@ public class BrineTrunkPlantBlock extends PipeBlock implements SimpleWaterlogged
     }
 
     @Override
-    protected boolean isPathfindable(BlockState state, PathComputationType pathComputationType) {
+    protected boolean isPathfindable(@NotNull BlockState state, @NotNull PathComputationType pathComputationType) {
         return false;
     }
 
     @Override
-    protected FluidState getFluidState(BlockState state) {
+    protected @NotNull FluidState getFluidState(@NotNull BlockState state) {
         return state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
     }
 }

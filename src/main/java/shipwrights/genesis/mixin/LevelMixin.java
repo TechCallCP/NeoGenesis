@@ -77,9 +77,15 @@ public abstract class LevelMixin {
         Quaterniondc rot = new Quaterniond(oc.getRotation()).conjugate();
         toStar.rotate(rot);
 
-        return NeoGenesisMod.getApparentSunAngle(
-                NeoGenesisMod.UP.dot(toStar),
-                NeoGenesisMod.EAST.dot(toStar));
+        double upDot = new Vector3d(0, 1, 0).dot(toStar);
+        double eastDot = new Vector3d(1, 0, 0).dot(toStar);
+
+        double apparentAngle = Math.atan2(upDot, eastDot) / (Math.PI * 2.0);
+        if (apparentAngle < 0) {
+            apparentAngle += 1.0;
+        }
+
+        return apparentAngle;
     }
 
     @Unique
@@ -94,6 +100,6 @@ public abstract class LevelMixin {
         Quaterniondc rot = new Quaterniond(oc.getRotation()).conjugate();
         toStar.rotate(rot);
 
-        return NeoGenesisMod.UP.dot(toStar);
+        return new Vector3d(0, 1, 0).dot(toStar);
     }
 }

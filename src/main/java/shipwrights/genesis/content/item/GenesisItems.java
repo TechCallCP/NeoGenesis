@@ -189,18 +189,6 @@ public class GenesisItems {
     public static final DeferredHolder<Item, Item> TURQUOISE_MOSS_CARPET = ITEMS.register("turquoise_moss_carpet",
             () -> new BlockItem(GenesisBlocks.TURQUOISE_MOSS_CARPET.get(), new Item.Properties()));
 
-    public static final DeferredHolder<Item, Item> SPINDLE_GRASS = ITEMS.register("spindle_grass",
-            () -> new BlockItem(GenesisBlocks.SPINDLE_GRASS.get(), new Item.Properties()));
-
-    public static final DeferredHolder<Item, Item> TALL_SPINDLE_GRASS = ITEMS.register("tall_spindle_grass",
-            () -> new BlockItem(GenesisBlocks.TALL_SPINDLE_GRASS.get(), new Item.Properties()));
-
-    public static final DeferredHolder<Item, Item> SPINDLE_BUSH = ITEMS.register("spindle_bush",
-            () -> new BlockItem(GenesisBlocks.SPINDLE_BUSH.get(), new Item.Properties()));
-
-    public static final DeferredHolder<Item, Item> BELL_FLOWER = ITEMS.register("bell_flower",
-            () -> new BlockItem(GenesisBlocks.BELL_FLOWER.get(), new Item.Properties()));
-
     public static final DeferredHolder<Item, Item> SMALL_VERDITE_BUD = ITEMS.register("small_verdite_bud",
             () -> new BlockItem(GenesisBlocks.SMALL_VERDITE_BUD.get(), new Item.Properties()));
 

@@ -1,7 +1,6 @@
 package shipwrights.genesis.content.painting;
 
 import net.minecraft.core.registries.Registries;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.decoration.PaintingVariant;
 
@@ -11,8 +10,6 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 
 import shipwrights.genesis.NeoGenesisMod;
 
-import java.util.Optional;
-
 public class GenesisPaintings {
     public static final DeferredRegister<PaintingVariant> PAINTING_VARIANTS =
             DeferredRegister.create(Registries.PAINTING_VARIANT, NeoGenesisMod.MOD_ID);
@@ -21,9 +18,7 @@ public class GenesisPaintings {
             () -> new PaintingVariant(
                     64,
                     64,
-                    ResourceLocation.fromNamespaceAndPath(NeoGenesisMod.MOD_ID, "space_0"),
-                    Optional.empty(),
-                    Optional.empty()
+                    ResourceLocation.fromNamespaceAndPath(NeoGenesisMod.MOD_ID, "space_0")
             ));
 
     public static void register(IEventBus eventBus) {

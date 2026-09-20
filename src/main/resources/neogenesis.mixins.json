@@ -26,7 +26,6 @@
     "SoundMixin"
   ],
   "mixins": [
-    "ArgumentTypeInfosMixin",
     "BlockBehaviourAccessor",
     "SableEntitySpaceHandler",
     "EntityMixin",

@@ -1,6 +1,7 @@
 package shipwrights.genesis.content.item;
 
 import net.minecraft.Util;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
@@ -30,7 +31,7 @@ public class SpaceArmourMaterial {
                         map.put(ArmorItem.Type.BODY, 1);
                     }),
                     5,
-                    SoundEvents.WOOL_HIT,
+                    BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.WOOL_HIT),
                     () -> Ingredient.of(Items.PHANTOM_MEMBRANE),
                     List.of(new ArmorMaterial.Layer(ResourceLocation.fromNamespaceAndPath(NeoGenesisMod.MOD_ID, "space_suit"))),
                     1.0F,

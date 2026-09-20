@@ -47,10 +47,14 @@ public class FogRendererMixin {
             Quaterniondc rot = new Quaterniond(oc.getRotation()).conjugate();
             toStar.rotate(rot);
 
-            double starUpDot = NeoGenesisMod.UP.dot(toStar);
-            double starEastDot = NeoGenesisMod.EAST.dot(toStar);
+            double starUpDot = new Vector3d(0, 1, 0).dot(toStar);
+            double starEastDot = new Vector3d(1, 0, 0).dot(toStar);
 
-            double _apparentAngle = NeoGenesisMod.getApparentSunAngle(starUpDot, starEastDot);
+            double _apparentAngle = java.lang.Math.atan2(starUpDot, starEastDot) / (java.lang.Math.PI * 2.0);
+            if (_apparentAngle < 0) {
+                _apparentAngle += 1.0;
+            }
+
             apparentAngle.set(_apparentAngle);
             long fakeTime = (long) (_apparentAngle * 24000);
 
@@ -72,7 +76,7 @@ public class FogRendererMixin {
             remap = false
     )
     private static float genesis$getSunAngle(ClientLevel instance, float v, @Share("apparentAngle") LocalDoubleRef apparentAngle) {
-        return (float) (apparentAngle.get() * Math.PI * 2);
+        return (float) (apparentAngle.get() * java.lang.Math.PI * 2);
     }
 
     @Redirect(

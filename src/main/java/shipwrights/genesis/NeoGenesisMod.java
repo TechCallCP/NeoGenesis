@@ -80,6 +80,11 @@ public class NeoGenesisMod {
                 && level.dimension().location().getPath().contains("space");
     }
 
+    public static boolean isSubspaceDimension(Level level) {
+        return level != null && level.dimension().location().getNamespace().equals(MOD_ID)
+                && level.dimension().location().getPath().contains("wormhole");
+    }
+
     public static boolean shouldCancelVoidDamage(Level level) {
         return isSpaceDimension(level);
     }

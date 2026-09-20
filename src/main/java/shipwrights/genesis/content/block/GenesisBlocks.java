@@ -562,61 +562,6 @@ public class GenesisBlocks {
             )
     );
 
-    public static final DeferredHolder<Block, Block> SPINDLE_GRASS = BLOCKS.register("spindle_grass", () ->
-            new AzurePlantBlock(BlockBehaviour.Properties
-                    .ofFullCopy(Blocks.SHORT_GRASS)
-                    .mapColor(MapColor.COLOR_BLUE)
-            )
-    );
-
-    public static final DeferredHolder<Block, Block> SPINDLE_BUSH = BLOCKS.register("spindle_bush", () ->
-            new AzurePlantBlock(BlockBehaviour.Properties
-                    .ofFullCopy(Blocks.SHORT_GRASS)
-                    .mapColor(MapColor.COLOR_BLUE)
-            )
-    );
-
-    public static final DeferredHolder<Block, Block> GLOWING_SPINDLE_BUSH = BLOCKS.register("glowing_spindle_bush", () ->
-            new AzurePlantBlock(BlockBehaviour.Properties
-                    .ofFullCopy(Blocks.SHORT_GRASS)
-                    .mapColor(MapColor.COLOR_BLUE)
-            )
-    );
-
-    public static final DeferredHolder<Block, Block> TALL_SPINDLE_GRASS = BLOCKS.register("tall_spindle_grass", () ->
-            new TallAzurePlantBlock(BlockBehaviour.Properties
-                    .ofFullCopy(Blocks.SHORT_GRASS)
-                    .mapColor(MapColor.COLOR_BLUE)
-            )
-    );
-
-    public static final DeferredHolder<Block, Block> GIANT_SPINDLE_GRASS = BLOCKS.register("gaint_spindle_grass", () ->
-            new TallAzurePlantBlock(BlockBehaviour.Properties
-                    .ofFullCopy(Blocks.SHORT_GRASS)
-                    .mapColor(MapColor.COLOR_BLUE)
-            )
-    );
-
-    public static final DeferredHolder<Block, Block> BELL_FLOWER = BLOCKS.register("bell_flower", () ->
-            new TallAzurePlantBlock(BlockBehaviour.Properties
-                    .ofFullCopy(Blocks.SHORT_GRASS)
-                    .mapColor(MapColor.COLOR_BLUE)
-            )
-    );
-
-    public static final DeferredHolder<Block, Block> HOOK_GRASS = BLOCKS.register("hook_grass", () ->
-            new AzurePlantBlock(BlockBehaviour.Properties.of()
-                    .replaceable()
-                    .noCollission()
-                    .instabreak()
-                    .sound(SoundType.GRASS)
-                    .offsetType(BlockBehaviour.OffsetType.XYZ)
-                    .ignitedByLava()
-                    .pushReaction(PushReaction.DESTROY)
-                    .mapColor(MapColor.COLOR_BLUE)
-            )
-    );
-
     public static final DeferredHolder<Block, Block> VERDITE_CRYSTAL_BLOCK = BLOCKS.register("verdite_crystal_block", () ->
             new VerditeCrystalBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_LIGHT_GREEN)

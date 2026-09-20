@@ -1,6 +1,7 @@
 package shipwrights.genesis.space.transformProvider;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.Registry;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -16,7 +17,7 @@ import java.util.Map;
 /**
  * Allows custom position and rotation for celestial bodies.
  * <br>
- * Implementations must be registered via {@link #register(ResourceLocation, Codec, StreamCodec)} before use.
+ * Implementations must be registered via {@link #register(ResourceLocation, MapCodec, StreamCodec)} before use.
  */
 public interface CelestialTransformProvider {
 
@@ -27,7 +28,7 @@ public interface CelestialTransformProvider {
     ResourceLocation getType();
 
     // Registry maps for CelestialTransformProvider codecs and stream codecs
-    Map<ResourceLocation, Codec<? extends CelestialTransformProvider>> CODEC_REGISTRY = new HashMap<>();
+    Map<ResourceLocation, MapCodec<? extends CelestialTransformProvider>> CODEC_REGISTRY = new HashMap<>();
     Map<ResourceLocation, StreamCodec<RegistryFriendlyByteBuf, ? extends CelestialTransformProvider>> STREAM_CODEC_REGISTRY = new HashMap<>();
 
     /**
@@ -38,7 +39,7 @@ public interface CelestialTransformProvider {
      * @param streamCodec The stream codec to sync this provider type over network
      */
     static void register(ResourceLocation type,
-                         Codec<? extends CelestialTransformProvider> codec,
+                         MapCodec<? extends CelestialTransformProvider> codec,
                          StreamCodec<RegistryFriendlyByteBuf, ? extends CelestialTransformProvider> streamCodec) {
         CODEC_REGISTRY.put(type, codec);
         STREAM_CODEC_REGISTRY.put(type, streamCodec);
@@ -50,7 +51,7 @@ public interface CelestialTransformProvider {
     Codec<CelestialTransformProvider> CODEC = ResourceLocation.CODEC.dispatch(
             CelestialTransformProvider::getType,
             type -> {
-                Codec<? extends CelestialTransformProvider> codec = CODEC_REGISTRY.get(type);
+                MapCodec<? extends CelestialTransformProvider> codec = CODEC_REGISTRY.get(type);
                 if (codec == null) {
                     throw new IllegalArgumentException("Unknown CelestialTransformProvider type: " + type);
                 }

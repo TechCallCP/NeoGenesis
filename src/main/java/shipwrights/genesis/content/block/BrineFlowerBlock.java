@@ -16,8 +16,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.BlockHitResult;
-
-import net.neoforged.neoforge.event.EventHooks;
+import org.jetbrains.annotations.NotNull;
 
 import shipwrights.genesis.content.GenesisTags;
 
@@ -35,23 +34,23 @@ public class BrineFlowerBlock extends Block {
     }
 
     @Override
-    protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+    protected void tick(@NotNull BlockState state, @NotNull ServerLevel level, @NotNull BlockPos pos, @NotNull RandomSource random) {
         if (!state.canSurvive(level, pos)) {
             level.destroyBlock(pos, true);
         }
     }
 
     @Override
-    protected boolean isRandomlyTicking(BlockState state) {
-        return state.getValue(AGE) < 5;
+    protected boolean isRandomlyTicking(@NotNull BlockState state) {
+        return state.getValue(AGE) < DEAD_AGE;
     }
 
     @Override
-    protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+    protected void randomTick(@NotNull BlockState state, @NotNull ServerLevel level, @NotNull BlockPos pos, @NotNull RandomSource random) {
         BlockPos abovePos = pos.above();
         if (level.isEmptyBlock(abovePos) && abovePos.getY() < level.getMaxBuildHeight()) {
             int age = state.getValue(AGE);
-            if (age < 5 && EventHooks.onCropsGrowPre(level, abovePos, state, true)) {
+            if (age < DEAD_AGE && net.neoforged.neoforge.common.CommonHooks.canCropGrow(level, abovePos, state, true)) {
                 boolean flag = false;
                 boolean flag1 = false;
                 BlockState belowState = level.getBlockState(pos.below());
@@ -112,7 +111,7 @@ public class BrineFlowerBlock extends Block {
                     }
                 }
 
-                EventHooks.onCropsGrowPost(level, pos, state);
+                net.neoforged.neoforge.common.CommonHooks.fireCropGrowPost(level, pos, state);
             }
         }
     }
@@ -123,7 +122,7 @@ public class BrineFlowerBlock extends Block {
     }
 
     private void placeDeadFlower(Level level, BlockPos pos) {
-        level.setBlock(pos, this.defaultBlockState().setValue(AGE, 5), 2);
+        level.setBlock(pos, this.defaultBlockState().setValue(AGE, DEAD_AGE), 2);
         level.levelEvent(1034, pos, 0);
     }
 
@@ -137,7 +136,7 @@ public class BrineFlowerBlock extends Block {
     }
 
     @Override
-    protected BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level, BlockPos currentPos, BlockPos neighborPos) {
+    protected @NotNull BlockState updateShape(@NotNull BlockState state, @NotNull Direction direction, @NotNull BlockState neighborState, @NotNull LevelAccessor level, @NotNull BlockPos currentPos, @NotNull BlockPos neighborPos) {
         if (direction != Direction.UP && !state.canSurvive(level, currentPos)) {
             level.scheduleTick(currentPos, this, 1);
         }
@@ -145,7 +144,7 @@ public class BrineFlowerBlock extends Block {
     }
 
     @Override
-    protected boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
+    protected boolean canSurvive(@NotNull BlockState state, @NotNull LevelReader level, @NotNull BlockPos pos) {
         BlockState belowState = level.getBlockState(pos.below());
         if (!belowState.is(this.plant) && !belowState.is(GenesisTags.Blocks.BRINE_TRUNK_PLANTABLE)) {
             if (!belowState.isAir()) {
@@ -219,12 +218,12 @@ public class BrineFlowerBlock extends Block {
         }
 
         if (!flag) {
-            level.setBlock(pos.above(i), GenesisBlocks.BRINE_FLOWER.get().defaultBlockState().setValue(AGE, 5), 2);
+            level.setBlock(pos.above(i), GenesisBlocks.BRINE_FLOWER.get().defaultBlockState().setValue(AGE, DEAD_AGE), 2);
         }
     }
 
     @Override
-    protected void onProjectileHit(Level level, BlockState state, BlockHitResult hitResult, Projectile projectile) {
+    protected void onProjectileHit(@NotNull Level level, @NotNull BlockState state, @NotNull BlockHitResult hitResult, @NotNull Projectile projectile) {
         BlockPos pos = hitResult.getBlockPos();
         if (!level.isClientSide && projectile.mayInteract(level, pos) && projectile.getType().is(EntityTypeTags.IMPACT_PROJECTILES)) {
             level.destroyBlock(pos, true, projectile);
