@@ -9,14 +9,10 @@ import java.util.function.BiFunction;
 import java.util.function.Predicate;
 
 public class PolygonClipping {
+
     /**
      * Computes the 2D cross product (signed area) of triangle (a,b,c).
      * Positive if a->b->c is a left turn, negative if right turn, zero if collinear.
-     *
-     * @param a first vertex
-     * @param b second vertex
-     * @param c third vertex
-     * @return signed area (cross product)
      */
     public static double cross(Vector2d a, Vector2d b, Vector2d c) {
         return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
@@ -24,9 +20,6 @@ public class PolygonClipping {
 
     /**
      * Sorts a list of points in CCW order around their centroid.
-     *
-     * @param points input list of points
-     * @return new list sorted CCW around centroid
      */
     public static List<Vector2d> angleSort(List<Vector2d> points) {
         Vector2d centroid = new Vector2d(0, 0);
@@ -42,10 +35,6 @@ public class PolygonClipping {
 
     /**
      * Prunes near-collinear points from a polygon (zero-area triangle removal).
-     *
-     * @param polygon input polygon vertices in order
-     * @param epsilon tolerance for collinearity (e.g., 1e-12)
-     * @return new list with collinear points removed
      */
     public static List<Vector2d> pruneCollinear(List<Vector2d> polygon, double epsilon) {
         if (polygon.size() < 3) return new ArrayList<>(polygon);
@@ -67,13 +56,6 @@ public class PolygonClipping {
 
     /**
      * Clips a polygon to an axis-aligned rectangle using Sutherland-Hodgman.
-     *
-     * @param polygon input polygon vertices in order
-     * @param xmin    minimum X of rectangle
-     * @param ymin    minimum Y of rectangle
-     * @param xmax    maximum X of rectangle
-     * @param ymax    maximum Y of rectangle
-     * @return new polygon fully contained in the rectangle
      */
     public static List<Vector2d> clipPolygonToRect(List<Vector2d> polygon,
                                                    double xmin, double ymin,
@@ -86,14 +68,6 @@ public class PolygonClipping {
         return output;
     }
 
-    /**
-     * Clips a polygon against a single edge.
-     *
-     * @param polygon      input polygon
-     * @param inside       predicate to test if a point is inside
-     * @param intersectFun function to compute intersection with edge
-     * @return new polygon after clipping
-     */
     private static List<Vector2d> clipEdge(List<Vector2d> polygon,
                                            Predicate<Vector2d> inside,
                                            BiFunction<Vector2d, Vector2d, Vector2d> intersectFun) {
@@ -121,15 +95,6 @@ public class PolygonClipping {
         return result;
     }
 
-    /**
-     * Computes intersection of a segment with an axis-aligned clipping edge.
-     *
-     * @param A        first segment point
-     * @param B        second segment point
-     * @param value    X or Y value of clipping line
-     * @param vertical true if clipping vertical line (x=value), false if horizontal (y=value)
-     * @return intersection point
-     */
     private static Vector2d intersectEdge(Vector2d A, Vector2d B, double value, boolean vertical) {
         double t;
         if (vertical) {
@@ -144,16 +109,12 @@ public class PolygonClipping {
     /**
      * Computes the convex hull of a set of 2D points using Graham scan algorithm.
      * Returns vertices in counter-clockwise order.
-     *
-     * @param points input list of points
-     * @return new list containing convex hull vertices in CCW order
      */
     public static List<Vector2d> convexHull(List<Vector2d> points) {
         if (points.size() < 3) {
             return new ArrayList<>(points);
         }
 
-        // Find the bottom-most point (or leftmost if tie)
         Vector2d pivot = points.get(0);
         for (Vector2d p : points) {
             if (p.y < pivot.y || (p.y == pivot.y && p.x < pivot.x)) {
@@ -161,7 +122,6 @@ public class PolygonClipping {
             }
         }
 
-        // Sort points by polar angle with respect to pivot
         final Vector2d finalPivot = pivot;
         List<Vector2d> sorted = new ArrayList<>(points);
         sorted.sort((a, b) -> {
@@ -177,16 +137,13 @@ public class PolygonClipping {
             int angleCompare = Double.compare(angleA, angleB);
             if (angleCompare != 0) return angleCompare;
 
-            // If angles are equal, closer point comes first
             double distA = finalPivot.distanceSquared(a);
             double distB = finalPivot.distanceSquared(b);
             return Double.compare(distA, distB);
         });
 
-        // Build the hull using Graham scan
         List<Vector2d> hull = new ArrayList<>();
         for (Vector2d p : sorted) {
-            // Remove points that would create a right turn
             while (hull.size() >= 2) {
                 Vector2d top = hull.get(hull.size() - 1);
                 Vector2d secondTop = hull.get(hull.size() - 2);
