@@ -21,7 +21,6 @@ base {
     archivesName = project.archives_name
 }
 
-// Replaced legacyForge with neoForge block for ModDevGradle
 neoForge {
     version = project.neoforge_version
 
@@ -55,34 +54,29 @@ jar {
 }
 
 repositories {
-    flatDir { dir 'libs'}
+    flatDir { dir 'libs' }
 
-    // tterrag Maven (Required for Registrate)
     maven {
         name = "tterrag Maven"
         url = "https://maven.tterrag.com"
     }
     maven { url = "https://maven.ithundxr.dev/snapshots" }
-    // Backup Registrate
-    // JitPack (Fallback for Pehkui)
+
     maven {
         name = "JitPack"
         url = "https://jitpack.io"
     }
 
-    // ParchmentMC Repository
     maven {
         name = "ParchmentMC"
         url = "https://maven.parchmentmc.org"
     }
 
-    // Curios Maven
     maven {
         name = 'Curios maven'
         url = "https://maven.theillusivec4.top/"
     }
 
-    // Modrinth Maven
     maven {
         name = "Modrinth"
         url = "https://api.modrinth.com/maven"
@@ -97,8 +91,6 @@ repositories {
         name = "RyanHCode Maven"
         url = 'https://maven.ryanhcode.dev/releases'
     }
-
-
 
     maven {
         name = "Jared's maven"
@@ -115,8 +107,6 @@ repositories {
 dependencies {
     annotationProcessor("org.spongepowered:mixin:0.8.5:processor")
 
-    // Registrate for NeoForge
-    // Registrate for 1.21.1 NeoForge via Modrinth
     implementation("com.tterrag.registrate:Registrate:${registrate_version}")
     jarJar("com.tterrag.registrate:Registrate:${registrate_version}") {
         version {
@@ -125,7 +115,6 @@ dependencies {
         }
     }
 
-    // MixinExtras & MixinSquared
     implementation(annotationProcessor("io.github.llamalad7:mixinextras-common:0.5.0"))
     implementation("io.github.llamalad7:mixinextras-neoforge:0.5.0")
 
@@ -138,20 +127,15 @@ dependencies {
         }
     }
 
-
-    // region Sable Physics Engine (Local JARs)
+    // Local JAR dependencies (Pehkui-3.8.3+1.21-neoforge.jar & Sable Physics)
     implementation(fileTree(dir: 'libs', include: ['*.jar']))
-    // endregion
+
     implementation("com.simibubi.create:create-${minecraft_version}:${create_version}:slim") { transitive = false }
     implementation("net.createmod.ponder:ponder-neoforge:${ponder_version}+mc${minecraft_version}")
     compileOnly("dev.engine-room.flywheel:flywheel-neoforge-api-${minecraft_version}:${flywheel_version}")
     runtimeOnly("dev.engine-room.flywheel:flywheel-neoforge-${minecraft_version}:${flywheel_version}")
 
-    // Official Maven Coordinates for Curios and Pehkui
     implementation("top.theillusivec4.curios:curios-neoforge:9.5.1+1.21.1")
-
-    implementation "com.github.Virtuoel:Pehkui:${pehkui_version}"
-    jarJar("com.github.virtuoel:pehkui:3.8.3+1.21.1-neoforge")
 
     additionalRuntimeClasspath("org.maplibre:earcut4j:3.0.0")
     implementation("org.maplibre:earcut4j:3.0.0")
@@ -162,11 +146,9 @@ dependencies {
         }
     }
 
-    // Dev / Runtime mods
     runtimeOnly("maven.modrinth:spark:1.10.109-neoforge")
     runtimeOnly("mezz.jei:jei-1.21.1-neoforge:19.21.0.247")
 
-    // Test dependencies
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.0")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.0")
 }
@@ -184,7 +166,6 @@ test {
 processResources {
     inputs.property 'version', project.version
 
-    // Target neoforge.mods.toml instead of legacy mods.toml
     filesMatching('META-INF/neoforge.mods.toml') {
         expand version: project.version
     }
@@ -193,7 +174,6 @@ processResources {
 java {
     withSourcesJar()
 
-    // Upgraded Java toolchain to Java 21 for MC 1.21.1
     sourceCompatibility = JavaVersion.VERSION_21
     targetCompatibility = JavaVersion.VERSION_21
 }
