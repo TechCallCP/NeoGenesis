@@ -16,7 +16,7 @@ import shipwrights.genesis.NeoGenesisMod;
 public class SableEntitySpaceHandler {
 
     @SubscribeEvent
-    public static void onEntityTick(EntityTickEvent.Pre event) {
+    private static void onEntityTick(EntityTickEvent.Pre event) {
         Entity entity = event.getEntity();
         Level level = entity.level();
 

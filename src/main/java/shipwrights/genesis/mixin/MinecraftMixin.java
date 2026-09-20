@@ -21,7 +21,7 @@ public abstract class MinecraftMixin {
     private static boolean genesis$settingTransition = false;
 
     @SuppressWarnings({"unused", "UnusedParameters"})
-    @Inject(method = "setLevel(Lnet/minecraft/client/multiplayer/ClientLevel;Lnet/minecraft/client/gui/screens/ReceivingLevelScreen$Reason;)V", at = @At("HEAD"))
+    @Inject(method = "setLevel", at = @At("HEAD"), remap = false)
     private void setLevelInject(ClientLevel newLevel, ReceivingLevelScreen.Reason reason, CallbackInfo ci) {
         ClientLevel oldLevel = Minecraft.getInstance().level;
 
@@ -37,7 +37,7 @@ public abstract class MinecraftMixin {
     }
 
     @SuppressWarnings({"unused", "UnusedParameters"})
-    @Inject(method = "setScreen(Lnet/minecraft/client/gui/screens/Screen;)V", at = @At("RETURN"))
+    @Inject(method = "setScreen", at = @At("RETURN"), remap = false)
     private void setScreenInject(Screen screen, CallbackInfo ci) {
         if (genesis$settingTransition || TransitionState.CURRENT == TransitionState.NONE) return;
 
