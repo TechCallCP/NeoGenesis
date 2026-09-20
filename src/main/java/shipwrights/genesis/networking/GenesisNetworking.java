@@ -30,6 +30,24 @@ public class GenesisNetworking {
                 StopVoidEngineStartSoundPacket.STREAM_CODEC,
                 StopVoidEngineStartSoundPacket::handle
         );
+
+        registrar.playToClient(
+                VoidEngineSoundPacket.TYPE,
+                VoidEngineSoundPacket.STREAM_CODEC,
+                VoidEngineSoundPacket::handle
+        );
+
+        registrar.playToClient(
+                WormholeTravelSoundPacket.TYPE,
+                WormholeTravelSoundPacket.STREAM_CODEC,
+                WormholeTravelSoundPacket::handle
+        );
+
+        registrar.playToClient(
+                SyncTimeOffsetPacket.TYPE,
+                SyncTimeOffsetPacket.STREAM_CODEC,
+                SyncTimeOffsetPacket::handle
+        );
     }
 
     public static void sendToAll(CustomPacketPayload payload) {

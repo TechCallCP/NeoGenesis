@@ -80,7 +80,7 @@ public class VoidCoreBlockEntity extends BlockEntity {
             level.setBlock(this.getBlockPos(), GenesisBlocks.VOID_CORE.get().defaultBlockState().setValue(VoidCoreBlock.DORMANT, false), Block.UPDATE_CLIENTS);
         } else {
             level.setBlock(this.getBlockPos(), GenesisBlocks.VOID_CORE.get().defaultBlockState().setValue(VoidCoreBlock.DORMANT, true), Block.UPDATE_CLIENTS);
-            if (level.dimension().location().equals(NeoGenesisMod.WORMHOLE_DIM) && level.getServer() != null) {
+            if (level.dimension().location().equals(VoidEngineInterfaceBlockEntity.WORMHOLE_DIM) && level.getServer() != null) {
                 ServerLevel returnLevel = level.getServer().getLevel(ResourceKey.create(Registries.DIMENSION, ResourceLocation.fromNamespaceAndPath(NeoGenesisMod.MOD_ID, "great_unknown")));
                 VoidEngineInterfaceBlockEntity.returnFromWormhole(level, pos, returnLevel, true);
             }
