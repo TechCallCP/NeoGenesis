@@ -1,15 +1,15 @@
 package shipwrights.genesis.teleportation.impl;
 
+import aeronautics.api.Ship;
 import net.minecraft.server.level.ServerLevel;
 import org.joml.Vector3dc;
-import org.valkyrienskies.core.api.ships.LoadedServerShip;
-import org.valkyrienskies.core.api.ships.ServerShipTransformProvider;
-import org.valkyrienskies.core.api.ships.properties.ShipTransform;
-import org.valkyrienskies.core.impl.game.ShipTeleportDataImpl;
-import org.valkyrienskies.core.internal.ShipTeleportData;
-import org.valkyrienskies.core.internal.world.VsiServerShipWorld;
-import org.valkyrienskies.mod.common.VSGameUtilsKt;
-import shipwrights.genesis.GenesisMod;
+import org.sable.api.SableUtils;
+import org.sable.api.ShipObjectWorld;
+import org.sable.api.ShipTeleportData;
+import org.sable.api.ShipTransform;
+import org.sable.api.ShipTransformProvider;
+
+import shipwrights.genesis.NeoGenesisMod;
 import shipwrights.genesis.teleportation.TeleportData;
 
 public class ShipTeleporter {
@@ -18,9 +18,9 @@ public class ShipTeleporter {
             long id,
             TeleportData data,
             ServerLevel newLevel,
-            VsiServerShipWorld shipWorld
+            ShipObjectWorld shipWorld
     ) {
-        LoadedServerShip ship = shipWorld.getLoadedShips().getById(id);
+        Ship ship = shipWorld.getLoadedShips().getById(id);
         if (ship == null) {
             return;
         }
@@ -36,23 +36,23 @@ public class ShipTeleporter {
             TeleportData data,
             ServerLevel level
     ) {
-        String vsDimName = VSGameUtilsKt.getDimensionId(level);
+        String vsDimName = SableUtils.getDimensionId(level);
 
-        return new ShipTeleportDataImpl(
+        return new ShipTeleportData(
                 data.newPos(),
                 data.rotation(),
                 data.velocity(),
                 data.omega(),
                 vsDimName,
-                GenesisMod.getDimensionScale(level),
+                NeoGenesisMod.getDimensionScale(level),
                 null
         );
     }
 
     private static void applyPostTeleportVelocity(
-            VsiServerShipWorld shipWorld,
+            ShipObjectWorld shipWorld,
             long id,
-            LoadedServerShip ship,
+            Ship ship,
             TeleportData data
     ) {
         Vector3dc velocity = data.velocity();
@@ -65,15 +65,15 @@ public class ShipTeleporter {
         ship.setTransformProvider(createVelocityTransformProvider(shipWorld, id, velocity, omega));
     }
 
-    private static ServerShipTransformProvider createVelocityTransformProvider(
-            VsiServerShipWorld shipWorld,
+    private static ShipTransformProvider createVelocityTransformProvider(
+            ShipObjectWorld shipWorld,
             long id,
             Vector3dc velocity,
             Vector3dc omega
     ) {
         return (prevTransform, transform) -> {
 
-            LoadedServerShip ship = shipWorld.getLoadedShips().getById(id);
+            Ship ship = shipWorld.getLoadedShips().getById(id);
             if (ship == null) {
                 return null;
             }
@@ -82,7 +82,7 @@ public class ShipTeleporter {
                 if (ship.getVelocity().lengthSquared() == 0 &&
                         ship.getAngularVelocity().lengthSquared() == 0) {
 
-                    return new ServerShipTransformProvider.NextTransformAndVelocityData(
+                    return new ShipTransformProvider.NextTransformAndVelocityData(
                             transform,
                             velocity,
                             omega

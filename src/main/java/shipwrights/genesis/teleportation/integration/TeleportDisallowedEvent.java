@@ -1,9 +1,8 @@
 package shipwrights.genesis.teleportation.integration;
 
-import net.minecraftforge.eventbus.api.Event;
-import org.valkyrienskies.core.api.ships.Ship;
+import aeronautics.api.Ship;
+import net.neoforged.bus.api.Event;
 import shipwrights.genesis.space.Celestial;
-
 
 /// Fired when a ship is denied entry to a planet due to addon or datapack functionality
 public final class TeleportDisallowedEvent extends Event {

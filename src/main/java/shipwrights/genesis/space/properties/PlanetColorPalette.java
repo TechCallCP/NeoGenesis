@@ -3,6 +3,9 @@ package shipwrights.genesis.space.properties;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 
 public interface PlanetColorPalette {
 
@@ -22,6 +25,13 @@ public interface PlanetColorPalette {
                 Codec.INT.fieldOf("b").forGetter(RGB::b)
         ).apply(instance, RGB::new));
 
+        public static final StreamCodec<ByteBuf, RGB> STREAM_CODEC = StreamCodec.composite(
+                ByteBufCodecs.VAR_INT, RGB::r,
+                ByteBufCodecs.VAR_INT, RGB::g,
+                ByteBufCodecs.VAR_INT, RGB::b,
+                RGB::new
+        );
+
         @Override
         public boolean isOverworld() {
             return false;
@@ -36,6 +46,7 @@ public interface PlanetColorPalette {
     class Overworld implements PlanetColorPalette {
 
         static final MapCodec<Overworld> MAP_CODEC = MapCodec.unit(new Overworld());
+        public static final StreamCodec<ByteBuf, Overworld> STREAM_CODEC = StreamCodec.unit(new Overworld());
 
         @Override
         public boolean isOverworld() {
@@ -55,6 +66,25 @@ public interface PlanetColorPalette {
                 case "genesis:rgb" -> RGB.MAP_CODEC.codec();
                 case "genesis:overworld" -> Overworld.MAP_CODEC.codec();
                 default -> throw new IllegalArgumentException("Unknown PlanetColorPalette type: " + type);
+            }
+    );
+
+    StreamCodec<ByteBuf, PlanetColorPalette> STREAM_CODEC = StreamCodec.of(
+            (buf, palette) -> {
+                if (palette.isOverworld()) {
+                    buf.writeByte(0);
+                } else if (palette instanceof RGB rgb) {
+                    buf.writeByte(1);
+                    RGB.STREAM_CODEC.encode(buf, rgb);
+                }
+            },
+            buf -> {
+                byte type = buf.readByte();
+                return switch (type) {
+                    case 0 -> new Overworld();
+                    case 1 -> RGB.STREAM_CODEC.decode(buf);
+                    default -> throw new IllegalArgumentException("Unknown PlanetColorPalette type ID: " + type);
+                };
             }
     );
 }

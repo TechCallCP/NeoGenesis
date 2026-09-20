@@ -17,18 +17,6 @@ import java.util.List;
  */
 public class EntityTeleporter {
 
-    /**
-     * Teleports an entity and all of its passengers to the given level and position.
-     * Passengers are detached before teleporting and reattached afterward with their
-     * positions offset relative to the vehicle's movement.
-     * The frame rotation is applied to each entity's look direction so it stays
-     * consistent relative to the ship after the coordinate frame changes.
-     *
-     * @param <T>      the type of the entity being teleported
-     * @param entity   the entity to teleport
-     * @param newLevel the destination level
-     * @param newPos   the destination position
-     */
     public static <T extends Entity> void teleportEntityAndPassengers(T entity, ServerLevel newLevel, Vec3 newPos) {
         teleportEntityAndPassengers(entity, newLevel, newPos, new Quaterniond());
     }
@@ -73,7 +61,7 @@ public class EntityTeleporter {
     private static Entity cloneAndTeleportEntity(Entity entity, ServerLevel newLevel, Vec3 newPos, float yRot, float xRot) {
         Entity newEntity = entity.getType().create(newLevel);
 
-        if (!entity.getClass().isInstance(newEntity)) {
+        if (newEntity == null || !entity.getClass().isInstance(newEntity)) {
             return null;
         }
 
@@ -114,12 +102,6 @@ public class EntityTeleporter {
         }
     }
 
-    /**
-     * Rotates a Minecraft yaw/pitch look direction by the given quaternion rotation.
-     * Minecraft uses: dx = -sin(yaw)*cos(pitch), dy = -sin(pitch), dz = cos(yaw)*cos(pitch).
-     *
-     * @return float[]{newYRot, newXRot} in degrees
-     */
     private static float[] rotateLookAngles(float yRot, float xRot, Quaterniondc rotation) {
         double yawRad = Math.toRadians(yRot);
         double pitchRad = Math.toRadians(xRot);

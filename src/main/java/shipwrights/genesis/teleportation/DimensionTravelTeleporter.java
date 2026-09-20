@@ -1,13 +1,13 @@
 package shipwrights.genesis.teleportation;
 
+import aeronautics.api.Ship;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaterniondc;
 import org.joml.Vector3dc;
-import org.valkyrienskies.core.api.ships.ServerShip;
-import org.valkyrienskies.core.internal.world.VsiServerShipWorld;
-import org.valkyrienskies.mod.common.VSGameUtilsKt;
+import org.sable.api.SableUtils;
+
 import shipwrights.genesis.teleportation.impl.EntityCollector;
 import shipwrights.genesis.teleportation.impl.EntityTeleporter;
 import shipwrights.genesis.teleportation.impl.ShipCollector;
@@ -21,7 +21,7 @@ public class DimensionTravelTeleporter {
     private static final ConcurrentHashMap<Long, Long> shipCooldownExpiry = new ConcurrentHashMap<>();
 
     public static void teleportShip(
-            ServerShip ship,
+            Ship ship,
             TravelDirection direction,
             ServerLevel oldLevel,
             ServerLevel newLevel,
@@ -32,7 +32,7 @@ public class DimensionTravelTeleporter {
         if (shouldSkip(ship.getId(), gameTime)) return;
 
         Vector3dc origin = ship.getTransform().getPositionInWorld();
-        VsiServerShipWorld shipWorld = VSGameUtilsKt.getShipObjectWorld(oldLevel);
+        var shipWorld = SableUtils.getShipObjectWorld(oldLevel);
 
         ShipCollector collector = new ShipCollector(direction, shipWorld);
         Map<Long, TeleportData> ships = collector.collectConnected(ship.getId(), origin, newPosition, newRotation);
