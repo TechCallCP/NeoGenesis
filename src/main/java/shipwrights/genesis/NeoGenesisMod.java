@@ -1,18 +1,26 @@
 package shipwrights.genesis;
 
+import com.mojang.logging.LogUtils;
+
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 
+import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.fml.loading.FMLLoader;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 
+import org.slf4j.Logger;
+
+import shipwrights.genesis.client.DimensionSpecialEffectsManagerMixin;
+import shipwrights.genesis.client.GenesisClientSetup;
 import shipwrights.genesis.content.fluid.GenesisFluids;
 import shipwrights.genesis.networking.GenesisNetworking;
 import shipwrights.genesis.space.Celestial;
@@ -23,13 +31,18 @@ import shipwrights.genesis.worldgen.WorldGenRegistry;
 public class NeoGenesisMod {
 
     public static final String MOD_ID = "genesis";
+    public static final Logger LOGGER = LogUtils.getLogger();
+
+    public static final ResourceLocation SPACE_DIM = ResourceLocation.fromNamespaceAndPath(MOD_ID, "space");
+    public static final ResourceLocation WORMHOLE_DIM = ResourceLocation.fromNamespaceAndPath(MOD_ID, "wormhole");
+    public static final ResourceLocation GENERIC_PLANET_ID = ResourceLocation.fromNamespaceAndPath(MOD_ID, "planet");
+
     public static final ResourceKey<Registry<Celestial>> CELESTIAL_REGISTRY_KEY =
             ResourceKey.createRegistryKey(ResourceLocation.fromNamespaceAndPath(MOD_ID, "celestial"));
 
     public static long clientTimeOffset = 0;
 
     public NeoGenesisMod(IEventBus modEventBus) {
-        // Pass the modEventBus argument required by updated subsystem initializers
         GenesisNetworking.init(modEventBus);
         WorldGenRegistry.init(modEventBus);
         GenesisFluids.register(modEventBus);
@@ -37,27 +50,37 @@ public class NeoGenesisMod {
         BuiltinCelestialTypes.register();
 
         modEventBus.addListener(this::commonSetup);
-        modEventBus.addListener(this::clientSetup);
-    }
 
-    public static boolean shouldCancelVoidDamage(Level level) {
-        return false;
-    }
-
-    public static void refreshEntityScaling(ServerPlayer player, ServerLevel level) {
+        if (FMLLoader.getDist() == Dist.CLIENT) {
+            modEventBus.addListener(this::clientSetup);
+            modEventBus.addListener(GenesisClientSetup::onClientSetup);
+            modEventBus.addListener(GenesisClientSetup::onRegisterMenuScreens);
+            modEventBus.addListener(GenesisClientSetup::onRegisterReloadListeners);
+            modEventBus.addListener(GenesisClientSetup::registerParticleProvider);
+            modEventBus.addListener(DimensionSpecialEffectsManagerMixin::registerDimensionEffects);
+        }
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
-        // Common initialization logic
     }
 
     private void clientSetup(final FMLClientSetupEvent event) {
-        // Client initialization logic
     }
 
     public static boolean isSpaceDimension(Level level) {
-        return level.dimension().location().getNamespace().equals(MOD_ID)
+        return level != null && level.dimension().location().getNamespace().equals(MOD_ID)
                 && level.dimension().location().getPath().contains("space");
+    }
+
+    public static boolean shouldCancelVoidDamage(Level level) {
+        return isSpaceDimension(level);
+    }
+
+    public static void refreshEntityScaling(Entity entity, Level level) {
+        if (entity == null || level == null) return;
+        if (isSpaceDimension(level)) {
+            entity.setNoGravity(true);
+        }
     }
 
     public static Celestial getCelestialForLevel(Level level) {

@@ -13,10 +13,9 @@ import net.minecraft.world.level.material.Fluid;
 
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.RegisterClientExtensionsEvent;
+import net.neoforged.fml.loading.FMLLoader;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
+import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 import net.neoforged.neoforge.fluids.BaseFlowingFluid;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -25,7 +24,6 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
 import shipwrights.genesis.NeoGenesisMod;
 
-@EventBusSubscriber(modid = NeoGenesisMod.MOD_ID, value = Dist.CLIENT)
 public class GenesisFluids {
 
     public static final DeferredRegister<FluidType> FLUID_TYPES =
@@ -81,9 +79,12 @@ public class GenesisFluids {
         FLUIDS.register(eventBus);
         BLOCKS.register(eventBus);
         ITEMS.register(eventBus);
+
+        if (FMLLoader.getDist() == Dist.CLIENT) {
+            eventBus.addListener(GenesisFluids::onRegisterClientExtensions);
+        }
     }
 
-    @SubscribeEvent
     public static void onRegisterClientExtensions(RegisterClientExtensionsEvent event) {
         event.registerFluidType(new IClientFluidTypeExtensions() {
             @Override

@@ -6,13 +6,11 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
+
 import org.jetbrains.annotations.NotNull;
 
 import shipwrights.genesis.NeoGenesisMod;
@@ -27,10 +25,8 @@ import shipwrights.genesis.content.particle.GenesisParticles;
 import shipwrights.genesis.content.particle.VerditeParticle;
 import shipwrights.genesis.content.particle.ZapBubbleParticle;
 
-@EventBusSubscriber(modid = NeoGenesisMod.MOD_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class GenesisClientSetup {
 
-    @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
         event.enqueueWork(() -> {
             BlockEntityRenderers.register(GenesisBlockEntities.NAV_PROJECTOR.get(), NavProjectorBlockEntityRenderer::new);
@@ -71,17 +67,15 @@ public class GenesisClientSetup {
             ItemBlockRenderTypes.setRenderLayer(GenesisBlocks.WITHERING_WILLOW_BRANCH.get(), RenderType.cutout());
             ItemBlockRenderTypes.setRenderLayer(GenesisBlocks.WITHERING_WILLOW_LEAVES.get(), RenderType.cutout());
 
-            ItemBlockRenderTypes.setRenderLayer(GenesisFluids.MIASMA.getSource(), RenderType.translucent());
-            ItemBlockRenderTypes.setRenderLayer(GenesisFluids.MIASMA.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(GenesisFluids.MIASMA_SOURCE.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(GenesisFluids.MIASMA_FLOWING.get(), RenderType.translucent());
         });
     }
 
-    @SubscribeEvent
     public static void onRegisterMenuScreens(RegisterMenuScreensEvent event) {
         event.register(GenesisBlocks.TULCITE_CATALYZER_CONTAINER.get(), TulciteCatalyzerScreen::new);
     }
 
-    @SubscribeEvent
     public static void onRegisterReloadListeners(RegisterClientReloadListenersEvent event) {
         event.registerReloadListener(new SimplePreparableReloadListener<Void>() {
             @Override
@@ -97,7 +91,6 @@ public class GenesisClientSetup {
         });
     }
 
-    @SubscribeEvent
     public static void registerParticleProvider(RegisterParticleProvidersEvent event) {
         event.registerSpriteSet(GenesisParticles.ZAP_BUBBLE_PARTICLES.get(), ZapBubbleParticle.Provider::new);
         event.registerSpriteSet(GenesisParticles.VERDITE_PARTICLES.get(), VerditeParticle.Provider::new);

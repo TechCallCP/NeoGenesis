@@ -23,12 +23,10 @@ import java.util.function.Supplier;
 
 public class MiasmaLiquidBlock extends LiquidBlock {
 
-    // Correctly routes via simpleCodec using your static fluid registry reference
     public static final MapCodec<LiquidBlock> CODEC = simpleCodec((properties) ->
-            new MiasmaLiquidBlock(GenesisFluids.MIASMA, properties)
+            new MiasmaLiquidBlock(GenesisFluids.MIASMA_SOURCE, properties)
     );
 
-    // FIXED: Must return MapCodec<? extends Block> to properly override the vanilla Block method
     @Override
     public MapCodec<LiquidBlock> codec() {
         return CODEC;
@@ -85,7 +83,6 @@ public class MiasmaLiquidBlock extends LiquidBlock {
         if (!level.isClientSide && entity instanceof LivingEntity livingEntity) {
             if (entity instanceof Player player && player.isCreative()) { return; }
 
-            // Reverted back to your original CONFUSION mapping setup
             livingEntity.addEffect(new MobEffectInstance(MobEffects.POISON, 200, 1, false, true));
             livingEntity.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 200, 1, false, true));
             livingEntity.hurt(level.damageSources().genericKill(), 2);
