@@ -1,6 +1,6 @@
 package shipwrights.genesis.tests.commands;
 
-import net.minecraftforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
 
 public class GameTestCommands {
 

@@ -1,16 +1,14 @@
 package shipwrights.genesis.teleportation.impl;
 
-import aeronautics.api.Ship;
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.level.ServerLevel;
+import org.joml.Quaterniondc;
 import org.joml.Vector3dc;
-import org.sable.api.SableUtils;
-import org.sable.api.ShipObjectWorld;
-import org.sable.api.ShipTeleportData;
-import org.sable.api.ShipTransform;
-import org.sable.api.ShipTransformProvider;
 
 import shipwrights.genesis.NeoGenesisMod;
 import shipwrights.genesis.teleportation.TeleportData;
+
+import java.lang.reflect.Method;
 
 public class ShipTeleporter {
 
@@ -18,89 +16,55 @@ public class ShipTeleporter {
             long id,
             TeleportData data,
             ServerLevel newLevel,
-            ShipObjectWorld shipWorld
+            Object shipWorld
     ) {
-        Ship ship = shipWorld.getLoadedShips().getById(id);
-        if (ship == null) {
-            return;
-        }
-        ship.setStatic(false);
+        String dimId = newLevel.dimension().location().toString();
+        Vector3dc pos = data.newPos();
 
-        ShipTeleportData teleportData = createTeleportData(data, newLevel);
-        shipWorld.teleportShip(ship, teleportData);
-
-        applyPostTeleportVelocity(shipWorld, id, ship, data);
-    }
-
-    private static ShipTeleportData createTeleportData(
-            TeleportData data,
-            ServerLevel level
-    ) {
-        String vsDimName = SableUtils.getDimensionId(level);
-
-        return new ShipTeleportData(
-                data.newPos(),
-                data.rotation(),
-                data.velocity(),
-                data.omega(),
-                vsDimName,
-                NeoGenesisMod.getDimensionScale(level),
-                null
-        );
-    }
-
-    private static void applyPostTeleportVelocity(
-            ShipObjectWorld shipWorld,
-            long id,
-            Ship ship,
-            TeleportData data
-    ) {
-        Vector3dc velocity = data.velocity();
-        Vector3dc omega = data.omega();
-
-        if (velocity.lengthSquared() == 0 && omega.lengthSquared() == 0) {
-            return;
-        }
-
-        ship.setTransformProvider(createVelocityTransformProvider(shipWorld, id, velocity, omega));
-    }
-
-    private static ShipTransformProvider createVelocityTransformProvider(
-            ShipObjectWorld shipWorld,
-            long id,
-            Vector3dc velocity,
-            Vector3dc omega
-    ) {
-        return (prevTransform, transform) -> {
-
-            Ship ship = shipWorld.getLoadedShips().getById(id);
-            if (ship == null) {
-                return null;
-            }
-
-            if (!hasTransformChanged(prevTransform, transform)) {
-                if (ship.getVelocity().lengthSquared() == 0 &&
-                        ship.getAngularVelocity().lengthSquared() == 0) {
-
-                    return new ShipTransformProvider.NextTransformAndVelocityData(
-                            transform,
-                            velocity,
-                            omega
-                    );
+        boolean teleported = false;
+        try {
+            Class<?> sableClass = Class.forName("dev.ryanhcode.sable.Sable");
+            try {
+                Method teleportMethod = sableClass.getMethod("teleport", long.class, ServerLevel.class, Vector3dc.class, Quaterniondc.class, Vector3dc.class, Vector3dc.class);
+                teleported = (boolean) teleportMethod.invoke(null, id, newLevel, pos, data.rotation(), data.velocity(), data.omega());
+            } catch (Exception e1) {
+                try {
+                    Method teleportMethod = sableClass.getMethod("teleportSubLevel", long.class, ServerLevel.class, Vector3dc.class);
+                    teleported = (boolean) teleportMethod.invoke(null, id, newLevel, pos);
+                } catch (Exception ignored) {
                 }
-            } else {
-                ship.setTransformProvider(null);
             }
+        } catch (Throwable ignored) {
+        }
 
-            return null;
-        };
+        if (!teleported) {
+            String cmd = String.format("execute in %s run sable teleport %d %f %f %f",
+                    dimId, id, pos.x(), pos.y(), pos.z());
+            NeoGenesisMod.LOGGER.info("[ShipTeleporter] Executing fallback teleport command: {}", cmd);
+            CommandSourceStack cmdSource = newLevel.getServer().createCommandSourceStack();
+            newLevel.getServer().getCommands().performPrefixedCommand(cmdSource, cmd);
+        }
     }
 
-    private static boolean hasTransformChanged(
-            ShipTransform prevTransform,
-            ShipTransform transform
+    public static void teleportSubLevel(
+            Object subLevel,
+            TeleportData data,
+            ServerLevel newLevel
     ) {
-        return !prevTransform.getPositionInWorld().equals(transform.getPositionInWorld())
-                || !prevTransform.getShipToWorldRotation().equals(transform.getShipToWorldRotation());
+        if (subLevel == null) return;
+        long id = getSubLevelId(subLevel);
+        teleportShip(id, data, newLevel, null);
+    }
+
+    private static long getSubLevelId(Object subLevel) {
+        try {
+            Method idMethod = subLevel.getClass().getMethod("getId");
+            Object val = idMethod.invoke(subLevel);
+            if (val instanceof Number num) {
+                return num.longValue();
+            }
+        } catch (Exception ignored) {
+        }
+        return 0L;
     }
 }

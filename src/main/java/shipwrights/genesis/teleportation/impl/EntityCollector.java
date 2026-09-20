@@ -1,6 +1,5 @@
 package shipwrights.genesis.teleportation.impl;
 
-import aeronautics.api.Ship;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
@@ -8,10 +7,10 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Quaterniondc;
 import org.joml.Vector3d;
 import org.joml.Vector3dc;
-import org.sable.api.SableUtils;
 
 import shipwrights.genesis.NeoGenesisMod;
 
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +25,7 @@ public class EntityCollector {
     }
 
     public Map<Entity, Vec3> collect(
-            List<Ship> ships,
+            List<?> ships,
             Vector3dc origin,
             Vector3dc newPos,
             Quaterniondc rotation
@@ -36,35 +35,27 @@ public class EntityCollector {
         return entityStorage;
     }
 
-    private void addEntitiesForShip(Ship ship, Vector3dc origin, Vector3dc newPos, Quaterniondc rotation) {
-        var worldAABB = ship.getWorldAABB();
-        var shipAABB = ship.getShipAABB();
+    private void addEntitiesForShip(Object ship, Vector3dc origin, Vector3dc newPos, Quaterniondc rotation) {
+        AABB worldAABB = getSubLevelAABB(ship);
+        AABB shipAABB = getSubLevelShipAABB(ship);
 
         if (shipAABB != null) {
-            AABB mcShipBox = new AABB(
-                    shipAABB.minX(), shipAABB.minY(), shipAABB.minZ(),
-                    shipAABB.maxX(), shipAABB.maxY(), shipAABB.maxZ()
-            );
-
             oldLevel.getEntities(
                     (Entity) null,
-                    mcShipBox.inflate(48),
+                    shipAABB.inflate(48),
                     entity -> !entityStorage.containsKey(entity)
             ).forEach(entity -> addEntity(entity, origin, newPos, rotation));
         }
 
-        AABB mcWorldBox = new AABB(
-                worldAABB.minX(), worldAABB.minY(), worldAABB.minZ(),
-                worldAABB.maxX(), worldAABB.maxY(), worldAABB.maxZ()
-        );
-
-        oldLevel.getEntities(
-                (Entity) null,
-                mcWorldBox.inflate(8 * NeoGenesisMod.getDimensionScale(oldLevel)),
-                entity -> !entityStorage.containsKey(entity)
-        ).forEach(entity ->
-                addEntity(entity, origin, newPos, rotation)
-        );
+        if (worldAABB != null) {
+            oldLevel.getEntities(
+                    (Entity) null,
+                    worldAABB.inflate(8 * NeoGenesisMod.getDimensionScale(oldLevel)),
+                    entity -> !entityStorage.containsKey(entity)
+            ).forEach(entity ->
+                    addEntity(entity, origin, newPos, rotation)
+            );
+        }
     }
 
     private void addEntity(Entity entity, Vector3dc origin, Vector3dc newPos, Quaterniondc rotation) {
@@ -73,12 +64,51 @@ public class EntityCollector {
             return;
         }
         Vec3 pos = root.position();
-        if (!SableUtils.isBlockInShipyard(oldLevel, pos)) {
+        if (!isBlockInShipyard(oldLevel, pos)) {
             Vector3d relPos = new Vector3d(pos.x, pos.y, pos.z).sub(origin);
             rotation.transform(relPos);
             relPos.add(newPos);
             pos = new Vec3(relPos.x, relPos.y, relPos.z);
         }
         entityStorage.put(root, pos);
+    }
+
+    private static boolean isBlockInShipyard(ServerLevel level, Vec3 pos) {
+        try {
+            Class<?> sableClass = Class.forName("dev.ryanhcode.sable.Sable");
+            Method method = sableClass.getMethod("isBlockInShipyard", ServerLevel.class, Vec3.class);
+            Object res = method.invoke(null, level, pos);
+            if (res instanceof Boolean b) return b;
+        } catch (Exception ignored) {
+        }
+        return false;
+    }
+
+    private static AABB getSubLevelAABB(Object subLevel) {
+        if (subLevel == null) return null;
+        try {
+            Method boxMethod = subLevel.getClass().getMethod("getWorldAABB");
+            Object boxObj = boxMethod.invoke(subLevel);
+            if (boxObj instanceof AABB aabb) return aabb;
+        } catch (Exception e) {
+            try {
+                Method boxMethod = subLevel.getClass().getMethod("getBoundingBox");
+                Object boxObj = boxMethod.invoke(subLevel);
+                if (boxObj instanceof AABB aabb) return aabb;
+            } catch (Exception ignored) {
+            }
+        }
+        return null;
+    }
+
+    private static AABB getSubLevelShipAABB(Object subLevel) {
+        if (subLevel == null) return null;
+        try {
+            Method boxMethod = subLevel.getClass().getMethod("getShipAABB");
+            Object boxObj = boxMethod.invoke(subLevel);
+            if (boxObj instanceof AABB aabb) return aabb;
+        } catch (Exception ignored) {
+        }
+        return null;
     }
 }

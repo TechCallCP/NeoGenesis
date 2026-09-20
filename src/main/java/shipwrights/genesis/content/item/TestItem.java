@@ -1,6 +1,6 @@
 package shipwrights.genesis.content.item;
 
-import kotlin.Pair;
+import com.mojang.datafixers.util.Pair;
 import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;

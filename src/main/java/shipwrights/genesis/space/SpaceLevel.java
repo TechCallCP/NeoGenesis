@@ -1,7 +1,6 @@
 package shipwrights.genesis.space;
 
 import com.mojang.datafixers.util.Pair;
-import kotlin.Pair;
 
 import net.minecraft.core.Registry;
 import net.minecraft.world.phys.AABB;
@@ -30,7 +29,7 @@ public class SpaceLevel {
         return registry.stream()
                 .filter(it -> predicate.test(it.type()))
                 .map(it -> new Pair<>(it, position.distanceSquared(it.getPosition(ticks, 0.0F, registry))))
-                .min(Comparator.comparingDouble(Pair::component2))
+                .min(Comparator.comparingDouble(Pair::getSecond))
                 .filter(pwd -> pwd.getSecond() < Double.MAX_VALUE).orElse(null);
     }
 

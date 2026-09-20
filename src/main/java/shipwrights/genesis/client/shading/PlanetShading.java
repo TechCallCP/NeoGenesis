@@ -2,17 +2,26 @@ package shipwrights.genesis.client.shading;
 
 import com.mojang.logging.LogUtils;
 
+import net.minecraft.world.phys.AABB;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 
 import org.jetbrains.annotations.Nullable;
-import org.joml.*;
-import org.joml.primitives.AABBdc;
+import org.joml.Matrix3d;
+import org.joml.Matrix4d;
+import org.joml.Matrix4dc;
+import org.joml.Quaterniond;
+import org.joml.Vector2d;
+import org.joml.Vector2dc;
+import org.joml.Vector3d;
+import org.joml.Vector3dc;
+import org.joml.Vector3i;
 import org.slf4j.Logger;
 
 import shipwrights.genesis.math.AAPlane;
 import shipwrights.genesis.math.OBB;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -50,12 +59,12 @@ public class PlanetShading {
         List<AAPlane> planes = new ArrayList<>();
         Vector3d refLocal = worldToLocal(referencePoint, obb);
 
-        AABBdc aabb = obb.localAabb();
+        Object aabb = obb.localAabb();
 
         for (int axis = 0; axis < 3; axis++) {
             // Check min face
             {
-                double pos = aabb.getMin(axis);
+                double pos = getMinAxis(aabb, axis);
                 Vector3d normal = new Vector3d();
                 normal.setComponent(axis, -1);
 
@@ -73,7 +82,7 @@ public class PlanetShading {
 
             // Check max face
             {
-                double pos = aabb.getMax(axis);
+                double pos = getMaxAxis(aabb, axis);
                 Vector3d normal = new Vector3d();
                 normal.setComponent(axis, 1);
 
@@ -200,5 +209,53 @@ public class PlanetShading {
         } else {
             return new Vector2d(point3D.x, point3D.y);
         }
+    }
+
+    private static double getMinAxis(Object aabb, int axis) {
+        if (aabb instanceof AABB mBox) {
+            return switch (axis) {
+                case 0 -> mBox.minX;
+                case 1 -> mBox.minY;
+                case 2 -> mBox.minZ;
+                default -> 0.0;
+            };
+        }
+        if (aabb != null) {
+            try {
+                Method m = aabb.getClass().getMethod("getMin", int.class);
+                return (double) m.invoke(aabb, axis);
+            } catch (Exception e) {
+                try {
+                    Method m = aabb.getClass().getMethod("min", int.class);
+                    return (double) m.invoke(aabb, axis);
+                } catch (Exception ignored) {
+                }
+            }
+        }
+        return 0.0;
+    }
+
+    private static double getMaxAxis(Object aabb, int axis) {
+        if (aabb instanceof AABB mBox) {
+            return switch (axis) {
+                case 0 -> mBox.maxX;
+                case 1 -> mBox.maxY;
+                case 2 -> mBox.maxZ;
+                default -> 0.0;
+            };
+        }
+        if (aabb != null) {
+            try {
+                Method m = aabb.getClass().getMethod("getMax", int.class);
+                return (double) m.invoke(aabb, axis);
+            } catch (Exception e) {
+                try {
+                    Method m = aabb.getClass().getMethod("max", int.class);
+                    return (double) m.invoke(aabb, axis);
+                } catch (Exception ignored) {
+                }
+            }
+        }
+        return 0.0;
     }
 }

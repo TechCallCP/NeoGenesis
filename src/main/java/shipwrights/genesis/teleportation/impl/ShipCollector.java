@@ -1,56 +1,39 @@
 package shipwrights.genesis.teleportation.impl;
 
-import aeronautics.api.Ship;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.ApiStatus;
 import org.joml.Quaterniond;
 import org.joml.Quaterniondc;
 import org.joml.Vector3d;
 import org.joml.Vector3dc;
-import org.joml.primitives.AABBd;
-import org.joml.primitives.AABBdc;
-import org.sable.api.PhysTickEvent;
-import org.sable.api.ShipJoint;
-import org.sable.api.ShipObjectWorld;
 
 import shipwrights.genesis.teleportation.TeleportData;
 import shipwrights.genesis.teleportation.TravelDirection;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 @ApiStatus.Internal
 public class ShipCollector {
 
-	private static Map<Long, Set<Integer>> SHIP2CONSTRAINTS = Map.of();
-	private static Map<Integer, ShipJoint> ID2CONSTRAINT;
-
-	private static final double SHIP_COLLECT_RANGE = 10;
+	private static final double SHIP_COLLECT_RANGE = 10.0;
 
 	private final TravelDirection direction;
-	private final ShipObjectWorld shipWorld;
+	private final Object shipWorld;
 
 	private final Long2ObjectOpenHashMap<TeleportData> ships = new Long2ObjectOpenHashMap<>();
-	private final List<Ship> collectedShips = new ArrayList<>();
+	private final List<Object> collectedShips = new ArrayList<>();
 	private double greatestOffset;
 
 	public ShipCollector(
 			TravelDirection direction,
-			ShipObjectWorld shipWorld
+			Object shipWorld
 	) {
 		this.direction = direction;
 		this.shipWorld = shipWorld;
-	}
-
-	public static void onPhysTick(PhysTickEvent event) {
-		var level = event.getWorld();
-		if (SHIP2CONSTRAINTS.isEmpty()) {
-			SHIP2CONSTRAINTS = level.getJointsByShipIds();
-			ID2CONSTRAINT = level.getAllJoints();
-		}
 	}
 
 	public Map<Long, TeleportData> collectConnected(
@@ -77,12 +60,8 @@ public class ShipCollector {
 		return this.ships;
 	}
 
-	public List<Ship> getCollectedShips() {
+	public List<Object> getCollectedShips() {
 		return this.collectedShips;
-	}
-
-	private void collectConnected(long shipId, Vector3dc origin, Vector3dc newPos, Quaterniondc rotation, List<Ship> collected) {
-		this.collectConnected(shipId, origin, newPos, rotation, null, null, collected);
 	}
 
 	private void collectConnected(
@@ -92,26 +71,27 @@ public class ShipCollector {
 			Quaterniondc rotation,
 			Vector3dc velocity,
 			Vector3dc omega,
-			List<Ship> collected
+			List<Object> collected
 	) {
 		if (this.ships.containsKey(shipId)) {
 			return;
 		}
-		Ship ship = this.getShip(shipId);
-		if (ship == null) {
+		Object subLevel = this.getShip(shipId);
+		if (subLevel == null) {
 			return;
 		}
-		Vector3dc pos = ship.getTransform().getPositionInWorld();
+
+		Vector3dc pos = getSubLevelPos(subLevel);
 		if (velocity == null) {
-			velocity = new Vector3d(ship.getVelocity());
+			velocity = getSubLevelVelocity(subLevel);
 		}
 		if (omega == null) {
-			omega = new Vector3d(ship.getAngularVelocity());
+			omega = getSubLevelOmega(subLevel);
 		}
-		collected.add(ship);
+		collected.add(subLevel);
 
 		Vector3d relPos = pos.sub(origin, new Vector3d());
-		Quaterniond newRotation = new Quaterniond(ship.getTransform().getShipToWorldRotation());
+		Quaterniond newRotation = new Quaterniond(getSubLevelRotation(subLevel));
 
 		if (this.direction == TravelDirection.PLANET_TO_SPACE) {
 			double offset = relPos.y;
@@ -138,7 +118,7 @@ public class ShipCollector {
 		if (this.direction == TravelDirection.PLANET_TO_SPACE) {
 			velocity0.mul(0.0625);
 		} else {
-			velocity0.mul(2);
+			velocity0.mul(2.0);
 		}
 
 		this.ships.put(
@@ -150,53 +130,137 @@ public class ShipCollector {
 						omega0
 				)
 		);
-
-		Set<Integer> constraints = SHIP2CONSTRAINTS.get(shipId);
-		if (constraints != null) {
-			new HashSet<>(constraints).stream().map(ID2CONSTRAINT::get).forEach((constraint) -> {
-				Long id = constraint.getShipId0();
-				if (id != null) {
-					this.collectConnected(id, origin, newPos, rotation, collected);
-				}
-				id = constraint.getShipId1();
-				if (id != null) {
-					this.collectConnected(id, origin, newPos, rotation, collected);
-				}
-			});
-		}
 	}
 
-	private void collectNearbyShips(List<Ship> collected, Vector3dc origin, Vector3dc newPos, Quaterniondc rotation) {
-		var loadedShips = this.shipWorld.getLoadedShips();
-
+	private void collectNearbyShips(List<Object> collected, Vector3dc origin, Vector3dc newPos, Quaterniondc rotation) {
+		List<Object> allLoaded = getAllLoadedShips();
 		for (int i = 0; i < collected.size(); i++) {
-			AABBdc shipBox = collected.get(i).getWorldAABB();
-			AABBd box = new AABBd(
-					shipBox.minX() - SHIP_COLLECT_RANGE, shipBox.minY() - SHIP_COLLECT_RANGE, shipBox.minZ() - SHIP_COLLECT_RANGE,
-					shipBox.maxX() + SHIP_COLLECT_RANGE, shipBox.maxY() + SHIP_COLLECT_RANGE, shipBox.maxZ() + SHIP_COLLECT_RANGE);
-			for (Ship ship : loadedShips.getIntersecting(box)) {
-				this.collectConnected(ship.getId(), origin, newPos, rotation, collected);
+			AABB shipBox = getSubLevelAABB(collected.get(i));
+			if (shipBox == null) continue;
+
+			AABB expandedBox = shipBox.inflate(SHIP_COLLECT_RANGE);
+			for (Object candidate : allLoaded) {
+				long candidateId = getSubLevelId(candidate);
+				if (this.ships.containsKey(candidateId)) continue;
+
+				AABB candidateBox = getSubLevelAABB(candidate);
+				if (candidateBox != null && expandedBox.intersects(candidateBox)) {
+					this.collectConnected(candidateId, origin, newPos, rotation, null, null, collected);
+				}
 			}
 		}
 	}
 
-	private void finish(List<Ship> collected, Quaterniondc rotation) {
+	private void finish(List<Object> collected, Quaterniondc rotation) {
 		Vector3d offset = new Vector3d(0, -this.greatestOffset, 0);
 		if (this.direction == TravelDirection.PLANET_TO_SPACE) {
 			rotation.transform(offset);
 		}
-		for (Ship ship : collected) {
-			long id = ship.getId();
-			Vector3d shipNewPos = this.ships.get(id).newPos();
-			shipNewPos.add(offset);
+		for (Object ship : collected) {
+			long id = getSubLevelId(ship);
+			TeleportData tData = this.ships.get(id);
+			if (tData != null) {
+				tData.newPos().add(offset);
+			}
 		}
 	}
 
-	private Ship getShip(long shipId) {
-		Ship ship = this.shipWorld.getLoadedShips().getById(shipId);
-		if (ship != null) {
-			return ship;
+	private Object getShip(long shipId) {
+		for (Object ship : getAllLoadedShips()) {
+			if (getSubLevelId(ship) == shipId) {
+				return ship;
+			}
 		}
-		return this.shipWorld.getAllShips().getById(shipId);
+		return null;
+	}
+
+	@SuppressWarnings("unchecked")
+	private List<Object> getAllLoadedShips() {
+		List<Object> list = new ArrayList<>();
+		if (this.shipWorld != null) {
+			try {
+				Method getLoadedMethod = this.shipWorld.getClass().getMethod("getLoadedShips");
+				Object res = getLoadedMethod.invoke(this.shipWorld);
+				if (res instanceof Iterable<?> iterable) {
+					for (Object o : iterable) {
+						if (o != null) list.add(o);
+					}
+				}
+			} catch (Exception ignored) {
+			}
+		}
+		return list;
+	}
+
+	private static long getSubLevelId(Object subLevel) {
+		if (subLevel == null) return 0L;
+		try {
+			Method idMethod = subLevel.getClass().getMethod("getId");
+			Object val = idMethod.invoke(subLevel);
+			if (val instanceof Number num) return num.longValue();
+		} catch (Exception ignored) {
+		}
+		return 0L;
+	}
+
+	private static Vector3dc getSubLevelPos(Object subLevel) {
+		AABB box = getSubLevelAABB(subLevel);
+		if (box != null) {
+			return new Vector3d(box.getCenter().x, box.getCenter().y, box.getCenter().z);
+		}
+		return new Vector3d();
+	}
+
+	private static Vector3dc getSubLevelVelocity(Object subLevel) {
+		if (subLevel != null) {
+			try {
+				Method velMethod = subLevel.getClass().getMethod("getVelocity");
+				Object val = velMethod.invoke(subLevel);
+				if (val instanceof Vector3dc v) return v;
+			} catch (Exception ignored) {
+			}
+		}
+		return new Vector3d();
+	}
+
+	private static Vector3dc getSubLevelOmega(Object subLevel) {
+		if (subLevel != null) {
+			try {
+				Method omegaMethod = subLevel.getClass().getMethod("getAngularVelocity");
+				Object val = omegaMethod.invoke(subLevel);
+				if (val instanceof Vector3dc v) return v;
+			} catch (Exception ignored) {
+			}
+		}
+		return new Vector3d();
+	}
+
+	private static Quaterniondc getSubLevelRotation(Object subLevel) {
+		if (subLevel != null) {
+			try {
+				Method rotMethod = subLevel.getClass().getMethod("getRotation");
+				Object val = rotMethod.invoke(subLevel);
+				if (val instanceof Quaterniondc q) return q;
+			} catch (Exception ignored) {
+			}
+		}
+		return new Quaterniond();
+	}
+
+	private static AABB getSubLevelAABB(Object subLevel) {
+		if (subLevel == null) return null;
+		try {
+			Method boxMethod = subLevel.getClass().getMethod("getWorldAABB");
+			Object boxObj = boxMethod.invoke(subLevel);
+			if (boxObj instanceof AABB aabb) return aabb;
+		} catch (Exception e) {
+			try {
+				Method boxMethod = subLevel.getClass().getMethod("getBoundingBox");
+				Object boxObj = boxMethod.invoke(subLevel);
+				if (boxObj instanceof AABB aabb) return aabb;
+			} catch (Exception ignored) {
+			}
+		}
+		return null;
 	}
 }

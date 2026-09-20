@@ -26,7 +26,7 @@ import shipwrights.genesis.time.GenesisTimeData;
 
 import java.lang.reflect.Method;
 
-@Mixin(ServerLevel.class)
+@Mixin(value = ServerLevel.class, remap = false)
 public abstract class ServerLevelMixin {
 
     @Shadow
@@ -46,17 +46,17 @@ public abstract class ServerLevelMixin {
         GenesisNetworking.sendToAll(new SyncTimeOffsetPacket(data.getTimeOffset()));
     }
 
-    @WrapOperation(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;getDayTime()J"))
+    @WrapOperation(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;getDayTime()J"))
     private static long useGenesisDayTime(ServerLevel instance, Operation<Long> original) {
         return NeoGenesisMod.getTicks(instance);
     }
 
-    @Inject(method = "addEntity", at = @At("HEAD"))
+    @Inject(method = "addFreshEntity", at = @At("HEAD"))
     private void addEntityMixin(Entity entity, CallbackInfoReturnable<Boolean> cir) {
         NeoGenesisMod.refreshEntityScaling(entity, getLevel());
     }
 
-    @Inject(method = "addPlayer", at = @At("HEAD"))
+    @Inject(method = "addNewPlayer", at = @At("HEAD"))
     private void addPlayerMixin(ServerPlayer player, CallbackInfo ci) {
         NeoGenesisMod.refreshEntityScaling(player, getLevel());
     }

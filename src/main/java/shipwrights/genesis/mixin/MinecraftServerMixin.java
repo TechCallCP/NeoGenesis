@@ -19,7 +19,7 @@ import shipwrights.genesis.NeoGenesisMod;
 import java.lang.reflect.Method;
 import java.util.Map;
 
-@Mixin(MinecraftServer.class)
+@Mixin(value = MinecraftServer.class, remap = false)
 public class MinecraftServerMixin {
 
     @Final
