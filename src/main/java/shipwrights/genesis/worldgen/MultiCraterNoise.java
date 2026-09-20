@@ -3,18 +3,21 @@ package shipwrights.genesis.worldgen;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.KeyDispatchDataCodec;
 import net.minecraft.world.level.levelgen.DensityFunction;
+
 import org.jetbrains.annotations.NotNull;
-import shipwrights.genesis.GenesisMod;
+
+import shipwrights.genesis.NeoGenesisMod;
 
 import static java.lang.Math.max;
 
 public class MultiCraterNoise implements DensityFunction {
 
-    public static final ResourceLocation resourceLocation =
-            ResourceLocation.fromNamespaceAndPath(GenesisMod.MOD_ID, "multi_crater");
+    public static final ResourceLocation RESOURCE_LOCATION =
+            ResourceLocation.fromNamespaceAndPath(NeoGenesisMod.MOD_ID, "multi_crater");
 
     private final double[] scales;
 
@@ -59,7 +62,6 @@ public class MultiCraterNoise implements DensityFunction {
 
         double minDist = Double.MAX_VALUE;
 
-        // 3x3 neighborhood
         for (int offsetX = -1; offsetX <= 1; offsetX++) {
             for (int offsetZ = -1; offsetZ <= 1; offsetZ++) {
                 int nx = cellX + offsetX;
@@ -80,7 +82,7 @@ public class MultiCraterNoise implements DensityFunction {
             }
         }
 
-        double crater = 12 * minDist / (frequency * frequency);
+        double crater = 12.0 * minDist / (frequency * frequency);
 
         return scaleY * (crater - 0.5) / max(1.0, crater * crater * crater);
     }
@@ -98,7 +100,6 @@ public class MultiCraterNoise implements DensityFunction {
 
     @Override
     public void fillArray(double[] arr, @NotNull ContextProvider provider) {
-        // Still fine, compute() is now heavier but called fewer times overall
         for (int i = 0; i < arr.length; i++) {
             arr[i] = compute(provider.forIndex(i));
         }
@@ -109,8 +110,15 @@ public class MultiCraterNoise implements DensityFunction {
         return this;
     }
 
-    @Override public double minValue() { return -1.0; }
-    @Override public double maxValue() { return 1.0; }
+    @Override
+    public double minValue() {
+        return -1.0;
+    }
+
+    @Override
+    public double maxValue() {
+        return 1.0;
+    }
 
     @Override
     public @NotNull KeyDispatchDataCodec<? extends DensityFunction> codec() {

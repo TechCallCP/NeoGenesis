@@ -3,17 +3,21 @@ package shipwrights.genesis.worldgen;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.KeyDispatchDataCodec;
 import net.minecraft.world.level.levelgen.DensityFunction;
+
 import org.jetbrains.annotations.NotNull;
-import shipwrights.genesis.GenesisMod;
+
+import shipwrights.genesis.NeoGenesisMod;
 
 import static java.lang.Math.max;
 
 public class CraterNoise implements DensityFunction {
 
-    public static final ResourceLocation resourceLocation = ResourceLocation.fromNamespaceAndPath(GenesisMod.MOD_ID, "crater");
+    public static final ResourceLocation RESOURCE_LOCATION =
+            ResourceLocation.fromNamespaceAndPath(NeoGenesisMod.MOD_ID, "crater");
 
     private final double scale;
 
@@ -55,7 +59,7 @@ public class CraterNoise implements DensityFunction {
                 double randomX = neighborCellX + lcgRandom(seed);
                 double randomZ = neighborCellZ + lcgRandom(seed + 1);
 
-                double cellSizeVariation = 0.7 + lcgRandom(seed + 2) * 0.6; // 0.7 to 1.3x size
+                double cellSizeVariation = 0.7 + lcgRandom(seed + 2) * 0.6;
 
                 double dx = (scaledX - randomX) / cellSizeVariation;
                 double dz = (scaledZ - randomZ) / cellSizeVariation;
@@ -65,7 +69,7 @@ public class CraterNoise implements DensityFunction {
             }
         }
 
-        double crater = 12 * minDist / (frequency * frequency);
+        double crater = 12.0 * minDist / (frequency * frequency);
 
         return scaleY * (crater - 0.5) / max(1.0, crater * crater * crater);
     }
@@ -91,10 +95,21 @@ public class CraterNoise implements DensityFunction {
 
     @Override
     public @NotNull DensityFunction mapAll(@NotNull Visitor visitor) {
-        return this; // No children to map
+        return this;
     }
 
-    @Override public double minValue() { return 0.0; }
-    @Override public double maxValue() { return -1.0; }
-    @Override public @NotNull KeyDispatchDataCodec<? extends DensityFunction> codec() { return CODEC; }
+    @Override
+    public double minValue() {
+        return -1.0;
+    }
+
+    @Override
+    public double maxValue() {
+        return 1.0;
+    }
+
+    @Override
+    public @NotNull KeyDispatchDataCodec<? extends DensityFunction> codec() {
+        return CODEC;
+    }
 }

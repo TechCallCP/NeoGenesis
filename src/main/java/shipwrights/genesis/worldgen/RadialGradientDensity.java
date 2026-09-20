@@ -3,8 +3,10 @@ package shipwrights.genesis.worldgen;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+
 import net.minecraft.util.KeyDispatchDataCodec;
 import net.minecraft.world.level.levelgen.DensityFunction;
+
 import org.jetbrains.annotations.NotNull;
 
 public class RadialGradientDensity implements DensityFunction {
@@ -65,7 +67,18 @@ public class RadialGradientDensity implements DensityFunction {
         return this;
     }
 
-    @Override public double minValue() { return minValue; }
-    @Override public double maxValue() { return maxValue; }
-    @Override public @NotNull KeyDispatchDataCodec<? extends DensityFunction> codec() { return CODEC; }
+    @Override
+    public double minValue() {
+        return minValue;
+    }
+
+    @Override
+    public double maxValue() {
+        return maxValue;
+    }
+
+    @Override
+    public @NotNull KeyDispatchDataCodec<? extends DensityFunction> codec() {
+        return CODEC;
+    }
 }

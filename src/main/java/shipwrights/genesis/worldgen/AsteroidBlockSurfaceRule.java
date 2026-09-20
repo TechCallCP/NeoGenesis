@@ -1,18 +1,21 @@
 package shipwrights.genesis.worldgen;
 
 import com.mojang.serialization.MapCodec;
+
 import net.minecraft.util.KeyDispatchDataCodec;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.SurfaceRules;
+
 import org.jetbrains.annotations.NotNull;
-import shipwrights.genesis.content.block.GenesisBlocks;
+
 import shipwrights.genesis.content.block.AsteroidBlock;
+import shipwrights.genesis.content.block.GenesisBlocks;
 
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class AsteroidBlockSurfaceRule implements SurfaceRules.RuleSource {
+
     public static final KeyDispatchDataCodec<AsteroidBlockSurfaceRule> CODEC =
             KeyDispatchDataCodec.of(MapCodec.unit(new AsteroidBlockSurfaceRule()));
 
@@ -26,7 +29,7 @@ public class AsteroidBlockSurfaceRule implements SurfaceRules.RuleSource {
     }
 
     @Override
-    public SurfaceRules.SurfaceRule apply(SurfaceRules.Context arg) {
+    public SurfaceRules.SurfaceRule apply(SurfaceRules.Context context) {
         return (i, j, k) -> {
             int index = (int) (hash3(i, j, k) % getStates().size());
             return getStates().get(index);

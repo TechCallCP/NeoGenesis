@@ -2,43 +2,47 @@ package shipwrights.genesis.worldgen;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.RegisterEvent;
-import shipwrights.genesis.GenesisMod;
 
-import static shipwrights.genesis.GenesisMod.*;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.RegisterEvent;
 
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
+import shipwrights.genesis.NeoGenesisMod;
+
 public class WorldGenRegistry {
-    @SubscribeEvent
-    public static void onRegisterEvent(RegisterEvent event) {
+
+    public static void init(IEventBus modEventBus) {
+        modEventBus.addListener(WorldGenRegistry::onRegisterEvent);
+    }
+
+    private static void onRegisterEvent(RegisterEvent event) {
         event.register(Registries.DENSITY_FUNCTION_TYPE, helper -> {
             helper.register(
-                    ResourceLocation.fromNamespaceAndPath(GenesisMod.MOD_ID, "random_noise"),
-                    RandomNoise.MAP_CODEC.codec()
+                    ResourceLocation.fromNamespaceAndPath(NeoGenesisMod.MOD_ID, "random_noise"),
+                    RandomNoise.KEY_CODEC.codec()
             );
             helper.register(
-                    ResourceLocation.fromNamespaceAndPath(GenesisMod.MOD_ID, "asteroid_belt"),
+                    ResourceLocation.fromNamespaceAndPath(NeoGenesisMod.MOD_ID, "asteroid_belt"),
                     AsteroidBelt.MAP_CODEC.codec()
             );
             helper.register(
-                    ResourceLocation.fromNamespaceAndPath(GenesisMod.MOD_ID, "radial_gradient"),
+                    ResourceLocation.fromNamespaceAndPath(NeoGenesisMod.MOD_ID, "radial_gradient"),
                     RadialGradientDensity.MAP_CODEC.codec()
             );
             helper.register(
-                    CraterNoise.resourceLocation,
+                    CraterNoise.RESOURCE_LOCATION,
                     CraterNoise.CODEC.codec()
             );
-
             helper.register(
-                    MultiCraterNoise.resourceLocation,
+                    MultiCraterNoise.RESOURCE_LOCATION,
                     MultiCraterNoise.CODEC.codec()
             );
         });
 
         event.register(Registries.MATERIAL_RULE, helper -> {
-            helper.register(ASTEROID_RULE_ID, AsteroidBlockSurfaceRule.CODEC.codec());
+            helper.register(
+                    ResourceLocation.fromNamespaceAndPath(NeoGenesisMod.MOD_ID, "asteroid_rule"),
+                    AsteroidBlockSurfaceRule.CODEC.codec()
+            );
         });
     }
 }
