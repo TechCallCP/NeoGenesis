@@ -1,6 +1,5 @@
 package shipwrights.genesis.teleportation.integration;
 
-import aeronautics.api.Ship;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
@@ -11,7 +10,7 @@ import org.joml.Quaterniond;
 import org.joml.Quaterniondc;
 import org.joml.Vector3d;
 import org.joml.Vector3dc;
-
+import org.sable.api.ship.ServerShip;
 import shipwrights.genesis.NeoGenesisMod;
 import shipwrights.genesis.config.GenesisCommonConfig;
 import shipwrights.genesis.space.Celestial;
@@ -47,7 +46,7 @@ public class PlanetToSpaceTeleporter {
 
 		long ticks = NeoGenesisMod.getTicks(level);
 
-		for (Ship ship : getSortedShips(level)) {
+		for (ServerShip ship : getSortedShips(level)) {
 			Vector3dc shipPos = ship.getTransform().getPositionInWorld();
 			if (!ship.isStatic() && shipPos.y() > GenesisCommonConfig.getAtmosphereExitHeight()) {
 
@@ -65,6 +64,7 @@ public class PlanetToSpaceTeleporter {
 		}
 	}
 
+	// Package-private — accessed by tests
 	static Quaterniondc computeSpaceRotation(Quaterniondc vantageRotation, Quaterniondc shipRotation) {
 		return new Quaterniond(vantageRotation).mul(shipRotation, new Quaterniond());
 	}

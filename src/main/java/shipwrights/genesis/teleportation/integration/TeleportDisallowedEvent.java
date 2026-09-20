@@ -1,7 +1,7 @@
 package shipwrights.genesis.teleportation.integration;
 
-import aeronautics.api.Ship;
 import net.neoforged.bus.api.Event;
+import org.sable.api.ship.Ship;
 import shipwrights.genesis.space.Celestial;
 
 /// Fired when a ship is denied entry to a planet due to addon or datapack functionality

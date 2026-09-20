@@ -1,6 +1,5 @@
 package shipwrights.genesis.teleportation.integration;
 
-import aeronautics.api.Ship;
 import net.minecraft.core.Registry;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.Registries;
@@ -8,7 +7,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.PlayerTeam;
 import net.neoforged.bus.api.EventPriority;
@@ -19,8 +18,8 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Quaterniond;
 import org.joml.Vector3d;
 import org.joml.Vector3dc;
-import org.joml.primitives.AABBic;
-
+import org.sable.api.ship.ServerShip;
+import org.sable.api.ship.Ship;
 import shipwrights.genesis.NeoGenesisMod;
 import shipwrights.genesis.config.GenesisCommonConfig;
 import shipwrights.genesis.math.OBB;
@@ -33,7 +32,7 @@ import java.util.*;
 import static shipwrights.genesis.teleportation.integration.Util.getSortedShips;
 
 public class SpaceToPlanetTeleporter {
-	private static final int LANDING_ACCURACY = 8;
+	private static final int LANDING_ACCURACY = 8; // Randomization range in chunks
 
 	private final boolean gameTest;
 
@@ -54,10 +53,10 @@ public class SpaceToPlanetTeleporter {
 		long ticks = NeoGenesisMod.getTicks(level);
 		Registry<Celestial> registry = NeoGenesisMod.getCelestialRegistry(level);
 
-		for (Ship ship : getSortedShips(level)) {
-			Vector3dc center = ship.getWorldAABB().center(new Vector3d());
-			Vec3 shipCenter = new Vec3(center.x(), center.y(), center.z());
-			AABBic shipAABB = ship.getShipAABB();
+		for (ServerShip ship : getSortedShips(level)) {
+			AABB worldAABB = ship.getWorldAABB();
+			Vec3 shipCenter = worldAABB != null ? worldAABB.getCenter() : Vec3.ZERO;
+			AABB shipAABB = ship.getShipAABB();
 
 			Celestial nearest = getNearestPlanet(ship, ticks, registry);
 			if (ship.isStatic() || nearest == null || shipAABB == null) continue;
@@ -83,7 +82,7 @@ public class SpaceToPlanetTeleporter {
 		}
 	}
 
-	private static boolean shipOverlapsCelestial(Ship ship, AABBic shipAABB, Celestial nearest, long ticks, Registry<Celestial> registry) {
+	private static boolean shipOverlapsCelestial(ServerShip ship, AABB shipAABB, Celestial nearest, long ticks, Registry<Celestial> registry) {
 		return OBB.fromShip(shipAABB, ship.getShipToWorld()).overlapsWith(nearest.getOBB(ticks, registry));
 	}
 
@@ -120,7 +119,7 @@ public class SpaceToPlanetTeleporter {
 	}
 
 	@Nullable static Celestial getNearestPlanet(Ship ship, long ticks, Registry<Celestial> registry) {
-		AABBic shipAABB = ship.getShipAABB();
+		AABB shipAABB = ship.getShipAABB();
 		if (shipAABB != null) {
 			OBB shipOBB = OBB.fromShip(shipAABB, ship.getShipToWorld());
 
