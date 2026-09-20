@@ -61,6 +61,14 @@ public class NeoGenesisMod {
         }
     }
 
+    public static boolean isMiniScale(ServerLevel level) {
+        return false;
+    }
+
+    public static boolean isMiniScale(Level level) {
+        return false;
+    }
+
     private void commonSetup(final FMLCommonSetupEvent event) {
     }
 

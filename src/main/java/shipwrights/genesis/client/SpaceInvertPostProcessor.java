@@ -15,10 +15,13 @@ import org.joml.Vector3d;
 import org.joml.Vector3dc;
 
 import shipwrights.genesis.NeoGenesisMod;
+import shipwrights.genesis.mixin.PostChainAccessor;
 import shipwrights.genesis.space.Celestial;
 import shipwrights.genesis.space.SpaceLevel;
 import shipwrights.genesis.space.type.BuiltinCelestialTypes;
 
+import java.lang.reflect.Field;
+import java.util.List;
 import java.util.function.Predicate;
 
 public class SpaceInvertPostProcessor {
@@ -50,9 +53,9 @@ public class SpaceInvertPostProcessor {
             return;
         }
 
-        Long ticks = NeoGenesisMod.getTicks(level);
-        Float partialTick = Float.valueOf(mc.getTimer().getGameTimeDeltaPartialTick(Boolean.TRUE));
-        Vec3 camPos = localPlayer.getPosition(partialTick.floatValue());
+        long ticks = NeoGenesisMod.getTicks(level);
+        float partialTick = mc.getTimer().getGameTimeDeltaPartialTick(true);
+        Vec3 camPos = localPlayer.getPosition(partialTick);
         Vector3d camPosJoml = new Vector3d(camPos.x, camPos.y, camPos.z);
 
         Registry<Celestial> registry = NeoGenesisMod.getCelestialRegistry(level);
@@ -68,22 +71,37 @@ public class SpaceInvertPostProcessor {
             starPos = result.getFirst().getPosition(ticks, partialTick, registry);
         }
 
-        Float camX = Float.valueOf((float) camPos.x);
-        Float camY = Float.valueOf((float) camPos.y);
-        Float camZ = Float.valueOf((float) camPos.z);
-        Float starX = Float.valueOf(starPos != null ? (float) starPos.x() : 0.0F);
-        Float starY = Float.valueOf(starPos != null ? (float) starPos.y() : 0.0F);
-        Float starZ = Float.valueOf(starPos != null ? (float) starPos.z() : 0.0F);
+        float camX = (float) camPos.x;
+        float camY = (float) camPos.y;
+        float camZ = (float) camPos.z;
+        float starX = starPos != null ? (float) starPos.x() : 0.0F;
+        float starY = starPos != null ? (float) starPos.y() : 0.0F;
+        float starZ = starPos != null ? (float) starPos.z() : 0.0F;
 
-        for (PostPass pass : this.postChain.passes) {
+        List<PostPass> passes = getPostChainPasses(this.postChain);
+        passes.forEach(pass -> {
             Uniform cameraUniform = pass.getEffect().getUniform("cameraPos");
             if (cameraUniform != null) {
-                cameraUniform.set(camX.floatValue(), camY.floatValue(), camZ.floatValue());
+                cameraUniform.set(camX, camY, camZ);
             }
             Uniform uniform = pass.getEffect().getUniform("starPos");
             if (uniform != null) {
-                uniform.set(starX.floatValue(), starY.floatValue(), starZ.floatValue());
+                uniform.set(starX, starY, starZ);
             }
+        });
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<PostPass> getPostChainPasses(PostChain postChain) {
+        if (postChain instanceof PostChainAccessor accessor) {
+            return accessor.getPasses();
+        }
+        try {
+            Field field = PostChain.class.getDeclaredField("passes");
+            field.setAccessible(true);
+            return (List<PostPass>) field.get(postChain);
+        } catch (Exception e) {
+            return List.of();
         }
     }
 }
