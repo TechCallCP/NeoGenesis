@@ -13,7 +13,7 @@ A fork of the original VS Genesis mod. Redesigned for Create Aeronautics and Neo
 ## Modules
 The suite is split into separate mods for modularity and maintainability. Each can be installed independently, making it easier for modpack creators to pick what they need.
 
-### Genesis
+### NeoGenesis
 > The core space mod which adds a space dimension, planets, an asteroid belt, and other features that appear in space or are directly related to space.
 >
 > Everything in space is 1/16th scale. This feature is unique to Genesis, and allows for a space dimension which feels much more vast, with better performance than any known alternative. You might not notice this feature right away - that's the point! We've been working hard to ensure that this scaling is done as seamlessly as possible.
