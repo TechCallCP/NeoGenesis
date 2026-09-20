@@ -22,11 +22,11 @@ public class WorldGenRegistry {
             );
             helper.register(
                     ResourceLocation.fromNamespaceAndPath(NeoGenesisMod.MOD_ID, "asteroid_belt"),
-                    AsteroidBelt.MAP_CODEC.codec()
+                    AsteroidBelt.MAP_CODEC
             );
             helper.register(
                     ResourceLocation.fromNamespaceAndPath(NeoGenesisMod.MOD_ID, "radial_gradient"),
-                    RadialGradientDensity.MAP_CODEC.codec()
+                    RadialGradientDensity.MAP_CODEC
             );
             helper.register(
                     CraterNoise.RESOURCE_LOCATION,

@@ -43,7 +43,7 @@ public class WallZaplightSpindlesBlock extends BaseCoralFanBlock {
     }
 
     @Override
-    protected MapCodec<? extends BaseCoralFanBlock> codec() {
+    public MapCodec<? extends BaseCoralFanBlock> codec() {
         return CODEC;
     }
 

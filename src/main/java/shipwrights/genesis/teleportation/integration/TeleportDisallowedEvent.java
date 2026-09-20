@@ -1,21 +1,20 @@
 package shipwrights.genesis.teleportation.integration;
 
 import net.neoforged.bus.api.Event;
-import org.sable.api.ship.Ship;
 import shipwrights.genesis.space.Celestial;
 
-/// Fired when a ship is denied entry to a planet due to addon or datapack functionality
+/// Fired when a sub-level/ship is denied entry to a planet due to addon or datapack functionality
 public final class TeleportDisallowedEvent extends Event {
-    private final Ship ship;
+    private final Object ship;
     private final Celestial celestial;
 
-    public TeleportDisallowedEvent(Ship ship, Celestial celestial) {
+    public TeleportDisallowedEvent(Object ship, Celestial celestial) {
         this.ship = ship;
         this.celestial = celestial;
     }
 
-    /// ship that tried to teleport to a Celestial
-    public Ship ship() {
+    /// Sub-level or ship object that tried to teleport to a Celestial
+    public Object ship() {
         return ship;
     }
 
