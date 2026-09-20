@@ -6,17 +6,18 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(FogRenderer.class)
 public interface FogRendererAccessor {
-    @Accessor
+
+    @Accessor(value = "fogRed", remap = false)
     static float getFogRed() {
         throw new UnsupportedOperationException();
     }
 
-    @Accessor
+    @Accessor(value = "fogGreen", remap = false)
     static float getFogGreen() {
         throw new UnsupportedOperationException();
     }
 
-    @Accessor
+    @Accessor(value = "fogBlue", remap = false)
     static float getFogBlue() {
         throw new UnsupportedOperationException();
     }
