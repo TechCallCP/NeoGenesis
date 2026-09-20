@@ -3,15 +3,19 @@ package shipwrights.genesis.client.sound;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.sounds.SoundSource;
+
 import org.lwjgl.openal.AL10;
+
 import shipwrights.genesis.NeoGenesisMod;
 
 public class SoundFilterHandler {
-    private static final Minecraft client = Minecraft.getInstance();
+
+    private static final Minecraft CLIENT = Minecraft.getInstance();
 
     public static int determineFilterId(SoundInstance sound) {
-        if (!AudioFilterManager.isReady() || client.player == null || client.level == null)
+        if (!AudioFilterManager.isReady() || CLIENT.player == null || CLIENT.level == null) {
             return AL10.AL_NONE;
+        }
 
         if (shouldExcludeFromFiltering(sound)) {
             return AL10.AL_NONE;
@@ -21,11 +25,13 @@ public class SoundFilterHandler {
     }
 
     private static int getWaterFilterId() {
-        if (client.player == null)
+        if (CLIENT.player == null) {
             return AL10.AL_NONE;
+        }
 
-        if (client.player.isUnderWater())
+        if (CLIENT.player.isUnderWater()) {
             return AudioFilterManager.getFilterId(AudioFilterManager.Filter.LOWPASS);
+        }
 
         return AL10.AL_NONE;
     }
@@ -37,11 +43,13 @@ public class SoundFilterHandler {
     }
 
     private static int getSpaceFilterId() {
-        if (client.player == null)
+        if (CLIENT.player == null || CLIENT.level == null) {
             return AL10.AL_NONE;
+        }
 
-        if (client.player.level().dimension().location().equals(NeoGenesisMod.SPACE_DIM))
+        if (NeoGenesisMod.isSpaceDimension(CLIENT.level)) {
             return AudioFilterManager.getFilterId(AudioFilterManager.Filter.LOWPASS);
+        }
 
         return AL10.AL_NONE;
     }

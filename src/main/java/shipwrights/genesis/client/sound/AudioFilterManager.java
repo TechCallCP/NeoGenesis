@@ -1,12 +1,20 @@
 package shipwrights.genesis.client.sound;
 
-import org.lwjgl.openal.*;
-import shipwrights.genesis.NeoGenesisMod;
+import com.mojang.logging.LogUtils;
+
+import org.lwjgl.openal.AL10;
+import org.lwjgl.openal.ALC;
+import org.lwjgl.openal.ALC10;
+import org.lwjgl.openal.ALCCapabilities;
+import org.lwjgl.openal.EXTEfx;
+import org.slf4j.Logger;
 
 import java.util.EnumMap;
 import java.util.Map;
 
 public class AudioFilterManager {
+
+    private static final Logger LOGGER = LogUtils.getLogger();
 
     public enum Filter {
         LOWPASS,
@@ -27,20 +35,22 @@ public class AudioFilterManager {
 
         initializeLowPassFilter();
 
-        if (FILTER_IDS.isEmpty())
+        if (FILTER_IDS.isEmpty()) {
             efxSupported = false;
+        }
     }
 
     private static void initializeLowPassFilter() {
         int filterId = EXTEfx.alGenFilters();
 
-        if (hasAlError("Failed to generate EFX Filter for LPF."))
+        if (hasAlError("Failed to generate EFX Filter for LPF.")) {
             return;
+        }
 
         try {
             EXTEfx.alFilteri(filterId, EXTEfx.AL_FILTER_TYPE, EXTEfx.AL_FILTER_LOWPASS);
-            EXTEfx.alFilterf(filterId, EXTEfx.AL_LOWPASS_GAIN, 1.0f);
-            EXTEfx.alFilterf(filterId, EXTEfx.AL_LOWPASS_GAINHF, 0.005f);
+            EXTEfx.alFilterf(filterId, EXTEfx.AL_LOWPASS_GAIN, 1.0F);
+            EXTEfx.alFilterf(filterId, EXTEfx.AL_LOWPASS_GAINHF, 0.005F);
 
             if (hasAlError("Failed to set LPF parameters.")) {
                 EXTEfx.alDeleteFilters(filterId);
@@ -69,7 +79,7 @@ public class AudioFilterManager {
     private static boolean hasAlError(String errorContext) {
         int alError = AL10.alGetError();
         if (alError != AL10.AL_NO_ERROR) {
-            NeoGenesisMod.LOGGER.error("{}: Error code: {}", errorContext, alError);
+            LOGGER.error("{}: Error code: {}", errorContext, alError);
             return true;
         }
         return false;
@@ -84,8 +94,9 @@ public class AudioFilterManager {
     }
 
     public static void dispose() {
-        for (int filterId : FILTER_IDS.values())
+        for (int filterId : FILTER_IDS.values()) {
             EXTEfx.alDeleteFilters(filterId);
+        }
         FILTER_IDS.clear();
         efxSupported = false;
         attemptedInit = false;
