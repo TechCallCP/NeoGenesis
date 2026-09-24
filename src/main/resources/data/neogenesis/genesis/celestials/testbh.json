@@ -1,0 +1,11 @@
+{
+  "type": "neogenesis:blackhole",
+  "size": 2048,
+  "gravity": 8,
+  "transformProvider": {
+    "type": "neogenesis:static",
+    "x": 0.0,
+    "y": -200000.0,
+    "z": -200000.0
+  }
+}

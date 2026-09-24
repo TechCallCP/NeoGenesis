@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
-@Mixin(LevelRenderer.class)
+@Mixin(value = LevelRenderer.class, remap = false)
 public class LevelRendererMixin {
 
     @ModifyVariable(
@@ -22,6 +22,7 @@ public class LevelRendererMixin {
                     ordinal = 0
             ),
             ordinal = 0,
+            require = 0,
             remap = false
     )
     private float modifyK2(float f, LightTexture lightTexture,

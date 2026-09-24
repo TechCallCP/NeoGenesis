@@ -61,10 +61,10 @@ public interface PlanetColorPalette {
 
     Codec<PlanetColorPalette> CODEC = Codec.STRING.dispatch(
             "type",
-            palette -> palette.isOverworld() ? "genesis:overworld" : "genesis:rgb",
+            palette -> palette.isOverworld() ? "neogenesis:overworld" : "neogenesis:rgb",
             type -> switch (type) {
-                case "genesis:rgb" -> RGB.MAP_CODEC;
-                case "genesis:overworld" -> Overworld.MAP_CODEC;
+                case "neogenesis:rgb" -> RGB.MAP_CODEC;
+                case "neogenesis:overworld" -> Overworld.MAP_CODEC;
                 default -> throw new IllegalArgumentException("Unknown PlanetColorPalette type: " + type);
             }
     );

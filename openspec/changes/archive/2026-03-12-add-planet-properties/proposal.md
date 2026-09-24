@@ -2,7 +2,7 @@
 
 ## Why
 
-Planets (`genesis:body`) are the only visitable celestial type, meaning players actually land on and inhabit them. The base `Celestial` model is intentionally minimal — just enough to position, render, and orbit a body. But planets need richer environmental data: atmospheric density, atmospheric thickness, whether it rains, and what color the sky/fog should appear.
+Planets (`neogenesis:body`) are the only visitable celestial type, meaning players actually land on and inhabit them. The base `Celestial` model is intentionally minimal — just enough to position, render, and orbit a body. But planets need richer environmental data: atmospheric density, atmospheric thickness, whether it rains, and what color the sky/fog should appear.
 
 Adding this data directly to `Celestial` would bloat every celestial type with planet-specific fields. Instead, planet properties live in a separate, parallel registry loaded from `system_config/planet_properties/` — the same resource pack directory as celestial configs, but a distinct sub-path so the two loaders don't conflict.
 

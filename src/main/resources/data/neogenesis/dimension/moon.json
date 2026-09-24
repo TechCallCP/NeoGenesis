@@ -1,0 +1,48 @@
+{
+  "type": "neogenesis:moon",
+  "generator": {
+    "biome_source": {
+      "biomes": [
+        {
+          "parameters": {
+            "erosion": 0.3899,
+            "depth": 0,
+            "weirdness": 0.7,
+            "offset": 0,
+            "temperature": 0.4482,
+            "humidity": 0.94,
+            "continentalness": 0.1
+          },
+          "biome": "neogenesis:moon_barrens"
+        },
+        {
+          "parameters": {
+            "erosion": 0.3899,
+            "depth": 0,
+            "weirdness": 0.25,
+            "offset": 0,
+            "temperature": 0.5482,
+            "humidity": 0.94,
+            "continentalness": 0.5
+          },
+          "biome": "neogenesis:moon_lowlands"
+        },
+        {
+          "parameters": {
+            "erosion": 0.3899,
+            "depth": 0,
+            "weirdness": 0.5,
+            "offset": 0,
+            "temperature": 0.6482,
+            "humidity": 0.94,
+            "continentalness": 0.3
+          },
+          "biome": "neogenesis:moon_highlands"
+        }
+      ],
+      "type": "minecraft:multi_noise"
+    },
+    "settings": "neogenesis:moon_noise_settings",
+    "type": "minecraft:noise"
+  }
+}

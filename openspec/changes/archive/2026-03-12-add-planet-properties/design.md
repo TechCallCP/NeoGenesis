@@ -26,18 +26,18 @@ Each file under `system_config/planet_properties/` is a JSON object mapping cele
 {
   "planets": [
     {
-      "id": "genesis:earth",
+      "id": "neogenesis:earth",
       "density": 1.0,
       "thickness": 1.0,
       "precipitation": true,
-      "color": { "type": "genesis:overworld" }
+      "color": { "type": "neogenesis:overworld" }
     },
     {
-      "id": "genesis:mars",
+      "id": "neogenesis:mars",
       "density": 0.006,
       "thickness": 0.3,
       "precipitation": false,
-      "color": { "type": "genesis:rgb", "r": 180, "g": 90, "b": 50 }
+      "color": { "type": "neogenesis:rgb", "r": 180, "g": 90, "b": 50 }
     }
   ]
 }
@@ -47,8 +47,8 @@ Each file under `system_config/planet_properties/` is a JSON object mapping cele
 
 `PlanetColorPalette` is polymorphic, mirroring `CelestialTransformProvider`. The dispatch field is `"type"`:
 
-- `genesis:rgb` → `PlanetColorPalette.RGB(int r, int g, int b)`
-- `genesis:overworld` → `PlanetColorPalette.Overworld` (singleton, no extra fields)
+- `neogenesis:rgb` → `PlanetColorPalette.RGB(int r, int g, int b)`
+- `neogenesis:overworld` → `PlanetColorPalette.Overworld` (singleton, no extra fields)
 
 `Overworld` is a sentinel: callers MUST check `isOverworld()` before calling `getRGB()`, which throws. The actual sky color for the Overworld is sourced from biome data at render time.
 

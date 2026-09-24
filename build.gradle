@@ -180,6 +180,7 @@ java {
 
 tasks.withType(JavaCompile).configureEach {
     it.options.release = 21
+    options.compilerArgs.add("-AdisableTargetValidator=true")
 }
 
 sourceSets {

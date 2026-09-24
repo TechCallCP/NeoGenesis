@@ -1,6 +1,6 @@
 ## 1. Codecs
 
-- [x] 1.1 Add `PlanetColorPalette` dispatch codec with `genesis:rgb` and `genesis:overworld` variants
+- [x] 1.1 Add `PlanetColorPalette` dispatch codec with `neogenesis:rgb` and `neogenesis:overworld` variants
 - [x] 1.2 Add `PlanetProperties` Mojang codec (fields: `id`, `density`, `thickness`, `precipitation`, `color`)
 - [x] 1.3 Add `PlanetPropertiesModel` record (wraps a `List<PlanetPropertiesEntry>`) with codec, mirroring `SystemConfigModel`
 

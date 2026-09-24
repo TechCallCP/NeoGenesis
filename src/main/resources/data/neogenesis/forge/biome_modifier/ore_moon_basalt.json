@@ -1,0 +1,6 @@
+{
+  "type": "forge:add_features",
+  "features": "neogenesis:ore_moon_basalt",
+  "biomes": "#neogenesis:is_moon",
+  "step": "underground_ores"
+}

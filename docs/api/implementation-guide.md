@@ -16,11 +16,11 @@ Each file defines one celestial. Its ID is `namespace:name`. You can add files f
 
 ```json
 {
-  "type": "genesis:star",
+  "type": "neogenesis:star",
   "size": 1440,
   "gravity": 2.0,
   "transformProvider": {
-    "type": "genesis:static",
+    "type": "neogenesis:static",
     "x": 0.0,
     "y": 0.0,
     "z": 0.0,
@@ -35,7 +35,7 @@ Each file defines one celestial. Its ID is `namespace:name`. You can add files f
 }
 ```
 
-`properties` for `genesis:star` is a two-color gradient rendered on the star's surface (values 0–255).
+`properties` for `neogenesis:star` is a two-color gradient rendered on the star's surface (values 0–255).
 
 ---
 
@@ -45,11 +45,11 @@ Each file defines one celestial. Its ID is `namespace:name`. You can add files f
 
 ```json
 {
-  "type": "genesis:body",
+  "type": "neogenesis:body",
   "size": 96,
   "gravity": 1.0,
   "transformProvider": {
-    "type": "genesis:orbiting",
+    "type": "neogenesis:orbiting",
     "parentID": "mymod:sun",
     "seed": 12345,
     "orbitDistance": 15000,
@@ -62,7 +62,7 @@ Each file defines one celestial. Its ID is `namespace:name`. You can add files f
       "thickness": 1.0,
       "precipitation": true,
       "isBreathable": true,
-      "color": { "type": "genesis:overworld" }
+      "color": { "type": "neogenesis:overworld" }
     }
   }
 }
@@ -78,11 +78,11 @@ Each file defines one celestial. Its ID is `namespace:name`. You can add files f
 
 ```json
 {
-  "type": "genesis:body",
+  "type": "neogenesis:body",
   "size": 29,
   "gravity": 0.1622,
   "transformProvider": {
-    "type": "genesis:orbiting",
+    "type": "neogenesis:orbiting",
     "parentID": "mymod:earth",
     "seed": 67890,
     "orbitDistance": 750,
@@ -95,7 +95,7 @@ Each file defines one celestial. Its ID is `namespace:name`. You can add files f
       "thickness": 0.0,
       "precipitation": false,
       "isBreathable": false,
-      "color": { "type": "genesis:rgb", "r": 5, "g": 5, "b": 10 }
+      "color": { "type": "neogenesis:rgb", "r": 5, "g": 5, "b": 10 }
     }
   }
 }
@@ -111,11 +111,11 @@ Each file defines one celestial. Its ID is `namespace:name`. You can add files f
 
 ```json
 {
-  "type": "genesis:blackhole",
+  "type": "neogenesis:blackhole",
   "size": 2048,
   "gravity": 8.0,
   "transformProvider": {
-    "type": "genesis:static",
+    "type": "neogenesis:static",
     "x": 0.0,
     "y": -200000.0,
     "z": -200000.0
@@ -124,13 +124,13 @@ Each file defines one celestial. Its ID is `namespace:name`. You can add files f
 }
 ```
 
-`genesis:blackhole` has no type-specific properties.
+`neogenesis:blackhole` has no type-specific properties.
 
 ---
 
 ## Transform Providers
 
-### `genesis:static`
+### `neogenesis:static`
 
 Fixed position and optional rotation.
 
@@ -139,7 +139,7 @@ Fixed position and optional rotation.
 | `x`, `y`, `z` | Number | Yes | — | Position |
 | `xRot`, `yRot`, `zRot` | Number | No | `0.0` | Rotation in radians |
 
-### `genesis:orbiting`
+### `neogenesis:orbiting`
 
 Circular orbit around a parent.
 
@@ -164,14 +164,14 @@ Circular orbit around a parent.
 | `transformProvider` | Object | Yes | — | Transform configuration |
 | `properties` | Object | Yes | — | Type-specific properties (see below) |
 
-### `genesis:star` properties
+### `neogenesis:star` properties
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `r0`, `g0`, `b0` | Integer (0–255) | Primary gradient color |
 | `r1`, `g1`, `b1` | Integer (0–255) | Secondary gradient color |
 
-### `genesis:body` properties
+### `neogenesis:body` properties
 
 ```json
 "properties": {
@@ -180,7 +180,7 @@ Circular orbit around a parent.
     "thickness": 1.0,
     "precipitation": true,
     "isBreathable": true,
-    "color": { "type": "genesis:overworld" }
+    "color": { "type": "neogenesis:overworld" }
   }
 }
 ```
@@ -191,9 +191,9 @@ Circular orbit around a parent.
 | `thickness` | Number | Visual thickness of atmosphere shell |
 | `precipitation` | Boolean | Whether weather occurs |
 | `isBreathable` | Boolean | Whether players can breathe |
-| `color` | Object | `{ "type": "genesis:overworld" }` or `{ "type": "genesis:rgb", "r": 0, "g": 100, "b": 255 }` |
+| `color` | Object | `{ "type": "neogenesis:overworld" }` or `{ "type": "neogenesis:rgb", "r": 0, "g": 100, "b": 255 }` |
 
-### `genesis:blackhole` properties
+### `neogenesis:blackhole` properties
 
 Use `"properties": {}`.
 
@@ -217,7 +217,7 @@ Genesis default solar system values:
 
 ## Textures
 
-Planet and moon textures (`genesis:body`) are looked up automatically by celestial ID. Place them in a **resource pack or mod** (client-side):
+Planet and moon textures (`neogenesis:body`) are looked up automatically by celestial ID. Place them in a **resource pack or mod** (client-side):
 
 ```
 assets/genesis/textures/planets/<namespace>/<name>.png
@@ -247,7 +247,7 @@ Access the registry from a `Level`:
 Registry<Celestial> registry = GenesisMod.getCelestialRegistry(level);
 
 // Get by ID
-Celestial sun = registry.get(ResourceLocation.parse("genesis:sun"));
+Celestial sun = registry.get(ResourceLocation.parse("neogenesis:sun"));
 
 // Get the celestial for the current level/dimension
 Celestial current = GenesisMod.getCelestialForLevel(level);
@@ -270,16 +270,16 @@ registry.stream()
 
 ## Complete Example: Genesis Default Solar System
 
-The four files that ship with Genesis:
+The four files that ship with neogenesis:
 
 `data/genesis/genesis/celestials/sun.json`
 ```json
 {
-  "type": "genesis:star",
+  "type": "neogenesis:star",
   "size": 1440,
   "gravity": 2.0,
   "transformProvider": {
-    "type": "genesis:static",
+    "type": "neogenesis:static",
     "x": 0.0, "y": 0.0, "z": 0.0,
     "xRot": 15, "yRot": 45, "zRot": 5
   },
@@ -293,12 +293,12 @@ The four files that ship with Genesis:
 `data/minecraft/genesis/celestials/overworld.json`
 ```json
 {
-  "type": "genesis:body",
+  "type": "neogenesis:body",
   "size": 96,
   "gravity": 1.0,
   "transformProvider": {
-    "type": "genesis:orbiting",
-    "parentID": "genesis:sun",
+    "type": "neogenesis:orbiting",
+    "parentID": "neogenesis:sun",
     "seed": 2,
     "orbitDistance": 15000,
     "orbitTime": 4600000,
@@ -310,7 +310,7 @@ The four files that ship with Genesis:
       "thickness": 1.0,
       "precipitation": true,
       "isBreathable": true,
-      "color": { "type": "genesis:overworld" }
+      "color": { "type": "neogenesis:overworld" }
     }
   }
 }
@@ -319,11 +319,11 @@ The four files that ship with Genesis:
 `data/genesis/genesis/celestials/moon.json`
 ```json
 {
-  "type": "genesis:body",
+  "type": "neogenesis:body",
   "size": 29,
   "gravity": 0.1622,
   "transformProvider": {
-    "type": "genesis:orbiting",
+    "type": "neogenesis:orbiting",
     "parentID": "minecraft:overworld",
     "seed": 67890,
     "orbitDistance": 750,
@@ -336,7 +336,7 @@ The four files that ship with Genesis:
       "thickness": 0.0,
       "precipitation": false,
       "isBreathable": false,
-      "color": { "type": "genesis:rgb", "r": 5, "g": 5, "b": 10 }
+      "color": { "type": "neogenesis:rgb", "r": 5, "g": 5, "b": 10 }
     }
   }
 }
@@ -345,11 +345,11 @@ The four files that ship with Genesis:
 `data/genesis/genesis/celestials/testbh.json`
 ```json
 {
-  "type": "genesis:blackhole",
+  "type": "neogenesis:blackhole",
   "size": 2048,
   "gravity": 8,
   "transformProvider": {
-    "type": "genesis:static",
+    "type": "neogenesis:static",
     "x": 0.0,
     "y": -200000.0,
     "z": -200000.0

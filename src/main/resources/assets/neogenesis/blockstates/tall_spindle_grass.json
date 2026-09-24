@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "half=lower": {
+      "model": "neogenesis:block/tall_spindle_grass_bottom"
+    },
+    "half=upper": {
+      "model": "neogenesis:block/tall_spindle_grass_top"
+    }
+  }
+}

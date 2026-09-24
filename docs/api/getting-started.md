@@ -8,7 +8,7 @@ Celestials are the stars, planets, moons, and other astronomical bodies in Genes
 
 Each celestial has:
 
-- **Type** — What kind it is (`genesis:star`, `genesis:body`, `genesis:blackhole`, or custom)
+- **Type** — What kind it is (`neogenesis:star`, `neogenesis:body`, `neogenesis:blackhole`, or custom)
 - **Physical properties** — Size, gravity, color, and type-specific properties
 - **Transform** — How it moves and rotates over time
 
@@ -18,9 +18,9 @@ The celestial's ID is derived from its data file path: `data/<namespace>/genesis
 
 | Type | Light | Shadow | Visitable | Use for |
 |------|-------|--------|-----------|---------|
-| `genesis:star` | yes | no | no | Suns |
-| `genesis:body` | no | yes | yes | Planets, moons |
-| `genesis:blackhole` | no | no | no | Black holes |
+| `neogenesis:star` | yes | no | no | Suns |
+| `neogenesis:body` | no | yes | yes | Planets, moons |
+| `neogenesis:blackhole` | no | no | no | Black holes |
 
 Addon mods can register additional types — see [Advanced Topics](advanced.md).
 
@@ -28,16 +28,16 @@ Addon mods can register additional types — see [Advanced Topics](advanced.md).
 
 | Type | Use for |
 |------|---------|
-| `genesis:static` | Fixed position (e.g. a central sun) |
-| `genesis:orbiting` | Circular orbit around a parent celestial |
+| `neogenesis:static` | Fixed position (e.g. a central sun) |
+| `neogenesis:orbiting` | Circular orbit around a parent celestial |
 
 ### Properties
 
 Each celestial type uses type-specific `properties`:
 
-- `genesis:star` — Two-color gradient (`r0/g0/b0`, `r1/g1/b1`, values 0–255)
-- `genesis:body` — `atmosphere` object
-- `genesis:blackhole` — No properties needed (use `{}`)
+- `neogenesis:star` — Two-color gradient (`r0/g0/b0`, `r1/g1/b1`, values 0–255)
+- `neogenesis:body` — `atmosphere` object
+- `neogenesis:blackhole` — No properties needed (use `{}`)
 
 ## Quick Start
 
@@ -45,11 +45,11 @@ A minimal star at the origin (`data/mymod/genesis/celestials/my_sun.json`):
 
 ```json
 {
-  "type": "genesis:star",
+  "type": "neogenesis:star",
   "size": 1440,
   "gravity": 2.0,
   "transformProvider": {
-    "type": "genesis:static",
+    "type": "neogenesis:static",
     "x": 0.0,
     "y": 0.0,
     "z": 0.0

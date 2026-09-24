@@ -1,0 +1,24 @@
+{
+  "variants": {
+    "facing=north": [
+      {"model": "neogenesis:block/wall_zaplight_spindles_0", "y": 180},
+      {"model": "neogenesis:block/wall_zaplight_spindles_1", "y": 180},
+      {"model": "neogenesis:block/wall_zaplight_spindles_2", "y": 180}
+    ],
+    "facing=south": [
+      {"model": "neogenesis:block/wall_zaplight_spindles_0"},
+      {"model": "neogenesis:block/wall_zaplight_spindles_1"},
+      {"model": "neogenesis:block/wall_zaplight_spindles_2"}
+    ],
+    "facing=east": [
+      {"model": "neogenesis:block/wall_zaplight_spindles_0", "y": 270},
+      {"model": "neogenesis:block/wall_zaplight_spindles_1", "y": 270},
+      {"model": "neogenesis:block/wall_zaplight_spindles_2", "y": 270}
+    ],
+    "facing=west": [
+      {"model": "neogenesis:block/wall_zaplight_spindles_0", "y": 90},
+      {"model": "neogenesis:block/wall_zaplight_spindles_1", "y": 90},
+      {"model": "neogenesis:block/wall_zaplight_spindles_2", "y": 90}
+    ]
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "values": [
+    "#neogenesis:base_stone_moon",
+    "neogenesis:hallow_moon_stone",
+    "neogenesis:moon_sand",
+    "neogenesis:wavy_moon_sand",
+    "neogenesis:dark_moon_sand",
+    "neogenesis:dark_wavy_moon_sand",
+    "#minecraft:dirt",
+    "#minecraft:sand",
+    "#minecraft:terracotta",
+    "#minecraft:iron_ores",
+    "#minecraft:copper_ores",
+    "minecraft:water",
+    "minecraft:gravel",
+    "minecraft:suspicious_gravel",
+    "minecraft:sandstone",
+    "minecraft:red_sandstone",
+    "minecraft:calcite",
+    "minecraft:snow",
+    "minecraft:packed_ice",
+    "minecraft:raw_iron_block",
+    "minecraft:raw_copper_block",
+    "neogenesis:void_core_ore",
+    "minecraft:basalt"
+  ]
+}

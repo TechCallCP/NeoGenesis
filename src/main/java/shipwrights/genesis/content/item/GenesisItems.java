@@ -7,6 +7,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.StandingAndWallBlockItem;
 
+import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
@@ -19,6 +20,10 @@ import java.util.Map;
 public class GenesisItems {
     public static final DeferredRegister<Item> ITEMS =
             DeferredRegister.create(Registries.ITEM, NeoGenesisMod.MOD_ID);
+
+    public static void register(IEventBus eventBus) {
+        ITEMS.register(eventBus);
+    }
 
     public static Map<String, DeferredHolder<Item, Item>> DYNAMIC_ITEMS = new HashMap<>();
 

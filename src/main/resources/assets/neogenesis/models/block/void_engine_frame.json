@@ -1,0 +1,12 @@
+{
+    "parent": "block/cube",
+    "textures": {
+        "down": "neogenesis:block/void_engine_frame",
+        "up": "neogenesis:block/void_engine_frame",
+        "north": "neogenesis:block/void_engine_frame",
+        "south": "neogenesis:block/void_engine_frame",
+        "east": "neogenesis:block/void_engine_frame",
+        "west": "neogenesis:block/void_engine_frame",
+        "particle": "neogenesis:block/void_engine_frame"
+    }
+} 

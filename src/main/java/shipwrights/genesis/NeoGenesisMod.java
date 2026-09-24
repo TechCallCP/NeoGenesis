@@ -16,12 +16,22 @@ import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.fml.loading.FMLLoader;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.common.NeoForge;
 
 import org.slf4j.Logger;
 
 import shipwrights.genesis.client.DimensionSpecialEffectsManagerMixin;
 import shipwrights.genesis.client.GenesisClientSetup;
+import shipwrights.genesis.commands.NeogenesisCommandArguments;
+import shipwrights.genesis.content.block.GenesisBlocks;
+import shipwrights.genesis.content.blockentity.GenesisBlockEntities;
 import shipwrights.genesis.content.fluid.GenesisFluids;
+import shipwrights.genesis.content.item.GenesisCreativeTabs;
+import shipwrights.genesis.content.item.GenesisItems;
+import shipwrights.genesis.content.painting.GenesisPaintings;
+import shipwrights.genesis.content.particle.GenesisParticles;
+import shipwrights.genesis.content.sound.GenesisSounds;
+import shipwrights.genesis.handler.SableEntitySpaceHandler;
 import shipwrights.genesis.networking.GenesisNetworking;
 import shipwrights.genesis.space.Celestial;
 import shipwrights.genesis.space.type.BuiltinCelestialTypes;
@@ -30,7 +40,7 @@ import shipwrights.genesis.worldgen.WorldGenRegistry;
 @Mod(NeoGenesisMod.MOD_ID)
 public class NeoGenesisMod {
 
-    public static final String MOD_ID = "genesis";
+    public static final String MOD_ID = "neogenesis";
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public static final ResourceLocation SPACE_DIM = ResourceLocation.fromNamespaceAndPath(MOD_ID, "space");
@@ -45,9 +55,23 @@ public class NeoGenesisMod {
     public NeoGenesisMod(IEventBus modEventBus) {
         GenesisNetworking.init(modEventBus);
         WorldGenRegistry.init(modEventBus);
+
+        // Command argument registry
+        NeogenesisCommandArguments.register(modEventBus);
+
+        // All DeferredRegisters connected to the mod event bus
+        GenesisBlocks.register(modEventBus);
+        GenesisItems.register(modEventBus);
+        GenesisCreativeTabs.register(modEventBus); // <-- Registers your creative tabs
+        GenesisBlockEntities.register(modEventBus);
         GenesisFluids.register(modEventBus);
+        GenesisParticles.register(modEventBus);
+        GenesisPaintings.register(modEventBus);
+        GenesisSounds.register(modEventBus);
 
         BuiltinCelestialTypes.register();
+
+        NeoForge.EVENT_BUS.register(SableEntitySpaceHandler.class);
 
         modEventBus.addListener(this::commonSetup);
 

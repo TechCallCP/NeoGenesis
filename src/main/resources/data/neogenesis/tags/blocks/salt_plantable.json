@@ -1,0 +1,14 @@
+{
+  "values": [
+    "neogenesis:salt",
+    "neogenesis:cracked_salt",
+    "neogenesis:red_salt",
+    "neogenesis:cracked_red_salt",
+    "neogenesis:pale_red_salt",
+    "neogenesis:cracked_pale_red_salt",
+    "neogenesis:cyan_salt",
+    "neogenesis:cracked_cyan_salt",
+    "neogenesis:turquoise_salt",
+    "neogenesis:cracked_turquoise_salt"
+  ]
+}

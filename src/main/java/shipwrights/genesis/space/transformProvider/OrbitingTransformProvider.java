@@ -22,7 +22,7 @@ import java.util.Random;
  * orbital angles and base rotation (matching OrbitingBody behavior).
  */
 public class OrbitingTransformProvider implements CelestialTransformProvider {
-    public static final ResourceLocation TYPE = ResourceLocation.parse("genesis:orbiting");
+    public static final ResourceLocation TYPE = ResourceLocation.parse("neogenesis:orbiting");
 
     private final ResourceLocation parentID;
     private final int seed;

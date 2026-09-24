@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/slab",
+  "textures": {
+    "bottom": "neogenesis:block/echostone",
+    "top": "neogenesis:block/echostone",
+    "side": "neogenesis:block/echostone"
+  }
+}

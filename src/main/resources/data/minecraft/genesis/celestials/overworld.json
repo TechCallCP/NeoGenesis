@@ -1,10 +1,10 @@
 {
-  "type": "genesis:body",
+  "type": "neogenesis:body",
   "size": 96,
   "gravity": 1.0,
   "transformProvider": {
-    "type": "genesis:orbiting",
-    "parentID": "genesis:sun",
+    "type": "neogenesis:orbiting",
+    "parentID": "neogenesis:sun",
     "seed": 2,
     "orbitDistance": 15000,
     "orbitTime": 4600000,
@@ -17,7 +17,7 @@
       "precipitation": true,
       "isBreathable": true,
       "color": {
-        "type": "genesis:overworld"
+        "type": "neogenesis:overworld"
       }
     }
   }

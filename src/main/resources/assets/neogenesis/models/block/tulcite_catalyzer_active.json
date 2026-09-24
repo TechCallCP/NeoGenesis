@@ -1,0 +1,12 @@
+{
+    "parent": "block/cube",
+    "textures": {
+        "down": "neogenesis:block/nav_projector_bottom",
+        "up": "neogenesis:block/nav_projector_bottom",
+        "north": "neogenesis:block/tulcite_catalyzer_active",
+        "south": "neogenesis:block/tulcite_catalyzer_active",
+        "east": "neogenesis:block/tulcite_catalyzer_active",
+        "west": "neogenesis:block/tulcite_catalyzer_active",
+        "particle": "neogenesis:block/tulcite_catalyzer_active"
+    }
+} 

@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/stairs",
+  "textures": {
+    "bottom": "neogenesis:block/nullstone",
+    "top": "neogenesis:block/nullstone",
+    "side": "neogenesis:block/nullstone"
+  }
+}

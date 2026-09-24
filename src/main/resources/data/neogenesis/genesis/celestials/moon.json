@@ -1,0 +1,27 @@
+{
+  "type": "neogenesis:body",
+  "size": 29,
+  "gravity": 0.1622,
+  "transformProvider": {
+    "type": "neogenesis:orbiting",
+    "parentID": "minecraft:overworld",
+    "seed": 67890,
+    "orbitDistance": 750,
+    "orbitTime": 184329,
+    "dayLength": 0
+  },
+  "properties": {
+    "atmosphere": {
+      "density": 0.1,
+      "thickness": 0.2,
+      "precipitation": false,
+      "isBreathable": false,
+      "color": {
+        "type": "neogenesis:rgb",
+        "r": 5,
+        "g": 5,
+        "b": 10
+      }
+    }
+  }
+}

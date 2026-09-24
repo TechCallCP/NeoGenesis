@@ -1,0 +1,13 @@
+  {
+    "variants": {
+      "type=bottom": {
+        "model": "neogenesis:block/warpstone_slab"
+      },
+      "type=top": {
+        "model": "neogenesis:block/warpstone_slab_top"
+      },
+      "type=double": {
+        "model": "neogenesis:block/warpstone"
+      }
+    }
+  }

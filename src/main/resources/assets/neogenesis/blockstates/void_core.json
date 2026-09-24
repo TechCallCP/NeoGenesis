@@ -1,0 +1,10 @@
+{
+    "variants": {
+        "dormant=false": {
+            "model": "neogenesis:block/void_core_dormant"
+        },
+        "dormant=true": {
+            "model": "neogenesis:block/void_core_dormant"
+        }
+    }
+} 

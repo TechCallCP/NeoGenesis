@@ -1,6 +1,7 @@
 package shipwrights.genesis.commands;
 
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
+import net.minecraft.commands.synchronization.ArgumentTypeInfos;
 import net.minecraft.commands.synchronization.SingletonArgumentInfo;
 import net.minecraft.core.registries.Registries;
 import net.neoforged.bus.api.IEventBus;
@@ -14,7 +15,10 @@ public class NeogenesisCommandArguments {
 
     public static final DeferredHolder<ArgumentTypeInfo<?, ?>, ArgumentTypeInfo<CelestialArgument, SingletonArgumentInfo<CelestialArgument>.Template>> CELESTIAL =
             COMMAND_ARGUMENT_TYPES.register("celestial", () ->
-                    SingletonArgumentInfo.contextFree(CelestialArgument::celestial)
+                    ArgumentTypeInfos.registerByClass(
+                            CelestialArgument.class,
+                            SingletonArgumentInfo.contextFree(CelestialArgument::celestial)
+                    )
             );
 
     public static void register(IEventBus eventBus) {

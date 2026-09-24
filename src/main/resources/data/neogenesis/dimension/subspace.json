@@ -1,0 +1,12 @@
+{
+  "type": "neogenesis:subspace",
+  "generator": {
+    "type": "minecraft:noise",
+    "seed": 0,
+    "settings": "neogenesis:subspace",
+    "biome_source": {
+      "type": "minecraft:fixed",
+      "biome": "neogenesis:subspace"
+    }
+  }
+}

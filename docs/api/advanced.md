@@ -143,7 +143,7 @@ Call `FigureEightTransformProvider.register()` during mod initialization. Then u
 
 ```json
 {
-  "type": "genesis:body",
+  "type": "neogenesis:body",
   "size": 100,
   "gravity": 1.0,
   "transformProvider": {
@@ -155,4 +155,4 @@ Call `FigureEightTransformProvider.register()` during mod initialization. Then u
 }
 ```
 
-The `registry` parameter in `getPosition`/`getRotation` is available if you need to look up a parent celestial's position (as `genesis:orbiting` does internally).
+The `registry` parameter in `getPosition`/`getRotation` is available if you need to look up a parent celestial's position (as `neogenesis:orbiting` does internally).

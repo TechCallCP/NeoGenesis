@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cross",
+  "textures": {
+    "cross": "neogenesis:block/medium_verdite_bud"
+  }
+}

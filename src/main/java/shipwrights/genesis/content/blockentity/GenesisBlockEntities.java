@@ -2,6 +2,7 @@ package shipwrights.genesis.content.blockentity;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
@@ -11,6 +12,10 @@ import shipwrights.genesis.content.block.GenesisBlocks;
 public class GenesisBlockEntities {
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES =
             DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, NeoGenesisMod.MOD_ID);
+
+    public static void register(IEventBus eventBus) {
+        BLOCK_ENTITIES.register(eventBus);
+    }
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<NavProjectorBlockEntity>> NAV_PROJECTOR =
             BLOCK_ENTITIES.register("nav_projector",

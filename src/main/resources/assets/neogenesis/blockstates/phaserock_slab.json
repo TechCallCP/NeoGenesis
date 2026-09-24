@@ -1,0 +1,13 @@
+  {
+    "variants": {
+      "type=bottom": {
+        "model": "neogenesis:block/phaserock_slab"
+      },
+      "type=top": {
+        "model": "neogenesis:block/phaserock_slab_top"
+      },
+      "type=double": {
+        "model": "neogenesis:block/phaserock"
+      }
+    }
+  }

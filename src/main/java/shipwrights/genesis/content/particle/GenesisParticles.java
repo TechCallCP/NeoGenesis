@@ -11,16 +11,16 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import shipwrights.genesis.NeoGenesisMod;
 
 public class GenesisParticles {
-    public static final DeferredRegister<ParticleType<?>> PARTICLE_TYPES =
+    public static final DeferredRegister<ParticleType<?>> PARTICLES =
             DeferredRegister.create(Registries.PARTICLE_TYPE, NeoGenesisMod.MOD_ID);
 
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> ZAP_BUBBLE_PARTICLES =
-            PARTICLE_TYPES.register("zap_bubble_particles", () -> new SimpleParticleType(true));
+            PARTICLES.register("zap_bubble_particles", () -> new SimpleParticleType(false));
 
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> VERDITE_PARTICLES =
-            PARTICLE_TYPES.register("verdite_particles", () -> new SimpleParticleType(true));
+            PARTICLES.register("verdite_particles", () -> new SimpleParticleType(true));
 
     public static void register(IEventBus eventBus) {
-        PARTICLE_TYPES.register(eventBus);
+        PARTICLES.register(eventBus);
     }
 }

@@ -1,0 +1,13 @@
+  {
+    "variants": {
+      "type=bottom": {
+        "model": "neogenesis:block/riftrock_slab"
+      },
+      "type=top": {
+        "model": "neogenesis:block/riftrock_slab_top"
+      },
+      "type=double": {
+        "model": "neogenesis:block/riftrock"
+      }
+    }
+  }

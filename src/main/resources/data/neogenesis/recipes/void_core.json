@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "functional",
+  "key": {
+    "E": {
+      "item": "neogenesis:dead_moon_coral_block"
+    },
+    "O": {
+      "item": "neogenesis:void_shard"
+    }
+  },
+  "pattern": [
+    "OOO",
+    "OEO",
+    "OOO"
+  ],
+  "result": {
+    "item": "neogenesis:void_core",
+    "count": 1
+  },
+  "show_notification": true
+}

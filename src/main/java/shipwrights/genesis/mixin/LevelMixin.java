@@ -26,7 +26,8 @@ public abstract class LevelMixin {
         if (vp instanceof VantagePoint.OnCelestial oc) {
             return (long)(genesis$getApparentAngle(oc, gameTime, 0f) * 24000);
         }
-        return original.call();
+        // Returns the Genesis offset time instead of raw vanilla time
+        return gameTime;
     }
 
     @WrapMethod(method = "getSunAngle", remap = false)

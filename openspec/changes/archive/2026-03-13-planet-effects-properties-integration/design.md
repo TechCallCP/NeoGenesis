@@ -3,7 +3,7 @@
 `PlanetDimensionEffects` is the client-side renderer for custom planet dimensions. It currently has three hardcoded behaviors that should be data-driven:
 
 1. **Precipitation** — `hasPrecipitation()` returns `true` unconditionally; there's an explicit `//TODO` in the code.
-2. **Sky color** — `getSkyColor()` always samples biome sky color. `PlanetColorPalette` defines a `genesis:rgb` variant explicitly for non-Overworld planets.
+2. **Sky color** — `getSkyColor()` always samples biome sky color. `PlanetColorPalette` defines a `neogenesis:rgb` variant explicitly for non-Overworld planets.
 3. **Atmospheric density** — `PlanetProperties.density` (0 = vacuum, 1 = Earth-like) is loaded but never consumed by the renderer.
 
 `PlanetProperties` is fully implemented, data-file driven, and synced to clients via `PlanetPropertiesSyncPacket`. All data is available at render time. The integration is purely a client-side read operation — no changes to data loading, networking, or server code.
@@ -12,7 +12,7 @@
 
 **Goals:**
 - Wire `PlanetProperties.precipitation` into `hasPrecipitation()`
-- Branch sky color on `PlanetColorPalette.isOverworld()`: use biome sampling for `genesis:overworld`, otherwise use the planet's explicit RGB
+- Branch sky color on `PlanetColorPalette.isOverworld()`: use biome sampling for `neogenesis:overworld`, otherwise use the planet's explicit RGB
 - Use `PlanetProperties.density` to modulate atmospheric scattering (star brightness, sky intensity)
 - Graceful fallback when no `PlanetProperties` entry exists for a planet (treat as Overworld-like defaults)
 
@@ -27,7 +27,7 @@
 
 `PlanetDimensionEffects` should call `PlanetProperties.get(celestial.getID())` and defensively null-check. If no entry is registered, fall back to `precipitation = true` and the overworld color path so unregistered planets stay visually correct.
 
-**Alternative considered:** Require every `genesis:body` to have a `PlanetProperties` entry and log a warning if missing. Rejected — too strict for third-party addon compatibility during early development.
+**Alternative considered:** Require every `neogenesis:body` to have a `PlanetProperties` entry and log a warning if missing. Rejected — too strict for third-party addon compatibility during early development.
 
 ### Sky color branching
 
@@ -62,7 +62,7 @@ effectiveStarBrightness = lerp(density, 1.0, starBrightness)
 | Property | Fallback if `PlanetProperties` is null |
 |---|---|
 | `precipitation` | `true` |
-| `color` | `genesis:overworld` (biome sampling) |
+| `color` | `neogenesis:overworld` (biome sampling) |
 | `density` | `1.0` |
 
 ## Risks / Trade-offs

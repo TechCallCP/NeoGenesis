@@ -1,0 +1,13 @@
+  {
+    "variants": {
+      "type=bottom": {
+        "model": "neogenesis:block/nullstone_slab"
+      },
+      "type=top": {
+        "model": "neogenesis:block/nullstone_slab_top"
+      },
+      "type=double": {
+        "model": "neogenesis:block/nullstone"
+      }
+    }
+  }

@@ -148,7 +148,7 @@ public class PlanetRenderer implements CelestialRenderer {
     }
 
     private void renderPlanetAt(ResourceLocation planetID, List<FaceShadow> shadows, PoseStack poseStack, double x, double y, double z, double halfExtent, Quaterniondc localRotation, float alpha) {
-        ResourceLocation textureLocation = ResourceLocation.parse("genesis:planets/" + planetID.getNamespace() + "/" + planetID.getPath());
+        ResourceLocation textureLocation = ResourceLocation.parse("neogenesis:planets/" + planetID.getNamespace() + "/" + planetID.getPath());
 
         MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
         var renderType = getTexturedPlanetRenderType(textureLocation);

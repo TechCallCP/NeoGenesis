@@ -91,9 +91,9 @@ static void register(CelestialType type)            // register a custom type
 
 | ID | `castsLight` | `castsShadow` | `isVisitable` |
 |----|-------------|--------------|--------------|
-| `genesis:star` | true | false | false |
-| `genesis:body` | false | true | true |
-| `genesis:blackhole` | false | false | false |
+| `neogenesis:star` | true | false | false |
+| `neogenesis:body` | false | true | true |
+| `neogenesis:blackhole` | false | false | false |
 
 ---
 
@@ -127,7 +127,7 @@ Codec<CelestialTransformProvider> DISPATCH_CODEC   // dispatch codec for JSON
 
 ## StaticTransformProvider
 
-**Type ID:** `genesis:static`
+**Type ID:** `neogenesis:static`
 
 ### Constructors
 
@@ -149,7 +149,7 @@ Rotation values are in radians. Defaults to `0.0`.
 
 ## OrbitingTransformProvider
 
-**Type ID:** `genesis:orbiting`
+**Type ID:** `neogenesis:orbiting`
 
 ### Constructor
 
@@ -213,11 +213,11 @@ public record Atmosphere(
 | `thickness` | Visual thickness of atmosphere shell |
 | `precipitation` | Whether weather occurs |
 | `isBreathable` | Whether players can breathe |
-| `color` | `{ "type": "genesis:overworld" }` or `{ "type": "genesis:rgb", "r": 0, "g": 100, "b": 255 }` |
+| `color` | `{ "type": "neogenesis:overworld" }` or `{ "type": "neogenesis:rgb", "r": 0, "g": 100, "b": 255 }` |
 
 ### EmptyProperties
 
-Used by `genesis:blackhole`. Codec produces `{}` / accepts any object.
+Used by `neogenesis:blackhole`. Codec produces `{}` / accepts any object.
 
 ---
 

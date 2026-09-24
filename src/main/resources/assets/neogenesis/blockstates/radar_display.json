@@ -1,0 +1,27 @@
+{
+    "variants": {
+        "facing=north": {
+            "model": "neogenesis:block/radar_display"
+        },
+        "facing=east": {
+            "model": "neogenesis:block/radar_display",
+            "y": 90
+        },
+        "facing=south": {
+            "model": "neogenesis:block/radar_display",
+            "y": 180
+        },
+        "facing=west": {
+            "model": "neogenesis:block/radar_display",
+            "y": 270
+        },
+        "facing=up": {
+            "model": "neogenesis:block/radar_display",
+            "x": 270
+        },
+        "facing=down": {
+            "model": "neogenesis:block/radar_display",
+            "x": 90
+        }
+    }
+}

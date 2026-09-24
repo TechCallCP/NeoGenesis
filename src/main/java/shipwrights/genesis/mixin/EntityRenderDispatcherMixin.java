@@ -14,19 +14,37 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import shipwrights.genesis.NeoGenesisMod;
 
-@Mixin(EntityRenderDispatcher.class)
+@Mixin(value = EntityRenderDispatcher.class, remap = false)
 public class EntityRenderDispatcherMixin {
 
     @Unique
     private static final ThreadLocal<Entity> genesis$currentEntity = new ThreadLocal<>();
 
     @Inject(method = "renderHitbox", at = @At("HEAD"), remap = false)
-    private static void captureEntity(PoseStack poseStack, VertexConsumer buffer, Entity entity, float partialTick, CallbackInfo ci) {
+    private static void captureEntity(
+            PoseStack poseStack,
+            VertexConsumer buffer,
+            Entity entity,
+            float red,
+            float green,
+            float blue,
+            float partialTick,
+            CallbackInfo ci
+    ) {
         genesis$currentEntity.set(entity);
     }
 
     @Inject(method = "renderHitbox", at = @At("RETURN"), remap = false)
-    private static void clearEntity(PoseStack poseStack, VertexConsumer buffer, Entity entity, float partialTick, CallbackInfo ci) {
+    private static void clearEntity(
+            PoseStack poseStack,
+            VertexConsumer buffer,
+            Entity entity,
+            float red,
+            float green,
+            float blue,
+            float partialTick,
+            CallbackInfo ci
+    ) {
         genesis$currentEntity.remove();
     }
 

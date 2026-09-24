@@ -46,6 +46,9 @@ public class CelestialRenderDispatcher {
         }
 
         Registry<Celestial> registry = NeoGenesisMod.getCelestialRegistry(level);
+        if (registry == null) {
+            return; // Prevents NullPointerException in dimensions without celestial registries
+        }
 
         long ticks = NeoGenesisMod.getTicks(level);
         float partialTick = NeoGenesisMod.getPartialTick(level, event);

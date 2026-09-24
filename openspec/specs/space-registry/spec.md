@@ -42,7 +42,7 @@ The registry SHALL support querying celestials by position and type predicate, r
 
 #### Scenario: Nearest star lookup
 - **WHEN** a celestial calls `getNearestStar(gameTime, partialTick)`
-- **THEN** the registry returns the closest celestial whose type is `genesis:star`
+- **THEN** the registry returns the closest celestial whose type is `neogenesis:star`
 
 #### Scenario: No stars present
 - **WHEN** there are no stars in the registry
@@ -69,7 +69,7 @@ Each celestial body SHALL be able to compute a local day time and sun elevation 
 Celestial types SHALL be registered by `ResourceLocation` before they are referenced by any celestial definition. Duplicate type IDs are silently ignored.
 
 #### Scenario: Type lookup
-- **WHEN** a celestial is deserialized with `type = "genesis:star"`
+- **WHEN** a celestial is deserialized with `type = "neogenesis:star"`
 - **THEN** `CelestialType.get(...)` returns the `STAR` type instance
 
 #### Scenario: Unknown type
@@ -83,20 +83,20 @@ The mod SHALL provide three built-in celestial types:
 
 | ID | Casts Light | Casts Shadow | Visitable | Renderer |
 |---|---|---|---|---|
-| `genesis:star` | yes | no | no | `StarRenderer` |
-| `genesis:body` | no | yes | yes | `PlanetRenderer` |
-| `genesis:blackhole` | no | no | no | `BlackholeRenderer` |
+| `neogenesis:star` | yes | no | no | `StarRenderer` |
+| `neogenesis:body` | no | yes | yes | `PlanetRenderer` |
+| `neogenesis:blackhole` | no | no | no | `BlackholeRenderer` |
 
 #### Scenario: Star properties
-- **WHEN** a celestial's type is `genesis:star`
+- **WHEN** a celestial's type is `neogenesis:star`
 - **THEN** `castsLight()` is `true`, `castsShadow()` is `false`, `isVisitable()` is `false`
 
 #### Scenario: Body (planet) properties
-- **WHEN** a celestial's type is `genesis:body`
+- **WHEN** a celestial's type is `neogenesis:body`
 - **THEN** `castsShadow()` is `true` and `isVisitable()` is `true`
 
 #### Scenario: Blackhole properties
-- **WHEN** a celestial's type is `genesis:blackhole`
+- **WHEN** a celestial's type is `neogenesis:blackhole`
 - **THEN** `castsLight()`, `castsShadow()`, and `isVisitable()` are all `false`
 
 ---
@@ -116,7 +116,7 @@ Every celestial body SHALL have a `CelestialTransformProvider` that computes its
 
 ---
 
-### Requirement: Static Transform Provider (`genesis:static`)
+### Requirement: Static Transform Provider (`neogenesis:static`)
 A static provider SHALL hold a fixed position (`x`, `y`, `z`) and rotation expressed as Euler angles (`xRot`, `yRot`, `zRot` in radians, all defaulting to `0`). Position and rotation do not change over time.
 
 #### Scenario: Fixed position
@@ -129,7 +129,7 @@ A static provider SHALL hold a fixed position (`x`, `y`, `z`) and rotation expre
 
 ---
 
-### Requirement: Orbiting Transform Provider (`genesis:orbiting`)
+### Requirement: Orbiting Transform Provider (`neogenesis:orbiting`)
 An orbiting provider SHALL compute a time-varying position around a parent celestial using Keplerian-style spherical coordinates. It SHALL also apply a time-varying rotation (daily spin around the Y axis).
 
 Parameters:
@@ -230,11 +230,11 @@ The registry SHALL expose three query methods:
 - `getWhere(Predicate<CelestialType>)` — returns all celestials whose type matches the predicate
 
 #### Scenario: Get by ID
-- **WHEN** `get("genesis:earth")` is called and that celestial is registered
+- **WHEN** `get("neogenesis:earth")` is called and that celestial is registered
 - **THEN** the matching `Celestial` is returned
 
 #### Scenario: Get by ID missing
-- **WHEN** `get("genesis:unknown")` is called
+- **WHEN** `get("neogenesis:unknown")` is called
 - **THEN** `null` is returned
 
 #### Scenario: Filter by type

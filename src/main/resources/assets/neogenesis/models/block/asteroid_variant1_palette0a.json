@@ -1,0 +1,6 @@
+{
+  "parent": "neogenesis:block/asteroid_variant1",
+  "textures": {
+    "all": "neogenesis:block/asteroid_palette_0a"
+  }
+}

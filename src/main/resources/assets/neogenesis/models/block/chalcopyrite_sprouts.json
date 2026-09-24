@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cross",
+  "textures": {
+    "cross": "neogenesis:block/chalcopyrite_sprouts"
+  }
+}

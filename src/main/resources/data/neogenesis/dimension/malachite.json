@@ -1,0 +1,48 @@
+{
+  "type": "neogenesis:malachite",
+  "generator": {
+    "biome_source": {
+      "biomes": [
+        {
+          "parameters": {
+            "erosion": 0.3899,
+            "depth": 0,
+            "weirdness": 0.0,
+            "offset": 0,
+            "temperature": 0.0,
+            "humidity": 0.94,
+            "continentalness": 0.1
+          },
+          "biome": "neogenesis:malachite_barrens"
+        },
+        {
+          "parameters": {
+            "erosion": 0.3899,
+            "depth": 0,
+            "weirdness": 0.0,
+            "offset": 0,
+            "temperature": 0.5,
+            "humidity": 0.94,
+            "continentalness": 0.5
+          },
+          "biome": "neogenesis:malachite_bramble"
+        },
+        {
+          "parameters": {
+            "erosion": 0.3899,
+            "depth": 0,
+            "weirdness": 0.0,
+            "offset": 0,
+            "temperature": 1.0,
+            "humidity": 0.94,
+            "continentalness": 0.3
+          },
+          "biome": "neogenesis:malachite_crags"
+        }
+      ],
+      "type": "minecraft:multi_noise"
+    },
+    "settings": "neogenesis:malachite_noise_settings",
+    "type": "minecraft:noise"
+  }
+}

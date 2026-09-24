@@ -1,0 +1,30 @@
+{
+  "variants": {
+    "facing=down": {
+      "model": "neogenesis:block/medium_verdite_bud",
+      "x": 180
+    },
+    "facing=east": {
+      "model": "neogenesis:block/medium_verdite_bud",
+      "x": 90,
+      "y": 90
+    },
+    "facing=north": {
+      "model": "neogenesis:block/medium_verdite_bud",
+      "x": 90
+    },
+    "facing=south": {
+      "model": "neogenesis:block/medium_verdite_bud",
+      "x": 90,
+      "y": 180
+    },
+    "facing=up": {
+      "model": "neogenesis:block/medium_verdite_bud"
+    },
+    "facing=west": {
+      "model": "neogenesis:block/medium_verdite_bud",
+      "x": 90,
+      "y": 270
+    }
+  }
+}

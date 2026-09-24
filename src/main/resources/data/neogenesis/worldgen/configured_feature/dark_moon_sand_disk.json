@@ -1,0 +1,55 @@
+{
+  "type": "minecraft:disk",
+  "config": {
+    "state_provider": {
+      "fallback": {
+        "type": "minecraft:simple_state_provider",
+        "state": {
+          "Name": "neogenesis:wavy_moon_sand"
+        }
+      },
+      "rules": [
+        {
+          "if_true": {
+            "type": "minecraft:matching_blocks",
+            "offset": [
+              0,
+              -1,
+              0
+            ],
+            "blocks": [
+              "neogenesis:wavy_moon_sand",
+              "neogenesis:moon_sand"
+            ]
+          },
+          "then": {
+            "type": "minecraft:weighted_state_provider",
+            "entries": [
+              {
+                "weight": 1,
+                "data": {
+                  "Name": "neogenesis:dark_wavy_moon_sand"
+                }
+              },
+              {
+                "weight": 1,
+                "data": {
+                  "Name": "neogenesis:dark_moon_sand"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "radius": 6,
+    "half_height": 3,
+    "target": {
+      "type": "minecraft:matching_blocks",
+      "blocks": [
+        "neogenesis:wavy_moon_sand",
+        "neogenesis:moon_sand"
+      ]
+    }
+  }
+}

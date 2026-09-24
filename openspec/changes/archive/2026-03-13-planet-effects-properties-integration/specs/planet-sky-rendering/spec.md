@@ -23,7 +23,7 @@
 - When `isOverworld()` is `true`, the sky color SHALL be determined by biome sampling (existing `getSkyColor` path), unmodified.
 - When `isOverworld()` is `false`, the sky color SHALL be calculated from the planet's explicit `getRGB()` values, with the same day/night `intensity` multiplier and rain/thunder desaturation applied as in the `getSkyColor` biome path.
 
-When no `PlanetProperties` entry exists, the renderer SHALL fall back to the `genesis:overworld` (biome sampling) path.
+When no `PlanetProperties` entry exists, the renderer SHALL fall back to the `neogenesis:overworld` (biome sampling) path.
 
 #### Scenario: Overworld palette uses biome sampling
 - **WHEN** the current planet's `PlanetColorPalette` has `isOverworld() == true`

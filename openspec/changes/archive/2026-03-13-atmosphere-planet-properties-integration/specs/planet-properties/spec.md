@@ -1,7 +1,7 @@
 ## MODIFIED Requirements
 
 ### Requirement: Planet Properties Data Model
-Each planet (celestial of type `genesis:body`) MAY have an associated `PlanetProperties` entry keyed by its `ResourceLocation` ID. The entry SHALL carry the following fields:
+Each planet (celestial of type `neogenesis:body`) MAY have an associated `PlanetProperties` entry keyed by its `ResourceLocation` ID. The entry SHALL carry the following fields:
 
 | Field | Type | Description |
 |---|---|---|
@@ -11,7 +11,7 @@ Each planet (celestial of type `genesis:body`) MAY have an associated `PlanetPro
 | `color` | `PlanetColorPalette` | Sky/atmosphere color source |
 
 #### Scenario: Property lookup for known planet
-- **WHEN** `PlanetProperties.get("genesis:earth")` is called and properties are loaded
+- **WHEN** `PlanetProperties.get("neogenesis:earth")` is called and properties are loaded
 - **THEN** the matching `PlanetProperties` record is returned
 
 #### Scenario: Property lookup for unknown planet

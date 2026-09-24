@@ -13,6 +13,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
 
+import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -27,6 +28,11 @@ import java.util.Optional;
 public class GenesisBlocks {
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(Registries.BLOCK, NeoGenesisMod.MOD_ID);
     public static final DeferredRegister<MenuType<?>> MENU_TYPES = DeferredRegister.create(Registries.MENU, NeoGenesisMod.MOD_ID);
+
+    public static void register(IEventBus eventBus) {
+        BLOCKS.register(eventBus);
+        MENU_TYPES.register(eventBus);
+    }
 
     // Concrete FallingBlock implementation for 1.21.1 codec requirement
     public static class GenesisFallingBlock extends FallingBlock {

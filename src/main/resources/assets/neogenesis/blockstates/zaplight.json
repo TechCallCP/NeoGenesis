@@ -1,0 +1,9 @@
+{
+  "variants": {
+    "": [
+      {"model": "neogenesis:block/zaplight_0", "weight": 1},
+      {"model": "neogenesis:block/zaplight_1", "weight": 3},
+      {"model": "neogenesis:block/zaplight_2", "weight": 1}
+    ]
+  }
+}

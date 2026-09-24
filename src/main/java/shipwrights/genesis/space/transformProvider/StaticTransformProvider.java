@@ -16,7 +16,7 @@ import shipwrights.genesis.space.Celestial;
 
 public class StaticTransformProvider implements CelestialTransformProvider {
 
-    public static final ResourceLocation TYPE = ResourceLocation.parse("genesis:static");
+    public static final ResourceLocation TYPE = ResourceLocation.parse("neogenesis:static");
 
     private final double x;
     private final double y;

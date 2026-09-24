@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "": [
+      {"model": "neogenesis:block/verdite_ore"},
+      {"model": "neogenesis:block/verdite_ore_alt"},
+      {"model": "neogenesis:block/verdite_ore_alt", "x": 270},
+      {"model": "neogenesis:block/verdite_ore_alt", "x": 90}
+    ]
+  }
+}

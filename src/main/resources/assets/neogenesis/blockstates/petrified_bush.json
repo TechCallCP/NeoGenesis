@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "color=0": {
+      "model": "neogenesis:block/petrified_bush_0"
+    },
+    "color=1": {
+      "model": "neogenesis:block/petrified_bush_1"
+    },
+    "color=2": {
+      "model": "neogenesis:block/petrified_bush_2"
+    },
+    "color=3": {
+      "model": "neogenesis:block/petrified_bush_3"
+    },
+    "color=4": {
+      "model": "neogenesis:block/petrified_bush_4"
+    }
+  }
+}
